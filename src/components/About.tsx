@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Code2, Target, Users2, Rocket, BookOpen, DollarSign, Award } from "lucide-react";
+import { ArrowRight, Code2, Target, Users2, BookOpen, DollarSign, Award } from "lucide-react";
 
 export function About() {
   return (
