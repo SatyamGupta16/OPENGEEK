@@ -1,34 +1,57 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "OpenGeek - Modern Web Development",
-  description: "Your gateway to modern web development. Built with Next.js, React, and TailwindCSS.",
+  title: "OpenGeek Community | Real Projects for Student Developers",
+  description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
+  keywords: "student developers, tech community, coding projects, learn programming, developer community, paid projects, mentorship",
+  authors: [{ name: "OpenGeek Community" }],
+  creator: "OpenGeek Community",
+  publisher: "OpenGeek Community",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://opengeek.dev",
+    siteName: "OpenGeek Community",
+    title: "OpenGeek Community | Real Projects for Student Developers",
+    description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "OpenGeek Community",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OpenGeek Community | Real Projects for Student Developers",
+    description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
+    images: ["/og-image.jpg"],
+    creator: "@opengeek",
+  },
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#000000",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
-      >
-        {children}
-      </body>
+    <html lang="en" className="dark">
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
