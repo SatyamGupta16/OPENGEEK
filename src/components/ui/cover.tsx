@@ -54,15 +54,16 @@ export const Cover = ({
             className="h-full w-full overflow-hidden absolute inset-0"
           >
             <motion.div
+              style={{
+                transform: "translateX(-50%)",
+              }}
               animate={{
-                translateX: ["-50%", "0%"],
+                transform: "translateX(0%)",
               }}
               transition={{
-                translateX: {
-                  duration: 10,
-                  ease: "linear",
-                  repeat: Infinity,
-                },
+                duration: 10,
+                ease: "linear",
+                repeat: Infinity,
               }}
               className="w-[200%] h-full flex"
             >

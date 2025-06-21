@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
@@ -6,7 +6,15 @@ import { Footer } from "@/components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://opengeek.dev"),
   title: "OpenGeek Community | Real Projects for Student Developers",
   description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
   keywords: "student developers, tech community, coding projects, learn programming, developer community, paid projects, mentorship",
@@ -16,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://opengeek.dev",
+    url: "https://opengeek.in",
     siteName: "OpenGeek Community",
     title: "OpenGeek Community | Real Projects for Student Developers",
     description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
@@ -42,8 +50,6 @@ export const metadata: Metadata = {
     apple: "/icon.svg",
   },
   manifest: "/manifest.json",
-  themeColor: "#000000",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({

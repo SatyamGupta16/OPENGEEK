@@ -79,7 +79,7 @@ export const SparklesCore = (props: ParticlesProps) => {
                 },
                 resize: {
                   enable: true,
-                  status: true
+                  delay: 0,
                 },
               },
               modes: {

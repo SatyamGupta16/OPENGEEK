@@ -36,8 +36,9 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.8 }}
-          className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold max-w-7xl mx-auto text-center mt-6 relative z-20 py-4 sm:py-6 bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/70"
+          className="text-5xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold max-w-7xl mx-auto text-center mt-6 relative z-20 py-4 sm:py-6 bg-clip-text text-transparent bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white"
         >
+          
           Turn Your Code into Real <br className="hidden sm:block" /> 
           <div className="relative inline-block">
             <Cover>
