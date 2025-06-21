@@ -1,9 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Code2, Target, Users2, BookOpen, DollarSign, Award } from "lucide-react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { Code2, Target, Users2, BookOpen, DollarSign, Award } from "lucide-react";
+import { motion, useScroll, useSpring } from "framer-motion";
 import { useRef } from "react";
 import { FocusCards } from "@/components/ui/focus-cards";
 import { BackgroundLines } from "@/components/ui/background-lines";
