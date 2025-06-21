@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Link from "next/link";
-import { Code2, BookOpen, Briefcase, Users2, Calendar } from "lucide-react";
+import { BookOpen, Briefcase, Users2, Calendar } from "lucide-react";
 
 const navItems = [
   {
