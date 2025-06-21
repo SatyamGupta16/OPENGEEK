@@ -3,6 +3,11 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 
+interface CardProps {
+  title: string;
+  content: string;
+}
+
 export const Card = React.memo(
   ({
     card,
@@ -10,7 +15,7 @@ export const Card = React.memo(
     hovered,
     setHovered,
   }: {
-    card: any;
+    card: CardProps;
     index: number;
     hovered: number | null;
     setHovered: React.Dispatch<React.SetStateAction<number | null>>;
@@ -58,12 +63,7 @@ export const Card = React.memo(
 
 Card.displayName = "Card";
 
-type Card = {
-  title: string;
-  content: string;
-};
-
-export function FocusCards({ cards }: { cards: Card[] }) {
+export function FocusCards({ cards }: { cards: CardProps[] }) {
   const [hovered, setHovered] = useState<number | null>(null);
 
   return (
