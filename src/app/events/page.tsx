@@ -69,7 +69,7 @@ export default function EventsPage() {
             Tech Events & Meetups
           </h1>
           <p className="text-white/70 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
-            Join our community events to learn, network, and grow with fellow developers. From hackathons to workshops, we've got something for everyone.
+            Join our community events to learn, network, and grow with fellow developers. From hackathons to workshops, we&apos;ve got something for everyone.
           </p>
         </motion.div>
       </section>

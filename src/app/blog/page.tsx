@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, User, Clock, ArrowRight, Tag } from "lucide-react";
+import { Calendar, User, Clock, ArrowRight } from "lucide-react";
 import { GridPattern } from "@/components/ui/grid-pattern";
 import { SpaceBackground } from "@/components/ui/space-background";
 

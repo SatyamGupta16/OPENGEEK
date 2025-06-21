@@ -24,7 +24,7 @@ export function Achievements() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              Showcasing our team's success in hackathons and web development projects
+              Showcasing our team&apos;s success in hackathons and web development projects
             </motion.p>
           </div>
 
