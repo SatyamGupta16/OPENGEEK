@@ -165,11 +165,7 @@ export async function GET() {
   }
 }
 
-// Helper function to get a single application by ID
-export async function getApplicationById(id: string) {
-  const applications = await readApplications()
-  return applications.find((app: any) => app.id === id)
-}
+
 
 // Helper function to update application status
 export async function updateApplicationStatus(id: string, status: 'pending' | 'approved' | 'rejected') {
