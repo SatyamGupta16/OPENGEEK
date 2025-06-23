@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { updateApplicationStatus } from '../route'
+import { updateApplicationStatus } from '@/lib/application-utils'
 
 export async function PUT(req: Request) {
   try {
