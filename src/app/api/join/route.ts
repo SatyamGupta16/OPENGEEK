@@ -118,6 +118,7 @@ export async function POST(request: Request) {
       const fileContent = await readFile(filePath, 'utf-8')
       applications = JSON.parse(fileContent)
     } catch (error) {
+      console.error(error); 
       toast.error('File doesnt exist or is empty, start with empty array')
       // File doesn't exist or is empty, start with empty array
     }

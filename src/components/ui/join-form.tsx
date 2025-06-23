@@ -169,6 +169,7 @@ export function JoinForm() {
       // Redirect to thank you page
       router.push('/join/thank-you')
     } catch (error) {
+      console.error('Failed to submit application. Please try again.');
       toast.error('Failed to submit application. Please try again.')
     } finally {
       setIsSubmitting(false)

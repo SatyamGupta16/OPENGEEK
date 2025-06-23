@@ -94,6 +94,7 @@ export default function AdminApplicationsPage() {
       const data = await response.json()
       setApplications(data)
     } catch (error) {
+      console.error(error);
       toast.error('Failed to load applications')
     } finally {
       setLoading(false)
@@ -124,6 +125,7 @@ export default function AdminApplicationsPage() {
 
       toast.success(statusConfig[newStatus].message)
     } catch (error) {
+      console.error(error); 
       toast.error('Failed to update status')
     }
   }
