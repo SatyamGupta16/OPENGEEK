@@ -1,55 +1,8 @@
 import { NextResponse } from 'next/server'
-import { writeFile, readFile, mkdir } from 'fs/promises'
-import path from 'path'
-import { existsSync } from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'bcrypt'
 import { toast } from 'sonner'
-
-// Store data in public directory which has proper permissions
-const DATA_DIR = path.join(process.cwd(), 'public', '_data')
-const DATA_FILE = path.join(DATA_DIR, 'applications.json')
-
-// Initialize the data file if it doesn't exist
-async function initializeDataFile() {
-  try {
-    // Create _data directory if it doesn't exist
-    if (!existsSync(DATA_DIR)) {
-      await mkdir(DATA_DIR, { recursive: true })
-    }
-    
-    // Create applications.json if it doesn't exist
-    if (!existsSync(DATA_FILE)) {
-      await writeFile(DATA_FILE, JSON.stringify([], null, 2), 'utf-8')
-    }
-  } catch (error) {
-    console.error('Error initializing data file:', error)
-    throw error
-  }
-}
-
-// Read applications from file
-async function readApplications() {
-  try {
-    await initializeDataFile()
-    const fileContent = await readFile(DATA_FILE, 'utf-8')
-    return JSON.parse(fileContent)
-  } catch (error) {
-    console.error('Error reading applications:', error)
-    return []
-  }
-}
-
-// Save applications to file
-async function saveApplications(applications: any[]) {
-  try {
-    await initializeDataFile()
-    await writeFile(DATA_FILE, JSON.stringify(applications, null, 2), 'utf-8')
-  } catch (error) {
-    console.error('Error saving applications:', error)
-    throw error
-  }
-}
+import { readApplications, saveApplications } from '@/lib/application-utils'
 
 interface Application {
   id: string
@@ -111,17 +64,7 @@ export async function POST(request: Request) {
       expectations,
     }
 
-    const filePath = path.join(process.cwd(), 'public', '_data', 'applications.json')
-    
-    let applications: Application[] = []
-    try {
-      const fileContent = await readFile(filePath, 'utf-8')
-      applications = JSON.parse(fileContent)
-    } catch (error) {
-      console.error(error); 
-      toast.error('File doesnt exist or is empty, start with empty array')
-      // File doesn't exist or is empty, start with empty array
-    }
+    let applications: Application[] = await readApplications()
 
     // Check if username is already taken
     if (applications.some(app => app.username === username)) {
@@ -140,7 +83,7 @@ export async function POST(request: Request) {
     }
 
     applications.push(application)
-    await writeFile(filePath, JSON.stringify(applications, null, 2))
+    await saveApplications(applications)
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -165,7 +108,11 @@ export async function GET() {
   }
 }
 
-
+// Helper function to get a single application by ID
+export async function getApplicationById(id: string) {
+  const applications = await readApplications()
+  return applications.find((app: any) => app.id === id)
+}
 
 // Helper function to update application status
 export async function updateApplicationStatus(id: string, status: 'pending' | 'approved' | 'rejected') {

@@ -20,18 +20,39 @@ export const Cover = ({
   const [beamPositions, setBeamPositions] = useState<number[]>([]);
 
   useEffect(() => {
-    if (ref.current) {
-      setContainerWidth(ref.current?.clientWidth ?? 0);
-
-      const height = ref.current?.clientHeight ?? 0;
-      const numberOfBeams = Math.floor(height / 10); // Adjust the divisor to control the spacing
+    const updateDimensions = (element: HTMLDivElement) => {
+      setContainerWidth(element.clientWidth);
+      const height = element.clientHeight;
+      const numberOfBeams = Math.floor(height / 10);
       const positions = Array.from(
         { length: numberOfBeams },
         (_, i) => (i + 1) * (height / (numberOfBeams + 1))
       );
       setBeamPositions(positions);
-    }
-  }, [ref.current]);
+    };
+
+    const element = ref.current;
+    if (!element) return;
+
+    // Initial update
+    updateDimensions(element);
+
+    // Setup ResizeObserver
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === element) {
+          updateDimensions(element);
+        }
+      }
+    });
+
+    resizeObserver.observe(element);
+
+    // Cleanup
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   return (
     <div
