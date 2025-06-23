@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'bcrypt'
-import { toast } from 'sonner'
+
 import { readApplications, saveApplications } from '@/lib/application-utils'
 
 interface Application {
@@ -108,27 +108,3 @@ export async function GET() {
   }
 }
 
-// Helper function to get a single application by ID
-export async function getApplicationById(id: string) {
-  const applications = await readApplications()
-  return applications.find((app: any) => app.id === id)
-}
-
-// Helper function to update application status
-export async function updateApplicationStatus(id: string, status: 'pending' | 'approved' | 'rejected') {
-  const applications = await readApplications()
-  const index = applications.findIndex((app: any) => app.id === id)
-  
-  if (index === -1) {
-    throw new Error('Application not found')
-  }
-
-  applications[index] = {
-    ...applications[index],
-    status,
-    lastUpdated: new Date().toISOString()
-  }
-
-  await saveApplications(applications)
-  return applications[index]
-} 
