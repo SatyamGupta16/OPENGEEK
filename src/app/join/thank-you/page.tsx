@@ -46,7 +46,7 @@ export default function ThankYouPage() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="mt-4 text-lg text-neutral-400"
           >
-            Thank you for joining our community. We're excited to have you on board!
+            Thank you for joining our community. We are excited to have you on board!
           </motion.p>
 
           <motion.p
@@ -55,7 +55,7 @@ export default function ThankYouPage() {
             transition={{ duration: 0.5, delay: 0.5 }}
             className="mt-2 text-neutral-500"
           >
-            We've opened our WhatsApp group in a new tab for you to join.
+            We have opened our WhatsApp group in a new tab for you to join.
           </motion.p>
 
           <motion.div

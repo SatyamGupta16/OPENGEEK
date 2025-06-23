@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { SpaceBackground } from '@/components/ui/space-background'
+
 import {
   Table,
   TableBody,
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { motion } from 'framer-motion'
+
 import { Search, Eye, Clock, CheckCircle2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

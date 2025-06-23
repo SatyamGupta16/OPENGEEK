@@ -48,7 +48,7 @@ interface PhoneInputProps {
   className?: string
 }
 
-export function PhoneInput({ value, onChange, className }: PhoneInputProps) {
+export function PhoneInput({ onChange, className }: PhoneInputProps) {
   const [open, setOpen] = React.useState(false)
   const [selectedCountry, setSelectedCountry] = React.useState(countries[0])
   const [phoneNumber, setPhoneNumber] = React.useState("")

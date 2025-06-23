@@ -13,9 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
 import { toast } from 'sonner'
-import { ChangeEvent, FormEvent } from 'react'
+
 import { useRouter } from 'next/navigation'
 import { PhoneInput } from './phone-input'
 import { cn } from '@/lib/utils'
@@ -179,18 +179,7 @@ export function JoinForm() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleTechStackChange = (category: keyof typeof formData.skills, value: string) => {
-    const currentTech = formData.skills
-    const updatedTech = currentTech.includes(value)
-      ? currentTech.filter(tech => tech !== value)
-      : [...currentTech, value]
-
-    setFormData(prev => ({
-      ...prev,
-      skills: updatedTech
-    }))
-  }
-
+  
   // Function to handle skill selection
   const toggleSkill = (skill: string) => {
     setFormData(prev => ({

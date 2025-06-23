@@ -4,6 +4,7 @@ import path from 'path'
 import { existsSync } from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'bcrypt'
+import { toast } from 'sonner'
 
 // Store data in public directory which has proper permissions
 const DATA_DIR = path.join(process.cwd(), 'public', '_data')
@@ -117,6 +118,7 @@ export async function POST(request: Request) {
       const fileContent = await readFile(filePath, 'utf-8')
       applications = JSON.parse(fileContent)
     } catch (error) {
+      toast.error('File doesnt exist or is empty, start with empty array')
       // File doesn't exist or is empty, start with empty array
     }
 
