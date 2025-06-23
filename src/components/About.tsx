@@ -49,48 +49,40 @@ export function About() {
   });
 
   return (
-    <section id="about" className="relative w-full py-16 sm:py-20 md:py-32 bg-black overflow-hidden min-h-screen">
+    <section id="about" className="relative w-full min-h-screen bg-black overflow-x-hidden">
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-blue-600 origin-left z-50"
         style={{ scaleX }}
       />
 
-      <div ref={containerRef}>
-      <BackgroundLines className="container px-4 md:px-6 pb-16 sm:pb-20 md:pb-32">
-        <motion.div 
-          className="flex flex-col items-center justify-center space-y-4 text-center mb-12 sm:mb-16 md:mb-20"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.h2 
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold flex flex-col sm:flex-row items-center gap-2 sm:gap-3 relative z-20 px-4"
-            initial={{ opacity: 0, y: 20 }}
+      <div ref={containerRef} className="w-full py-16 sm:py-20 md:py-24 lg:py-32">
+        <BackgroundLines className="container mx-auto px-3 xs:px-4 md:px-6">
+          <motion.div 
+            className="flex flex-col items-center justify-center space-y-3 sm:space-y-4 text-center mb-10 sm:mb-12 md:mb-16 lg:mb-20"
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+            transition={{ duration: 0.5 }}
           >
-            <span className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">Empowering Student</span>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 animate-gradient bg-[200%_auto] drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">Developers</span>
-          </motion.h2>
-          <motion.p 
-            className="max-w-[90%] sm:max-w-xl mx-auto text-xs sm:text-sm md:text-lg text-white/70 text-center relative z-20 px-4 leading-relaxed whitespace-pre-line"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-          >
-            {"We bridge the gap between learning and real-world experience,helping students and aspiring developers kickstart their careers through hands-on projects."}
-          </motion.p>
-        </motion.div>
+            <h2 
+              className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold max-w-7xl mx-auto text-center mt-4 sm:mt-6 relative z-20 py-3 sm:py-4 md:py-6 bg-clip-text text-transparent bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white flex flex-col xs:flex-row items-center gap-1 xs:gap-2 sm:gap-3"
+            >
+              <span>Empowering Student</span>
+              <span>Developers</span>
+            </h2>
+            <p className="max-w-[95%] xs:max-w-[90%] sm:max-w-xl mx-auto text-xs xs:text-sm sm:text-base md:text-lg text-white/70 text-center relative z-20 px-2 xs:px-4 leading-relaxed">
+              We bridge the gap between learning and real-world experience, helping students and aspiring developers kickstart their careers through hands-on projects and mentorship.
+            </p>
+          </motion.div>
 
-        <div className="px-4 sm:px-0 mt-12 sm:mt-16 md:mt-20">
-          <FocusCards 
-            cards={featureCards.map(card => ({
-              title: card.title,
-              content: card.description
-            }))}
-          />
-        </div>
-      </BackgroundLines>
+          <div className="w-full px-2 xs:px-4 sm:px-0 mt-8 sm:mt-12 md:mt-16 lg:mt-20">
+            <FocusCards 
+              cards={featureCards.map(card => ({
+                title: card.title,
+                content: card.description
+              }))}
+            />
+          </div>
+        </BackgroundLines>
       </div>
     </section>
   );
