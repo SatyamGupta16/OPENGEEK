@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Code2, Users, Briefcase, Trophy } from "lucide-react";
-
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Cover } from "@/components/ui/cover";
 import { ContainerTextFlip } from "@/components/ui/container-text-flip";
@@ -67,6 +67,7 @@ export function Hero() {
           transition={{ delay: 0.8, duration: 0.8 }}
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 px-4"
         >
+          <Link href="/internships">
           <Button 
             size="lg" 
             className="group relative w-full sm:w-auto text-base font-medium bg-gradient-to-r from-white/90 via-white/90 to-white/90 text-black hover:from-white hover:via-white hover:to-white transition-all duration-300 h-12 px-6 sm:px-8 overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_0_2px_rgba(255,255,255,0.4),0_4px_6px_-1px_rgba(255,255,255,0.1),0_2px_4px_-1px_rgba(255,255,255,0.06)] backdrop-blur-sm"
@@ -76,13 +77,16 @@ export function Hero() {
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </span>
           </Button>
+          </Link>
+          <Link href="/join">
           <Button 
             size="lg" 
             variant="outline" 
             className="group relative w-full sm:w-auto text-base font-medium bg-black/30 text-white hover:text-white hover:bg-black/50 transition-all duration-300 h-12 px-6 sm:px-8 overflow-hidden rounded-lg border border-white/20 hover:border-white/40 backdrop-blur-sm shadow-[0_0_0_1px_rgba(255,255,255,0.1)] hover:shadow-[0_0_0_2px_rgba(255,255,255,0.2),0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)]"
           >
             <span className="relative z-10">Join Community</span>
-          </Button>
+          </Button  >
+          </Link>
         </motion.div>
 
         <motion.div 

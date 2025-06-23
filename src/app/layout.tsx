@@ -1,71 +1,64 @@
-import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
+import type { Metadata, Viewport } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import ClientLayout from "@/components/layout/ClientLayout"
 
-export const viewport: Viewport = {
-  themeColor: "#000000",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-};
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://opengeek.dev"),
   title: "OpenGeek Community | Real Projects for Student Developers",
   description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
-  keywords: "student developers, tech community, coding projects, learn programming, developer community, paid projects, mentorship",
+  keywords: [
+    "student developers",
+    "tech community",
+    "programming projects",
+    "software development",
+    "coding mentorship",
+    "tech internships",
+    "learn to code",
+    "developer community",
+  ],
   authors: [{ name: "OpenGeek Community" }],
   creator: "OpenGeek Community",
   publisher: "OpenGeek Community",
+  robots: "index, follow",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://opengeek.in",
-    siteName: "OpenGeek Community",
+    url: "https://opengeek.dev",
     title: "OpenGeek Community | Real Projects for Student Developers",
-    description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "OpenGeek Community",
-      },
-    ],
+    description:
+      "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
+    siteName: "OpenGeek Community",
   },
   twitter: {
     card: "summary_large_image",
     title: "OpenGeek Community | Real Projects for Student Developers",
-    description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
-    images: ["/og-image.jpg"],
-    creator: "@opengeek",
+    description:
+      "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
   },
-  icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
-  },
-  manifest: "/manifest.json",
-};
+}
+
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen flex flex-col bg-black antialiased`}>
-        <Navbar />
-        <main className="flex-grow relative">
+        <ClientLayout>
           {children}
-        </main>
-        <Footer />
+        </ClientLayout>
       </body>
     </html>
-  );
+  )
 }
