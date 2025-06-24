@@ -1,35 +1,10 @@
 import { NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { hash } from 'bcrypt'
+import { supabase } from '@/lib/supabase'
+import type { Database } from '@/lib/database.types'
 
-import { readApplications, saveApplications } from '@/lib/application-utils'
-
-interface Application {
-  id: string
-  status: 'pending' | 'approved' | 'rejected'
-  submittedAt: string
-  
-  // Personal Details
-  name: string
-  email: string
-  phone: string
-  githubProfile: string
-  course: string
-  semester: string
-  
-  // Login Credentials (hashed)
-  username: string
-  hashedPassword: string
-
-  // Technical Background
-  experience: string
-  skills: string[]
-  interests: string
-  
-  // Community Interest
-  whyJoin: string
-  expectations: string
-}
+type Application = Database['public']['Tables']['applications']['Insert']
 
 export async function POST(request: Request) {
   try {
@@ -42,48 +17,69 @@ export async function POST(request: Request) {
       submittedAt
     } = body
 
+    // Check if username or email already exists
+    const { data: existing, error: checkError } = await supabase
+      .from('applications')
+      .select('username, email')
+      .or(`username.eq.${username},email.eq.${email}`)
+      .maybeSingle()
+
+    if (checkError) {
+      console.error('Error checking existing user:', checkError)
+      return NextResponse.json(
+        { error: 'Failed to check existing user' },
+        { status: 500 }
+      )
+    }
+
+    if (existing) {
+      if (existing.username === username) {
+        return NextResponse.json(
+          { error: 'Username is already taken' },
+          { status: 400 }
+        )
+      }
+      if (existing.email === email) {
+        return NextResponse.json(
+          { error: 'Email is already registered' },
+          { status: 400 }
+        )
+      }
+    }
+
     // Hash the password
     const hashedPassword = await hash(password, 10)
 
     const application: Application = {
       id: uuidv4(),
       status: 'pending',
-      submittedAt,
+      submitted_at: submittedAt,
       name,
       email,
       phone,
-      githubProfile,
+      github_profile: githubProfile,
       course,
       semester,
       username,
-      hashedPassword,
+      hashed_password: hashedPassword,
       experience,
       skills: skills || [],
       interests,
-      whyJoin,
+      why_join: whyJoin,
       expectations,
     }
 
-    let applications: Application[] = await readApplications()
+    const { error: insertError } = await supabase
+      .from('applications')
+      .insert([application])
 
-    // Check if username is already taken
-    if (applications.some(app => app.username === username)) {
+    if (insertError) {
+      console.error('Error inserting application:', insertError)
       return NextResponse.json(
-        { error: 'Username is already taken' },
-        { status: 400 }
+        { error: 'Failed to save application' },
+        { status: 500 }
       )
     }
-
-    // Check if email is already registered
-    if (applications.some(app => app.email === email)) {
-      return NextResponse.json(
-        { error: 'Email is already registered' },
-        { status: 400 }
-      )
-    }
-
-    applications.push(application)
-    await saveApplications(applications)
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -97,7 +93,19 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const applications = await readApplications()
+    const { data: applications, error } = await supabase
+      .from('applications')
+      .select('*')
+      .order('submitted_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching applications:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch applications' },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json(applications)
   } catch (error) {
     console.error('Error fetching applications:', error)
