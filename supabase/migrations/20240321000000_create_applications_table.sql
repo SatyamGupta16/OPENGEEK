@@ -1,3 +1,23 @@
+-- Drop existing constraints and indexes if they exist
+do $$ 
+begin
+    -- Drop existing constraints
+    alter table if exists applications
+        drop constraint if exists applications_email_unique,
+        drop constraint if exists applications_username_unique;
+        
+    -- Drop existing indexes
+    drop index if exists applications_email_idx;
+    drop index if exists applications_username_idx;
+    drop index if exists applications_submitted_at_idx;
+
+    -- Drop existing policies
+    drop policy if exists "Allow public application submissions" on applications;
+    drop policy if exists "Allow public to read all applications" on applications;
+    drop policy if exists "Users can view their own applications" on applications;
+    drop policy if exists "Admins can do everything" on applications;
+end $$;
+
 -- Create applications table
 create table if not exists applications (
     id uuid primary key,
@@ -29,24 +49,58 @@ create index if not exists applications_email_idx on applications(email);
 create index if not exists applications_username_idx on applications(username);
 create index if not exists applications_submitted_at_idx on applications(submitted_at desc);
 
--- Add RLS (Row Level Security) policies
+-- Enable RLS
 alter table applications enable row level security;
 
--- Allow public access for inserts (new applications)
+-- Create policies for public access
+-- Allow anyone to insert new applications
 create policy "Allow public application submissions"
     on applications
     for insert
     with check (true);
 
--- Allow authenticated users to view their own applications
-create policy "Users can view their own applications"
+-- Allow anyone to read all applications (needed for admin page)
+create policy "Allow public to read all applications"
     on applications
     for select
-    using (auth.uid()::text = id::text);
+    to public;
 
--- Allow admin access to all applications
-create policy "Admins can do everything"
+-- Allow anyone to update application status
+create policy "Allow public to update applications"
     on applications
-    to authenticated
-    using (auth.role() = 'admin')
-    with check (auth.role() = 'admin'); 
+    for update
+    using (true)
+    with check (true);
+
+-- Add some test data (optional - comment out if not needed)
+insert into applications (
+    id,
+    name,
+    email,
+    phone,
+    github_profile,
+    course,
+    semester,
+    username,
+    hashed_password,
+    experience,
+    skills,
+    interests,
+    why_join,
+    expectations
+) values (
+    gen_random_uuid(),
+    'Test User',
+    'test@example.com',
+    '+1234567890',
+    'https://github.com/testuser',
+    'Computer Science',
+    '3rd',
+    'testuser',
+    'hashed_password_here',
+    'intermediate',
+    array['JavaScript', 'React', 'Node.js'],
+    'Web Development, AI/ML',
+    'I want to learn and contribute to open source projects',
+    'To gain practical experience and collaborate with others'
+); 

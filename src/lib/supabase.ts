@@ -17,6 +17,8 @@ if (!supabaseKey) {
   )
 }
 
+console.log('Initializing Supabase client with URL:', supabaseUrl)
+
 // Create Supabase client with types
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {

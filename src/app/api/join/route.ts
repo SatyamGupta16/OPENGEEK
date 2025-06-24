@@ -93,26 +93,31 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    console.log('Fetching applications from Supabase...')
+    
     const { data: applications, error } = await supabase
       .from('applications')
       .select('*')
       .order('submitted_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching applications:', error)
+      console.error('Supabase error fetching applications:', error)
       return NextResponse.json(
         { error: 'Failed to fetch applications' },
         { status: 500 }
       )
     }
 
+    console.log('Applications fetched:', applications)
+
     if (!applications) {
+      console.log('No applications found, returning empty array')
       return NextResponse.json([])
     }
 
     return NextResponse.json(applications)
   } catch (error) {
-    console.error('Error fetching applications:', error)
+    console.error('Error in GET /api/join:', error)
     return NextResponse.json(
       { error: 'Failed to fetch applications' },
       { status: 500 }
