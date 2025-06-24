@@ -63,16 +63,17 @@ interface Application {
   name: string
   email: string
   phone: string
-  githubProfile: string
+  github_profile: string
   course: string
   semester: string
   experience: string
   skills: string[]
   interests: string
-  whyJoin: string
+  why_join: string
   expectations: string
-  submittedAt: string
+  submitted_at: string
   status: 'pending' | 'approved' | 'rejected'
+  last_updated?: string
 }
 
 export default function AdminApplicationsPage() {
@@ -92,7 +93,16 @@ export default function AdminApplicationsPage() {
       const response = await fetch('/api/join')
       if (!response.ok) throw new Error('Failed to fetch applications')
       const data = await response.json()
-      setApplications(data)
+      
+      // Transform the data to match our interface
+      const transformedData: Application[] = data.map((app: any) => ({
+        ...app,
+        githubProfile: app.github_profile,
+        whyJoin: app.why_join,
+        submittedAt: app.submitted_at,
+      }))
+      
+      setApplications(transformedData)
     } catch (error) {
       console.error(error);
       toast.error('Failed to load applications')
@@ -197,30 +207,11 @@ export default function AdminApplicationsPage() {
           <SelectTrigger className="w-full sm:w-[180px] bg-neutral-900 border-neutral-800">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-                      <SelectContent className="bg-neutral-900/95 backdrop-blur-sm border-neutral-800">
-            <SelectItem value="all">
-              <div className="flex items-center gap-2 text-neutral-400">
-                <span>All Status</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="pending">
-              <div className="flex items-center gap-2 text-yellow-500">
-                <Clock className="w-4 h-4" />
-                <span>Pending</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="approved">
-              <div className="flex items-center gap-2 text-emerald-500">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Approved</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="rejected">
-              <div className="flex items-center gap-2 text-rose-500">
-                <XCircle className="w-4 h-4" />
-                <span>Rejected</span>
-              </div>
-            </SelectItem>
+          <SelectContent className="bg-neutral-900/95 backdrop-blur-sm border-neutral-800">
+            <SelectItem value="all">All Applications</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -230,20 +221,19 @@ export default function AdminApplicationsPage() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-neutral-900/50">
-                <TableHead className="w-[50px]">#</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="hidden sm:table-cell">Email</TableHead>
-                <TableHead className="hidden md:table-cell">Phone</TableHead>
-                <TableHead className="hidden lg:table-cell">Submitted</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="border-neutral-800 hover:bg-neutral-900">
+                <TableHead className="text-neutral-400">Name</TableHead>
+                <TableHead className="text-neutral-400">Email</TableHead>
+                <TableHead className="text-neutral-400">Course</TableHead>
+                <TableHead className="text-neutral-400">Status</TableHead>
+                <TableHead className="text-neutral-400">Submitted</TableHead>
+                <TableHead className="text-neutral-400 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={6} className="text-center py-8">
                     <div className="flex items-center justify-center text-neutral-400">
                       <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -255,79 +245,34 @@ export default function AdminApplicationsPage() {
                 </TableRow>
               ) : filteredApplications.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-neutral-400">
+                  <TableCell colSpan={6} className="text-center py-8 text-neutral-400">
                     No applications found
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredApplications.map((application, index) => {
-                  const status = statusConfig[application.status]
-                  const StatusIcon = status.icon
-                  
-                  return (
-                    <TableRow key={application.id} className="hover:bg-neutral-900/50">
-                      <TableCell className="font-mono">{index + 1}</TableCell>
-                      <TableCell className="font-medium text-white">
-                        {application.name}
-                        {application.githubProfile && (
-                          <a
-                            href={application.githubProfile}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-xs text-blue-400 hover:text-blue-300 mt-1"
-                          >
-                            GitHub Profile ↗
-                          </a>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell">{application.email}</TableCell>
-                      <TableCell className="hidden md:table-cell">{application.phone}</TableCell>
-                      <TableCell className="hidden lg:table-cell text-neutral-400">
-                        {new Date(application.submittedAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={application.status}
-                          onValueChange={(value) => 
-                            updateApplicationStatus(
-                              application.id,
-                              value as 'pending' | 'approved' | 'rejected'
-                            )
-                          }
-                        >
-                          <SelectTrigger 
-                            className={cn(
-                              "w-[130px] border",
-                              status.bgColor,
-                              status.borderColor
-                            )}
-                          >
-                            <StatusIcon className={cn("w-4 h-4 mr-2", status.color)} />
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-neutral-900/95 backdrop-blur-sm border-neutral-800">
-                            <SelectItem value="pending">
-                              <div className="flex items-center gap-2 text-yellow-500">
-                                <Clock className="w-4 h-4" />
-                                <span>Pending</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="approved">
-                              <div className="flex items-center gap-2 text-emerald-500">
-                                <CheckCircle2 className="w-4 h-4" />
-                                <span>Approved</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="rejected">
-                              <div className="flex items-center gap-2 text-rose-500">
-                                <XCircle className="w-4 h-4" />
-                                <span>Rejected</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell className="text-right">
+                filteredApplications.map((application) => (
+                  <TableRow
+                    key={application.id}
+                    className="border-neutral-800 hover:bg-neutral-900"
+                  >
+                    <TableCell className="font-medium">{application.name}</TableCell>
+                    <TableCell>{application.email}</TableCell>
+                    <TableCell>{application.course}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {React.createElement(statusConfig[application.status].icon, {
+                          className: cn("w-4 h-4", statusConfig[application.status].color)
+                        })}
+                        <span className={cn("text-sm", statusConfig[application.status].color)}>
+                          {statusConfig[application.status].label}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(application.submitted_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -335,14 +280,28 @@ export default function AdminApplicationsPage() {
                             setSelectedApplication(application)
                             setIsDialogOpen(true)
                           }}
-                          className="text-neutral-400 hover:text-white"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })
+                        <Select
+                          value={application.status}
+                          onValueChange={(value: 'pending' | 'approved' | 'rejected') => 
+                            updateApplicationStatus(application.id, value)
+                          }
+                        >
+                          <SelectTrigger className="w-[130px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="approved">Approve</SelectItem>
+                            <SelectItem value="rejected">Reject</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
@@ -351,94 +310,102 @@ export default function AdminApplicationsPage() {
 
       {/* Application Details Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-neutral-900 border-neutral-800 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Application Details</DialogTitle>
-            <DialogDescription className="text-white/70">
-              Submitted on {selectedApplication && new Date(selectedApplication.submittedAt).toLocaleString()}
+            <DialogTitle>Application Details</DialogTitle>
+            <DialogDescription>
+              Detailed view of the application
             </DialogDescription>
           </DialogHeader>
+
           {selectedApplication && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h3 className="font-medium text-white/90 mb-1">Contact Information</h3>
-                  <div className="space-y-1 text-sm">
-                    <p><span className="text-white/60">Name:</span> {selectedApplication.name}</p>
-                    <p><span className="text-white/60">Email:</span> {selectedApplication.email}</p>
-                    <p><span className="text-white/60">Phone:</span> {selectedApplication.phone}</p>
-                  </div>
+                  <h4 className="text-sm font-medium text-neutral-400">Name</h4>
+                  <p>{selectedApplication.name}</p>
                 </div>
                 <div>
-                  <h3 className="font-medium text-white/90 mb-1">Education</h3>
-                  <div className="space-y-1 text-sm">
-                    <p><span className="text-white/60">Course:</span> {selectedApplication.course}</p>
-                    <p><span className="text-white/60">Semester:</span> {selectedApplication.semester}</p>
-                  </div>
+                  <h4 className="text-sm font-medium text-neutral-400">Email</h4>
+                  <p>{selectedApplication.email}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-neutral-400">Phone</h4>
+                  <p>{selectedApplication.phone}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-neutral-400">GitHub</h4>
+                  <a 
+                    href={selectedApplication.github_profile}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    {selectedApplication.github_profile}
+                  </a>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-neutral-400">Course</h4>
+                  <p>{selectedApplication.course}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-neutral-400">Semester</h4>
+                  <p>{selectedApplication.semester}</p>
                 </div>
               </div>
 
               <div>
-                <h3 className="font-medium text-white/90 mb-2">Technical Background</h3>
-                <div className="space-y-2">
-                  <p className="text-sm">
-                    <span className="text-white/60">Experience Level:</span>{" "}
-                    {selectedApplication.experience}
-                  </p>
-                  <div>
-                    <span className="text-sm text-white/60">Skills:</span>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedApplication.skills.map((skill, index) => (
-                        <span key={index} className="text-xs bg-white/10 text-white/90 px-2 py-1 rounded-full">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-sm text-white/60">Areas of Interest:</span>
-                    <p className="mt-1 text-sm text-white/90">{selectedApplication.interests}</p>
-                  </div>
+                <h4 className="text-sm font-medium text-neutral-400">Experience Level</h4>
+                <p className="capitalize">{selectedApplication.experience}</p>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium text-neutral-400">Skills</h4>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {selectedApplication.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-2 py-1 rounded-full text-xs bg-neutral-800 text-neutral-200"
+                    >
+                      {skill}
+                    </span>
+                  ))}
                 </div>
               </div>
 
               <div>
-                <h3 className="font-medium text-white/90 mb-2">Why Join OpenGeek?</h3>
-                <p className="text-sm text-white/70 whitespace-pre-wrap">{selectedApplication.whyJoin}</p>
+                <h4 className="text-sm font-medium text-neutral-400">Interests</h4>
+                <p>{selectedApplication.interests}</p>
               </div>
 
               <div>
-                <h3 className="font-medium text-white/90 mb-2">Expectations</h3>
-                <p className="text-sm text-white/70 whitespace-pre-wrap">{selectedApplication.expectations}</p>
+                <h4 className="text-sm font-medium text-neutral-400">Why Join?</h4>
+                <p>{selectedApplication.why_join}</p>
               </div>
 
-              <div className="pt-4 border-t border-neutral-800">
+              <div>
+                <h4 className="text-sm font-medium text-neutral-400">Expectations</h4>
+                <p>{selectedApplication.expectations}</p>
+              </div>
+
+              <div className="pt-4 flex justify-between items-center border-t border-neutral-800">
+                <div className="text-sm text-neutral-400">
+                  Submitted: {new Date(selectedApplication.submitted_at).toLocaleString()}
+                </div>
                 <Select
                   value={selectedApplication.status}
-                  onValueChange={(value) => {
-                    updateApplicationStatus(
-                      selectedApplication.id,
-                      value as 'pending' | 'approved' | 'rejected'
-                    )
+                  onValueChange={(value: 'pending' | 'approved' | 'rejected') => {
+                    updateApplicationStatus(selectedApplication.id, value)
                     setIsDialogOpen(false)
                   }}
                 >
-                  <SelectTrigger className={cn(
-                    "w-full border",
-                    statusConfig[selectedApplication.status].bgColor,
-                    statusConfig[selectedApplication.status].borderColor
-                  )}>
-                    <div className="flex items-center gap-2">
-                      {React.createElement(statusConfig[selectedApplication.status].icon, {
-                        className: cn("w-4 h-4", statusConfig[selectedApplication.status].color)
-                      })}
-                      <SelectValue />
-                    </div>
+                  <SelectTrigger>
+                    <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-900 border-neutral-800">
-                    <SelectItem value="pending" className="text-yellow-500">Pending</SelectItem>
-                    <SelectItem value="approved" className="text-green-500">Approved</SelectItem>
-                    <SelectItem value="rejected" className="text-red-500">Rejected</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="pending">Mark as Pending</SelectItem>
+                    <SelectItem value="approved">Approve Application</SelectItem>
+                    <SelectItem value="rejected">Reject Application</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
