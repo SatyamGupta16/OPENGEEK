@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { updateApplicationStatus } from '@/lib/application-utils'
+import { supabase } from '@/lib/supabase'
 
 export async function PUT(req: Request) {
   try {
@@ -19,7 +19,23 @@ export async function PUT(req: Request) {
       )
     }
 
-    const updatedApplication = await updateApplicationStatus(id, status)
+    const { data: updatedApplication, error } = await supabase
+      .from('applications')
+      .update({ 
+        status,
+        last_updated: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating application:', error)
+      return NextResponse.json(
+        { error: 'Failed to update application status' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
