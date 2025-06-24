@@ -14,8 +14,7 @@ begin
     -- Drop existing policies
     drop policy if exists "Allow public application submissions" on applications;
     drop policy if exists "Allow public to read all applications" on applications;
-    drop policy if exists "Users can view their own applications" on applications;
-    drop policy if exists "Admins can do everything" on applications;
+    drop policy if exists "Allow public to update applications" on applications;
 end $$;
 
 -- Create applications table
@@ -49,26 +48,23 @@ create index if not exists applications_email_idx on applications(email);
 create index if not exists applications_username_idx on applications(username);
 create index if not exists applications_submitted_at_idx on applications(submitted_at desc);
 
--- Enable RLS
+-- First, disable RLS to ensure it's in a clean state
+alter table applications disable row level security;
+
+-- Then enable RLS
 alter table applications enable row level security;
 
--- Create policies for public access
--- Allow anyone to insert new applications
-create policy "Allow public application submissions"
-    on applications
-    for insert
+-- Create policies with no authentication required
+create policy "Allow public to read all applications"
+    on applications for select
+    using (true);
+
+create policy "Allow public to insert applications"
+    on applications for insert
     with check (true);
 
--- Allow anyone to read all applications (needed for admin page)
-create policy "Allow public to read all applications"
-    on applications
-    for select
-    to public;
-
--- Allow anyone to update application status
 create policy "Allow public to update applications"
-    on applications
-    for update
+    on applications for update
     using (true)
     with check (true);
 

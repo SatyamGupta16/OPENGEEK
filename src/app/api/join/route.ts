@@ -95,9 +95,43 @@ export async function GET() {
   try {
     console.log('Fetching applications from Supabase...')
     
+    // First, let's check if we can connect to Supabase
+    const { data: testConnection, error: connectionError } = await supabase
+      .from('applications')
+      .select('count')
+      .single()
+
+    if (connectionError) {
+      console.error('Connection test failed:', connectionError)
+      return NextResponse.json(
+        { error: 'Failed to connect to database' },
+        { status: 500 }
+      )
+    }
+
+    console.log('Connection test successful, row count:', testConnection)
+
+    // Now fetch all applications
     const { data: applications, error } = await supabase
       .from('applications')
-      .select('*')
+      .select(`
+        id,
+        status,
+        submitted_at,
+        name,
+        email,
+        phone,
+        github_profile,
+        course,
+        semester,
+        username,
+        experience,
+        skills,
+        interests,
+        why_join,
+        expectations,
+        last_updated
+      `)
       .order('submitted_at', { ascending: false })
 
     if (error) {
@@ -108,14 +142,10 @@ export async function GET() {
       )
     }
 
-    console.log('Applications fetched:', applications)
+    console.log('Applications fetched successfully:', applications?.length || 0, 'records')
+    console.log('First record:', applications?.[0])
 
-    if (!applications) {
-      console.log('No applications found, returning empty array')
-      return NextResponse.json([])
-    }
-
-    return NextResponse.json(applications)
+    return NextResponse.json(applications || [])
   } catch (error) {
     console.error('Error in GET /api/join:', error)
     return NextResponse.json(
