@@ -90,21 +90,20 @@ export default function AdminApplicationsPage() {
 
   const fetchApplications = async () => {
     try {
+      setLoading(true)
       const response = await fetch('/api/join')
       if (!response.ok) throw new Error('Failed to fetch applications')
       const data = await response.json()
       
-      // Transform the data to match our interface
-      const transformedData: Application[] = data.map((app: any) => ({
-        ...app,
-        githubProfile: app.github_profile,
-        whyJoin: app.why_join,
-        submittedAt: app.submitted_at,
-      }))
+      if (!Array.isArray(data)) {
+        console.error('Expected array of applications but got:', data)
+        toast.error('Invalid data format received')
+        return
+      }
       
-      setApplications(transformedData)
+      setApplications(data)
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching applications:', error)
       toast.error('Failed to load applications')
     } finally {
       setLoading(false)

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const { data: existing, error: checkError } = await supabase
       .from('applications')
       .select('username, email')
-      .or(`username.eq.${username},email.eq.${email}`)
+      .or(`username.eq."${username}",email.eq."${email}"`)
       .maybeSingle()
 
     if (checkError) {
@@ -104,6 +104,10 @@ export async function GET() {
         { error: 'Failed to fetch applications' },
         { status: 500 }
       )
+    }
+
+    if (!applications) {
+      return NextResponse.json([])
     }
 
     return NextResponse.json(applications)
