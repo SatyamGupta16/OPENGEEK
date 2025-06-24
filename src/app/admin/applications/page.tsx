@@ -90,21 +90,31 @@ export default function AdminApplicationsPage() {
 
   const fetchApplications = async () => {
     try {
+      setLoading(true)
+      console.log('Fetching applications...')
+      
       const response = await fetch('/api/join')
-      if (!response.ok) throw new Error('Failed to fetch applications')
+      console.log('Response status:', response.status)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Error response:', errorData)
+        throw new Error(errorData.error || 'Failed to fetch applications')
+      }
+      
       const data = await response.json()
+      console.log('Received data:', data)
       
-      // Transform the data to match our interface
-      const transformedData: Application[] = data.map((app: any) => ({
-        ...app,
-        githubProfile: app.github_profile,
-        whyJoin: app.why_join,
-        submittedAt: app.submitted_at,
-      }))
+      if (!Array.isArray(data)) {
+        console.error('Expected array but got:', typeof data, data)
+        toast.error('Invalid data format received')
+        return
+      }
       
-      setApplications(transformedData)
+      setApplications(data)
+      console.log('Applications set:', data.length, 'items')
     } catch (error) {
-      console.error(error);
+      console.error('Error in fetchApplications:', error)
       toast.error('Failed to load applications')
     } finally {
       setLoading(false)
@@ -113,7 +123,9 @@ export default function AdminApplicationsPage() {
 
   const updateApplicationStatus = async (id: string, newStatus: 'pending' | 'approved' | 'rejected') => {
     try {
-      const response = await fetch(`/api/join/status`, {
+      console.log('Updating status:', { id, newStatus })
+      
+      const response = await fetch('/api/join/status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -121,8 +133,14 @@ export default function AdminApplicationsPage() {
         body: JSON.stringify({ id, status: newStatus }),
       })
 
-      if (!response.ok) throw new Error('Failed to update status')
-      
+      console.log('Update response status:', response.status)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Error updating status:', errorData)
+        throw new Error(errorData.error || 'Failed to update status')
+      }
+
       setApplications(prev => prev.map(app => 
         app.id === id ? { ...app, status: newStatus } : app
       ))
@@ -135,7 +153,7 @@ export default function AdminApplicationsPage() {
 
       toast.success(statusConfig[newStatus].message)
     } catch (error) {
-      console.error(error); 
+      console.error('Error in updateApplicationStatus:', error)
       toast.error('Failed to update status')
     }
   }

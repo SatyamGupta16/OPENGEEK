@@ -17,13 +17,19 @@ if (!supabaseKey) {
   )
 }
 
-// Create Supabase client with types
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-  },
-  db: {
-    schema: 'public'
+console.log('Initializing Supabase client with URL:', supabaseUrl)
+
+// Create Supabase client with types and service role key
+export const supabase = createClient<Database>(
+  supabaseUrl,
+  supabaseKey,
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: false // Don't persist session for service role
+    },
+    db: {
+      schema: 'public'
+    }
   }
-}) 
+) 
