@@ -7,20 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Bot, Calendar, Clock, Tag } from 'lucide-react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Avatar } from '@/components/ui/avatar'
-
-interface BlogPost {
-  id: string
-  slug: string
-  title: string
-  description: string
-  date: string
-  time: string
-  tags: string[]
-  readingTime: string
-  author: string
-  coverImage: string
-  featured?: boolean
-}
+import { blogPosts, type BlogPost } from './data'
 
 // Helper function to get formatted date
 const getFormattedDate = () => {
@@ -41,46 +28,6 @@ const getFormattedTime = () => {
 
 const currentDate = getFormattedDate()
 const currentTime = getFormattedTime()
-
-export const blogPosts: BlogPost[] = [
-  {
-    id: 'top-5-projects',
-    slug: 'top-5-projects-for-tech-students',
-    title: 'Top 5 Projects Every Tech Student Should Build Before Graduating',
-    description: 'A comprehensive guide to building essential projects that will boost your portfolio and practical skills. Learn what to build and how to showcase your abilities effectively.',
-    date: currentDate,
-    time: currentTime,
-    tags: ['Portfolio', 'Projects', 'Student', 'Learning'],
-    readingTime: '8 min read',
-    author: 'AI Assistant',
-    coverImage: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop',
-    featured: true
-  },
-  {
-    id: 'tech-paths',
-    slug: 'frontend-backend-devops-guide',
-    title: 'Frontend vs Backend vs DevOps: What Should You Learn First?',
-    description: 'An in-depth analysis of different tech career paths and how to choose the right one for you. Get insights into the skills, tools, and learning roadmap for each path.',
-    date: currentDate,
-    time: currentTime,
-    tags: ['Career Guide', 'Frontend', 'Backend', 'DevOps'],
-    readingTime: '10 min read',
-    author: 'AI Assistant',
-    coverImage: 'https://images.unsplash.com/photo-1607799279861-4dd421887fb3?q=80&w=2070&auto=format&fit=crop'
-  },
-  {
-    id: 'dev-resources',
-    slug: 'essential-developer-resources-2025',
-    title: '10 Free Resources Every Developer Should Bookmark in 2025',
-    description: 'Discover the most valuable free tools and resources that will supercharge your development workflow. From learning platforms to productivity tools, we have everything covered.',
-    date: currentDate,
-    time: currentTime,
-    tags: ['Resources', 'Tools', 'Learning', 'Free'],
-    readingTime: '7 min read',
-    author: 'AI Assistant',
-    coverImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop'
-  }
-]
 
 export default function BlogPage() {
   const featuredPost = blogPosts.find((post) => post.featured)
@@ -148,7 +95,7 @@ export default function BlogPage() {
                   {featuredPost.description}
                 </p>
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {featuredPost.tags.map((tag) => (
+                  {featuredPost.tags.map((tag: string) => (
                     <Badge key={tag} variant="secondary" className="bg-neutral-800 text-neutral-300 hover:bg-neutral-700">
                       {tag}
                     </Badge>
@@ -199,53 +146,39 @@ export default function BlogPage() {
                     fill
                     className="object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    quality={90}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/60 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/60 to-transparent rounded-t-lg" />
                 </div>
-                <div className="p-5">
+                <CardContent className="p-6">
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {post.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs bg-neutral-800 text-neutral-300 hover:bg-neutral-700">
+                    {post.tags.slice(0, 2).map((tag) => (
+                      <Badge key={tag} variant="secondary" className="bg-neutral-800 text-neutral-300">
                         {tag}
                       </Badge>
                     ))}
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 text-neutral-200 group-hover:text-blue-400 transition line-clamp-2">
+                  <h3 className="text-xl font-semibold mb-2 text-neutral-200 group-hover:text-blue-400 transition line-clamp-2">
                     {post.title}
                   </h3>
-                  <p className="text-neutral-400 text-sm line-clamp-2 mb-4">
+                  <p className="text-neutral-400 text-sm mb-4 line-clamp-2">
                     {post.description}
                   </p>
-                </div>
-                <div className="px-5 pb-5 mt-auto">
-                  <div className="flex items-center gap-4">
-                    <HoverCard>
-                      <HoverCardTrigger>
-                        <div className="flex items-center gap-2 cursor-pointer">
-                          <Avatar className="border border-neutral-700">
-                            <Image
-                              src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop"
-                              alt={post.author}
-                              width={28}
-                              height={28}
-                              className="rounded-full"
-                            />
-                          </Avatar>
-                          <span className="text-sm text-neutral-300">{post.author}</span>
-                        </div>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="bg-neutral-900 border-neutral-800">
-                        <div className="flex flex-col gap-2">
-                          <h4 className="font-semibold text-neutral-200">{post.author}</h4>
-                          <p className="text-sm text-neutral-400">Technical Writer & Developer</p>
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                    <span className="text-sm text-neutral-500">•</span>
-                    <span className="text-sm text-neutral-400">{post.readingTime}</span>
+                  <div className="flex items-center justify-between text-sm text-neutral-400">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6 border border-neutral-700">
+                        <Image
+                          src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop"
+                          alt={post.author}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                      </Avatar>
+                      <span>{post.author}</span>
+                    </div>
+                    <span>{post.readingTime}</span>
                   </div>
-                </div>
+                </CardContent>
               </Card>
             </Link>
           ))}
