@@ -10,13 +10,14 @@ import { Avatar } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 
-interface BlogPostParams {
+interface PageProps {
   params: {
     slug: string
   }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default function BlogPost({ params }: BlogPostParams) {
+export default function BlogPost({ params, searchParams }: PageProps) {
   const post = blogPosts.find((post) => post.slug === params.slug)
 
   if (!post) {
