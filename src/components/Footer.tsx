@@ -7,21 +7,21 @@ import { Button } from "@/components/ui/button";
 const footerLinks = {
   platform: [
     { name: "About Us", href: "#about" },
-    { name: "Projects", href: "#projects" },
-    { name: "Community", href: "#community" },
-    { name: "Mentorship", href: "#mentorship" },
+    
+    { name: "Community", href: "/community" },
+    { name: "Achievements", href: "#achievements" },
   ],
   resources: [
     { name: "Documentation", href: "#docs" },
     { name: "Learning Path", href: "#learn" },
-    { name: "Blog", href: "#blog" },
-    { name: "FAQ", href: "#faq" },
+    { name: "Blog", href: "/blog" },
+    { name: "FAQ", href: "/faq" },
   ],
   legal: [
-    { name: "Privacy Policy", href: "#privacy" },
+    { name: "Privacy Policy", href: "/privacy-policy" },
     { name: "Terms of Service", href: "#terms" },
-    { name: "Code of Conduct", href: "#conduct" },
-    { name: "Contact", href: "#contact" },
+    
+    { name: "Contact", href: "/contact" },
   ],
 };
 

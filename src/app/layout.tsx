@@ -1,10 +1,15 @@
-
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import ClientLayout from "@/components/layout/ClientLayout"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({
+  subsets: ["latin"],
+  display: 'swap',
+  preload: true,
+  adjustFontFallback: true,
+  fallback: ['system-ui', 'sans-serif']
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://opengeek.dev"),
