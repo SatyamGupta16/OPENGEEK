@@ -12,7 +12,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://opengeek.dev"),
+  metadataBase: new URL("https://opengeek.in"),
   title: "OpenGeek Community | Real Projects for Student Developers",
   description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
   keywords: [
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://opengeek.dev",
+    url: "https://opengeek.in",
     title: "OpenGeek Community | Real Projects for Student Developers",
     description:
       "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
@@ -58,11 +58,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} min-h-screen flex flex-col bg-black antialiased`}>
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+    <html lang="en" className="dark scroll-smooth">
+      <body className={`${inter.className} bg-black antialiased overflow-x-hidden`}>
+        <div className="relative w-full">
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </div>
       </body>
     </html>
   )

@@ -93,7 +93,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.8 }}
-          className="mt-12 sm:mt-16 md:mt-20 mb-8 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 md:gap-8 px-4"
+          className="mt-12 sm:mt-16 md:mt-20  grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 md:gap-8 px-4"
         >
           <motion.div 
             className="flex flex-col items-center gap-2 sm:gap-3"
