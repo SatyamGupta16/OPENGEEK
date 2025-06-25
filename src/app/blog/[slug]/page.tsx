@@ -14,10 +14,10 @@ interface PageProps {
   params: {
     slug: string
   }
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams?: { [key: string]: string | string[] | undefined }
 }
 
-export default function BlogPost({ params, searchParams }: PageProps) {
+export default async function BlogPost({ params, searchParams }: PageProps) {
   const post = blogPosts.find((post) => post.slug === params.slug)
 
   if (!post) {

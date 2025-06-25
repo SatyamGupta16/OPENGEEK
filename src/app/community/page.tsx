@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Badge } from "@/components/ui/badge"
 import {
   Table,
@@ -61,11 +61,7 @@ export default function CommunityPage() {
     totalSkills: 0
   })
 
-  useEffect(() => {
-    fetchMembers()
-  }, [])
-
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/join')
@@ -81,8 +77,8 @@ export default function CommunityPage() {
       
       // Sort by points and assign ranks
       const rankedMembers = membersWithPoints
-        .sort((a, b) => (b.points || 0) - (a.points || 0))
-        .map((member, index) => ({
+        .sort((a: Member, b: Member) => (b.points || 0) - (a.points || 0))
+        .map((member: Member, index: number) => ({
           ...member,
           rank: index + 1
         }))
@@ -90,8 +86,8 @@ export default function CommunityPage() {
       // Calculate stats
       const stats = {
         total: rankedMembers.length,
-        experts: rankedMembers.filter(m => m.experience.toLowerCase() === 'expert').length,
-        totalSkills: [...new Set(rankedMembers.flatMap(m => m.skills || []))].length
+        experts: rankedMembers.filter((m: Member) => m.experience.toLowerCase() === 'expert').length,
+        totalSkills: [...new Set(rankedMembers.flatMap((m: Member) => m.skills || []))].length
       }
 
       setStats(stats)
@@ -102,7 +98,11 @@ export default function CommunityPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchMembers()
+  }, [fetchMembers])
 
   const calculatePoints = (member: Member) => {
     const basePoints = experiencePoints[member.experience.toLowerCase() as keyof typeof experiencePoints] || 0
