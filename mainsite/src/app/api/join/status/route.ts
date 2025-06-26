@@ -46,7 +46,7 @@ export async function PUT(req: Request) {
     if (status === 'approved' && updatedApplication) {
       try {
         await resend.emails.send({
-          from: 'OpenGeek Community <onboarding@resend.dev>',
+          from: 'OpenGeek Community <community@noreply.opengeek.in>',
           to: updatedApplication.email,
           subject: 'Welcome to OpenGeek Community! 🎉',
           react: AcceptanceEmail({
