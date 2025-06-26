@@ -22,6 +22,7 @@ export interface Database {
           semester: string
           username: string
           hashed_password: string
+          temp_password: string | null
           experience: string
           skills: string[]
           additional_skills: string[]
@@ -31,6 +32,8 @@ export interface Database {
           last_updated: string | null
           gender: 'male' | 'female' | 'other'
           has_laptop: boolean
+          is_email_sent: boolean
+          email_sent_at: string | null
         }
         Insert: {
           id: string
@@ -44,6 +47,7 @@ export interface Database {
           semester: string
           username: string
           hashed_password: string
+          temp_password?: string | null
           experience: string
           skills?: string[]
           additional_skills?: string[]
@@ -53,6 +57,8 @@ export interface Database {
           last_updated?: string | null
           gender?: 'male' | 'female' | 'other'
           has_laptop?: boolean
+          is_email_sent?: boolean
+          email_sent_at?: string | null
         }
         Update: {
           id?: string
@@ -66,6 +72,7 @@ export interface Database {
           semester?: string
           username?: string
           hashed_password?: string
+          temp_password?: string | null
           experience?: string
           skills?: string[]
           additional_skills?: string[]
@@ -75,6 +82,8 @@ export interface Database {
           last_updated?: string | null
           gender?: 'male' | 'female' | 'other'
           has_laptop?: boolean
+          is_email_sent?: boolean
+          email_sent_at?: string | null
         }
       }
     }

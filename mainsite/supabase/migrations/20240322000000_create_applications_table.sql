@@ -27,6 +27,7 @@ create table applications (
     -- Login Credentials
     username text not null,
     hashed_password text not null,
+    temp_password text, -- Added for welcome email
 
     -- Technical Background
     experience text not null check (experience in ('beginner', 'intermediate', 'advanced')),
@@ -36,7 +37,11 @@ create table applications (
 
     -- Community Interest
     why_join text not null,
-    expectations text not null
+    expectations text not null,
+
+    -- Additional Metadata
+    is_email_sent boolean default false, -- Track if welcome email was sent
+    email_sent_at timestamp with time zone -- Track when welcome email was sent
 );
 
 -- Add unique constraints
@@ -94,6 +99,7 @@ insert into applications (
     semester,
     username,
     hashed_password,
+    temp_password,
     experience,
     skills,
     additional_skills,
@@ -111,6 +117,7 @@ insert into applications (
     '3rd',
     'testuser',
     'hashed_password_here',
+    'original_password_here',
     'intermediate',
     array['JavaScript', 'React', 'Node.js', 'Supabase'],
     array['AWS', 'Docker'],
