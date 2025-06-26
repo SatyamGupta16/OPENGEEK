@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Hash the password
+    // Store both hashed and temporary original password
     const hashedPassword = await hash(password, 10)
 
     const application: Application = {
@@ -63,6 +63,7 @@ export async function POST(request: Request) {
       semester,
       username,
       hashed_password: hashedPassword,
+      temp_password: password, // This will be used for welcome email and then removed
       experience,
       skills: skills || [],
       additional_skills: additionalSkills || [],

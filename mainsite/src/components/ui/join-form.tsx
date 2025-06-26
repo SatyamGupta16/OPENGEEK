@@ -171,8 +171,7 @@ export function JoinForm() {
 
       toast.success('Welcome to the OpenGeek Community!')
       
-      // Open WhatsApp group in new tab
-      window.open('https://chat.whatsapp.com/HXQnlpYjI1tELYU2zUgCe7', '_blank')
+      
       
       // Redirect to thank you page
       router.push('/join/thank-you')
