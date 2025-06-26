@@ -33,16 +33,22 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://opengeek.in",
-    title: "OpenGeek Community | Real Projects for Student Developers",
+    title: "OpenGeek Community 🚀",
     description:
       "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
     siteName: "OpenGeek Community",
+    images: [{
+      url: 'https://opengeek.in/banner.png',
+      
+      alt: 'OpenGeek Community - Empowering Tech Enthusiasts',
+    }],
   },
   twitter: {
     card: "summary_large_image",
     title: "OpenGeek Community | Real Projects for Student Developers",
     description:
       "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
+    images: ['https://opengeek.in/banner.png'],
   },
 }
 
