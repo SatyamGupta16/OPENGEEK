@@ -79,14 +79,13 @@ export function Navbar() {
 
       {/* Join Us Button - Visible on both Mobile and Desktop */}
       <div className="flex items-center gap-3">
-        <Link href="/signin" className="hidden sm:block text-sm text-white/70 hover:text-white transition-colors">
-          Sign in
-        </Link>
+        <Link href="/join">
         <Button
           className="relative text-sm sm:text-base font-medium bg-gradient-to-r from-white/90 via-white/90 to-white/90 text-black hover:from-white hover:via-white hover:to-white transition-all duration-300 h-8 xs:h-9 sm:h-10 px-3 xs:px-4 sm:px-5 rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_0_2px_rgba(255,255,255,0.4),0_4px_6px_-1px_rgba(255,255,255,0.1),0_2px_4px_-1px_rgba(255,255,255,0.06)] backdrop-blur-sm"
         >
-          Get Started
+          Sign In
         </Button>
+        </Link>
       </div>
     </motion.div>
   );

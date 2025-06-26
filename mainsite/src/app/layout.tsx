@@ -13,8 +13,13 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://opengeek.in"),
-  title: "OpenGeek Community | Real Projects for Student Developers",
+  title: "OpenGeek Community 🚀",
   description: "Join OpenGeek - where student developers turn passion into profession. Get paid real-world projects, learn from mentors, and build your career in tech.",
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
   keywords: [
     "student developers",
     "tech community",
