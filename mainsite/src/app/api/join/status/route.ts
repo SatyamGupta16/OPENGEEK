@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { Resend } from 'resend'
+import { AcceptanceEmail } from '@/lib/email-templates'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+const WHATSAPP_GROUP_LINK = 'https://chat.whatsapp.com/HXQnlpYjI1tELYU2zUgCe7'
 
 export async function PUT(req: Request) {
   try {
@@ -35,6 +40,26 @@ export async function PUT(req: Request) {
         { error: 'Failed to update application status' },
         { status: 500 }
       )
+    }
+
+    // Send acceptance email if application is approved
+    if (status === 'approved' && updatedApplication) {
+      try {
+        await resend.emails.send({
+          from: 'OpenGeek Community <community@noreply.opengeek.in>',
+          to: updatedApplication.email,
+          subject: 'Welcome to OpenGeek Community! 🎉',
+          react: AcceptanceEmail({
+            name: updatedApplication.name,
+            email: updatedApplication.email,
+            password: updatedApplication.password,
+            whatsappLink: WHATSAPP_GROUP_LINK
+          })
+        });
+      } catch (emailError) {
+        console.error('Error sending acceptance email:', emailError);
+        // Don't return error response here as the status update was successful
+      }
     }
 
     return NextResponse.json({
