@@ -24,10 +24,13 @@ export interface Database {
           hashed_password: string
           experience: string
           skills: string[]
+          additional_skills: string[]
           interests: string
           why_join: string
           expectations: string
           last_updated: string | null
+          gender: 'male' | 'female' | 'other'
+          has_laptop: boolean
         }
         Insert: {
           id: string
@@ -43,10 +46,13 @@ export interface Database {
           hashed_password: string
           experience: string
           skills?: string[]
+          additional_skills?: string[]
           interests: string
           why_join: string
           expectations: string
           last_updated?: string | null
+          gender?: 'male' | 'female' | 'other'
+          has_laptop?: boolean
         }
         Update: {
           id?: string
@@ -62,10 +68,13 @@ export interface Database {
           hashed_password?: string
           experience?: string
           skills?: string[]
+          additional_skills?: string[]
           interests?: string
           why_join?: string
           expectations?: string
           last_updated?: string | null
+          gender?: 'male' | 'female' | 'other'
+          has_laptop?: boolean
         }
       }
     }

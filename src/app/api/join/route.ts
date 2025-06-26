@@ -12,8 +12,9 @@ export async function POST(request: Request) {
     const {
       name, email, phone, githubProfile, course, semester,
       username, password,
-      experience, skills, interests,
+      experience, skills, additionalSkills, interests,
       whyJoin, expectations,
+      gender, hasLaptop,
       submittedAt
     } = body
 
@@ -64,9 +65,12 @@ export async function POST(request: Request) {
       hashed_password: hashedPassword,
       experience,
       skills: skills || [],
+      additional_skills: additionalSkills || [],
       interests,
       why_join: whyJoin,
       expectations,
+      gender: gender || 'other',
+      has_laptop: hasLaptop || false,
     }
 
     const { error: insertError } = await supabase
@@ -127,9 +131,12 @@ export async function GET() {
         username,
         experience,
         skills,
+        additional_skills,
         interests,
         why_join,
         expectations,
+        gender,
+        has_laptop,
         last_updated
       `)
       .order('submitted_at', { ascending: false })
