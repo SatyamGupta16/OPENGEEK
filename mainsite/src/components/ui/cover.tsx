@@ -123,28 +123,14 @@ export const Cover = ({
       <motion.span
         key={String(hovered)}
         animate={{
-          scale: hovered ? 0.8 : 1,
-          x: hovered ? [0, -30, 30, -30, 30, 0] : 0,
-          y: hovered ? [0, 30, -30, 30, -30, 0] : 0,
+          scale: hovered ? 0.95 : 1,
         }}
         exit={{
           filter: "none",
           scale: 1,
-          x: 0,
-          y: 0,
         }}
         transition={{
           duration: 0.2,
-          x: {
-            duration: 0.2,
-            repeat: Infinity,
-            repeatType: "loop",
-          },
-          y: {
-            duration: 0.2,
-            repeat: Infinity,
-            repeatType: "loop",
-          },
           scale: {
             duration: 0.2,
           },

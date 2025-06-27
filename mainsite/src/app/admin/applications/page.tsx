@@ -60,20 +60,40 @@ const statusConfig = {
 
 interface Application {
   id: string
+  status: 'pending' | 'approved' | 'rejected'
+  submitted_at: string
+  last_updated?: string
+  
+  // Personal Information
   name: string
   email: string
   phone: string
+  gender: string
   github_profile: string
+  has_laptop: boolean
+  
+  // Academic Information
   course: string
   semester: string
+  
+  // Login Credentials
+  username: string
+  hashed_password: string
+  temp_password?: string
+  
+  // Technical Background
   experience: string
   skills: string[]
+  additional_skills: string[]
   interests: string
+  
+  // Community Interest
   why_join: string
   expectations: string
-  submitted_at: string
-  status: 'pending' | 'approved' | 'rejected'
-  last_updated?: string
+  
+  // Email Status
+  is_email_sent?: boolean
+  email_sent_at?: string
 }
 
 export default function AdminApplicationsPage() {
@@ -328,106 +348,141 @@ export default function AdminApplicationsPage() {
 
       {/* Application Details Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Application Details</DialogTitle>
-            <DialogDescription>
-              Detailed view of the application
-            </DialogDescription>
-          </DialogHeader>
-
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           {selectedApplication && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-neutral-400">Name</h4>
-                  <p>{selectedApplication.name}</p>
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+                  Application Details
+                  <span className={cn(
+                    "text-sm px-2 py-1 rounded",
+                    statusConfig[selectedApplication.status].bgColor,
+                    statusConfig[selectedApplication.status].color
+                  )}>
+                    {statusConfig[selectedApplication.status].label}
+                  </span>
+                </DialogTitle>
+                <DialogDescription>
+                  Submitted on {new Date(selectedApplication.submitted_at).toLocaleString()}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                {/* Personal Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Personal Information</h3>
+                  <div className="space-y-2">
+                    <p><strong>Name:</strong> {selectedApplication.name}</p>
+                    <p><strong>Email:</strong> {selectedApplication.email}</p>
+                    <p><strong>Phone:</strong> {selectedApplication.phone}</p>
+                    <p><strong>Gender:</strong> {selectedApplication.gender}</p>
+                    <p><strong>GitHub:</strong> <a href={selectedApplication.github_profile} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">{selectedApplication.github_profile}</a></p>
+                    <p><strong>Has Laptop:</strong> {selectedApplication.has_laptop ? 'Yes' : 'No'}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-neutral-400">Email</h4>
-                  <p>{selectedApplication.email}</p>
+
+                {/* Academic Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Academic Information</h3>
+                  <div className="space-y-2">
+                    <p><strong>Course:</strong> {selectedApplication.course}</p>
+                    <p><strong>Semester:</strong> {selectedApplication.semester}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-neutral-400">Phone</h4>
-                  <p>{selectedApplication.phone}</p>
+
+                {/* Technical Background */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Technical Background</h3>
+                  <div className="space-y-2">
+                    <p><strong>Experience Level:</strong> {selectedApplication.experience}</p>
+                    <div>
+                      <strong>Skills:</strong>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {selectedApplication.skills.map(skill => (
+                          <span key={skill} className="px-2 py-1 bg-neutral-800 rounded text-sm">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <strong>Additional Skills:</strong>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {selectedApplication.additional_skills.map(skill => (
+                          <span key={skill} className="px-2 py-1 bg-neutral-800 rounded text-sm">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <p><strong>Interests:</strong> {selectedApplication.interests}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-neutral-400">GitHub</h4>
-                  <a 
-                    href={selectedApplication.github_profile}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    {selectedApplication.github_profile}
-                  </a>
+
+                {/* Community Interest */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Community Interest</h3>
+                  <div className="space-y-2">
+                    <div>
+                      <strong>Why Join:</strong>
+                      <p className="mt-1 text-neutral-300">{selectedApplication.why_join}</p>
+                    </div>
+                    <div>
+                      <strong>Expectations:</strong>
+                      <p className="mt-1 text-neutral-300">{selectedApplication.expectations}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-neutral-400">Course</h4>
-                  <p>{selectedApplication.course}</p>
+
+                {/* Login & Email Status */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Account Information</h3>
+                  <div className="space-y-2">
+                    <p><strong>Username:</strong> {selectedApplication.username}</p>
+                    {selectedApplication.temp_password && (
+                      <p><strong>Temporary Password:</strong> {selectedApplication.temp_password}</p>
+                    )}
+                    <p><strong>Email Status:</strong> {selectedApplication.is_email_sent ? 'Sent' : 'Not Sent'}</p>
+                    {selectedApplication.email_sent_at && (
+                      <p><strong>Email Sent At:</strong> {new Date(selectedApplication.email_sent_at).toLocaleString()}</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium text-neutral-400">Semester</h4>
-                  <p>{selectedApplication.semester}</p>
+
+                {/* Timestamps */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Timestamps</h3>
+                  <div className="space-y-2">
+                    <p><strong>Submitted At:</strong> {new Date(selectedApplication.submitted_at).toLocaleString()}</p>
+                    {selectedApplication.last_updated && (
+                      <p><strong>Last Updated:</strong> {new Date(selectedApplication.last_updated).toLocaleString()}</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <h4 className="text-sm font-medium text-neutral-400">Experience Level</h4>
-                <p className="capitalize">{selectedApplication.experience}</p>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-medium text-neutral-400">Skills</h4>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {selectedApplication.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="px-2 py-1 rounded-full text-xs bg-neutral-800 text-neutral-200"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-medium text-neutral-400">Interests</h4>
-                <p>{selectedApplication.interests}</p>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-medium text-neutral-400">Why Join?</h4>
-                <p>{selectedApplication.why_join}</p>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-medium text-neutral-400">Expectations</h4>
-                <p>{selectedApplication.expectations}</p>
-              </div>
-
-              <div className="pt-4 flex justify-between items-center border-t border-neutral-800">
-                <div className="text-sm text-neutral-400">
-                  Submitted: {new Date(selectedApplication.submitted_at).toLocaleString()}
-                </div>
-                <Select
-                  value={selectedApplication.status}
-                  onValueChange={(value: 'pending' | 'approved' | 'rejected') => {
-                    updateApplicationStatus(selectedApplication.id, value)
+              {/* Status Update Buttons */}
+              <div className="flex justify-end gap-3 mt-6">
+                <Button
+                  onClick={() => {
+                    updateApplicationStatus(selectedApplication.id, 'rejected')
                     setIsDialogOpen(false)
                   }}
+                  className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20"
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Mark as Pending</SelectItem>
-                    <SelectItem value="approved">Approve Application</SelectItem>
-                    <SelectItem value="rejected">Reject Application</SelectItem>
-                  </SelectContent>
-                </Select>
+                  Reject
+                </Button>
+                <Button
+                  onClick={() => {
+                    updateApplicationStatus(selectedApplication.id, 'approved')
+                    setIsDialogOpen(false)
+                  }}
+                  className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                >
+                  Approve
+                </Button>
               </div>
-            </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
