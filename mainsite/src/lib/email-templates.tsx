@@ -16,13 +16,13 @@ import { Bold } from 'lucide-react';
 
 interface WelcomeEmailProps {
   name: string;
-  username: string;
+  email: string;
   password: string;
 }
 
 export const WelcomeEmail = ({
   name,
-  username,
+  email,
   password,
 }: WelcomeEmailProps) => {
   const previewText = `Welcome to OpenGeek - Your Journey Begins Here`;
@@ -67,7 +67,7 @@ export const WelcomeEmail = ({
               <Text className="mt-4 font-mono text-[#e1e1e1]">
                 Platform URL: <Link href="https://platform.opengeek.in" className="text-blue-400 hover:text-blue-300">https://platform.opengeek.in</Link> (beta)
                 <br />
-                Email: <span className="text-blue-400">{username}</span>
+                Email: <span className="text-blue-400">{email}</span>
                 <br />
                 Password: <span className="text-blue-400">{password}</span>
               </Text>
