@@ -154,6 +154,11 @@ export function JoinForm() {
         return
       }
 
+      if (formData.password.length < 6) {
+        toast.error('Password must be at least 6 characters long')
+        return
+      }
+
       const response = await fetch('/api/join', {
         method: 'POST',
         headers: {
@@ -170,8 +175,6 @@ export function JoinForm() {
       }
 
       toast.success('Welcome to the OpenGeek Community!')
-      
-      
       
       // Redirect to thank you page
       router.push('/join/thank-you')
@@ -262,14 +265,15 @@ export function JoinForm() {
               />
             </div>
             <div>
-              <Label htmlFor="github">GitHub Profile</Label>
+              <Label htmlFor="githubProfile">
+                GitHub Profile <span className="text-neutral-500">(optional)</span>
+              </Label>
               <Input
-                id="github"
-              
+                id="githubProfile"
+                type="text"
+                placeholder="https://github.com/yourusername"
                 value={formData.githubProfile}
                 onChange={(e) => handleChange('githubProfile', e.target.value)}
-                placeholder="https://github.com/username"
-                className="mt-1.5"
               />
             </div>
           </div>
