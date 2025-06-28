@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { signIn } from '../lib/supabase';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
+import { SparklesCore } from "@/components/ui/sparkles";
 
 export default function Login() {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
@@ -97,19 +98,25 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-gradient-to-br from-[var(--background-start)] to-[var(--background-end)]">
+    <div className="min-h-screen w-full flex bg-gradient-to-br from-[var(--background-start)] to-[var(--background-end)] relative overflow-hidden">
+      {/* Particles background effect */}
+      <SparklesCore
+        className="absolute inset-0 w-full h-full z-0"
+        background="transparent"
+        particleColor="#60a5fa"
+        particleDensity={60}
+        minSize={1}
+        maxSize={2.5}
+        speed={1.2}
+      />
       {/* Left side - Login Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-20 animate-fadeIn">
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-20 animate-fadeIn">
         <div className="w-full max-w-md space-y-8">
-          {/* Logo */}
-          <div className="flex items-center gap-2 -ml-1 transition-all hover:scale-105 press-effect">
-            <LogoIcon className="h-8 w-8 text-[var(--primary)] animate-float" />
-            <span className="text-xl font-semibold text-white">platform opengeek</span>
-          </div>
+          
 
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-white animate-slideUp">
-              {isResetMode ? 'Reset your password' : 'Welcome back'}
+              {isResetMode ? 'Reset your password' : 'Welcome to OpenGeek! 🚀'}
             </h2>
             <p className="mt-2 text-sm text-gray-400 animate-slideUp delay-100">
               {isResetMode
@@ -219,10 +226,10 @@ export default function Login() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    {isResetMode ? "Sending instructions..." : "Signing in..."}
+                    {isResetMode ? "Sending instructions..." : "Logging in..."}
                   </div>
                 ) : (
-                  isResetMode ? "Send reset instructions" : "Sign in to account"
+                  isResetMode ? "Send reset instructions" : "Log in to account"
                 )}
               </button>
             </div>
@@ -270,7 +277,7 @@ export default function Login() {
                   Don't have an account?{' '}
                   <button
                     type="button"
-                    onClick={() => toast.info('Sign up coming soon!')}
+                    onClick={() => window.location.href = 'https://www.opengeek.in/join'}
                     className="font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors press-effect"
                   >
                     Create an account
@@ -283,11 +290,11 @@ export default function Login() {
       </div>
 
       {/* Right side - Image */}
-      <div className="hidden lg:block relative flex-1">
+      <div className="hidden lg:block relative flex-1 z-0">
         <div 
           className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
           style={{
-            backgroundImage: 'url("/auth-bg.jpg")',
+            backgroundImage: 'url("/login.jpg")',
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--background-start)]/90 via-transparent to-[var(--background-end)]/90 backdrop-blur-sm" />
@@ -325,24 +332,4 @@ function GitHubIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M7 7h10" />
-      <path d="M7 12h10" />
-      <path d="M7 17h10" />
-    </svg>
-  );
-} 
+ 
