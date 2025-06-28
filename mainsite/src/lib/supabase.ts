@@ -25,11 +25,14 @@ export const supabase = createClient<Database>(
   supabaseKey,
   {
     auth: {
-      autoRefreshToken: true,
-      persistSession: false // Don't persist session for service role
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false
     },
-    db: {
-      schema: 'public'
+    global: {
+      headers: {
+        'Authorization': `Bearer ${supabaseKey}`
+      }
     }
   }
 ) 
