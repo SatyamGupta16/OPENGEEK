@@ -88,7 +88,7 @@ export async function PUT(req: Request) {
           subject: 'Welcome to OpenGeek Community! 🎉',
           react: WelcomeEmail({
             name: application.name,
-            username: application.username,
+            email: application.email,
             password: application.temp_password || 'Please contact support for your password'
           })
         });
