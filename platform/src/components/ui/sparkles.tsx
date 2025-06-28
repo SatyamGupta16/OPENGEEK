@@ -1,5 +1,5 @@
 "use client";
-import React, { useId } from "react";
+import { useId } from "react";
 import { useEffect, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import type { Container, SingleOrMultiple } from "@tsparticles/engine";
@@ -216,20 +216,16 @@ export const SparklesCore = (props: ParticlesProps) => {
               number: {
                 density: {
                   enable: true,
-                  area: 800,
+                  width: 800,
+                  height: 800,
                 },
                 value: particleDensity || 60,
               },
               opacity: {
                 value: 0.7,
-                random: {
-                  enable: true,
-                  minimumValue: 0.3,
-                },
                 animation: {
                   enable: true,
                   speed: 0.5,
-                  minimumValue: 0.3,
                   sync: false,
                 },
               },
@@ -244,7 +240,6 @@ export const SparklesCore = (props: ParticlesProps) => {
                 animation: {
                   enable: true,
                   speed: 2,
-                  minimumValue: 0.5,
                   sync: false,
                 },
               },
