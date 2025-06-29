@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn } from '../lib/supabase';
+import { signIn } from '../../lib/supabase';
 import { toast } from 'sonner';
-import { cn } from '../lib/utils';
+import { cn } from '../../lib/utils';
 import { SparklesCore } from "@/components/ui/sparkles";
+import { useAuth } from '@/lib/auth-context';
 
 export default function Login() {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
@@ -14,6 +15,13 @@ export default function Login() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [formSuccess, setFormSuccess] = useState<{ [key: string]: boolean }>({});
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     // Reset success states when switching modes

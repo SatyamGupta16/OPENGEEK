@@ -104,7 +104,7 @@ export const signOut = async () => {
 };
 
 export const getCurrentUser = async () => {
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     // Get the user's profile with username
     const { data: profile } = await supabase
@@ -113,9 +113,9 @@ export const getCurrentUser = async () => {
       .eq('id', user.id)
       .single();
     
-    return { user: { ...user, ...profile }, error };
+    return { user: { ...user, ...profile }, error: null };
   }
-  return { user, error };
+      return { user, error: null };
 };
 
 // Auth state change listener
