@@ -1,52 +1,53 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import Login from './components/Login';
-import Home from './components/Home';
-import { useEffect, useState } from 'react';
-import { getCurrentUser } from './lib/supabase';
-
-function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { user } = await getCurrentUser();
-      setIsAuthenticated(!!user);
-    };
-    checkAuth();
-  }, []);
-
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
-}
+import Login from './app/login/Login';
+import DashboardPage from './app/dashboard/Page';
+import ProjectsPage from './app/projects/page';
+import LearnPage from './app/learn/page';
+import { AuthProvider } from './lib/auth-context';
+import { ProtectedRoute } from './components/auth/protected-route';
+import { ClientLayout } from './components/layout/ClientLayout';
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
+    <AuthProvider>
+      <Router>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          {/* Public Routes */}
           <Route
-            path="/"
+            path="/login"
             element={
-              <PrivateRoute>
-                <Home />
-              </PrivateRoute>
+              <ProtectedRoute requireAuth={false}>
+                <Login />
+              </ProtectedRoute>
             }
           />
-          
-          <Route path="/" element={<Navigate to="/home" replace />} />
+
+          {/* Protected Routes with Layout */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <ClientLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/learn" element={<LearnPage />} />
+            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/community" element={<div className="p-8">Community Page</div>} />
+            <Route path="/documentation" element={<div className="p-8">Documentation Page</div>} />
+            <Route path="/recent-updates" element={<div className="p-8">Recent Updates Page</div>} />
+            <Route path="/discussions" element={<div className="p-8">Discussions Page</div>} />
+            <Route path="/settings" element={<div className="p-8">Settings Page</div>} />
+            <Route path="/help" element={<div className="p-8">Help Center Page</div>} />
+          </Route>
+
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Toaster position="top-right" />
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 
