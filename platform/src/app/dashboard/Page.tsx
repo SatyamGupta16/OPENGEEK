@@ -7,10 +7,12 @@ import {
   GitForkIcon,
   ActivityIcon
 } from "lucide-react"
+import { withLoadingTransition } from '@/components/ui/loading-effect';
 
-export default function DashboardPage() {
+function DashboardPage() {
   return (
     <div className="mx-auto max-w-7xl p-8">
+      <h1 className="text-3xl font-bold text-white mb-6">Dashboard</h1>
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-[#1f2937] to-[#0d1117] rounded-lg border border-[#30363d] p-8">
         <h1 className="text-2xl font-bold text-white mb-3">Welcome to OpenGeek Community</h1>
@@ -98,4 +100,6 @@ export default function DashboardPage() {
     </div>
   )
 }
+
+export default withLoadingTransition(DashboardPage);
 
