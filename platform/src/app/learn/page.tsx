@@ -10,8 +10,9 @@ import {
   ArrowRightIcon
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { withLoadingTransition } from '@/components/ui/loading-effect'
 
-export default function LearnPage() {
+function LearnPage() {
   return (
     <div className="mx-auto max-w-7xl p-8">
       {/* Header */}
@@ -123,4 +124,6 @@ export default function LearnPage() {
       </div>
     </div>
   )
-} 
+}
+
+export default withLoadingTransition(LearnPage) 

@@ -14,6 +14,7 @@ export default function Login() {
   const [isResetMode, setIsResetMode] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [formSuccess, setFormSuccess] = useState<{ [key: string]: boolean }>({});
+  const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -83,17 +84,20 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const { error } = await signIn(usernameOrEmail, password);
+      const { data, error } = await signIn(usernameOrEmail, password);
       
       if (error) {
         toast.error('Login failed', {
           description: error.message || 'Please check your credentials and try again.'
         });
-      } else {
+      } else if (data?.user) {
+        setIsSuccess(true);
         toast.success('Welcome back!', {
           description: 'Successfully logged in to your account.'
         });
-        navigate('/');
+        // Add delay before navigation
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        navigate('/', { replace: true });
       }
     } catch (err) {
       console.error("Failed to login", err);
@@ -101,9 +105,32 @@ export default function Login() {
         description: 'Please try again later or contact support.'
       });
     } finally {
-      setLoading(false);
+      if (!isSuccess) {
+        setLoading(false);
+      }
     }
   };
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-[var(--background-start)] to-[var(--background-end)] relative overflow-hidden">
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="w-16 h-16 relative">
+            <div className="absolute inset-0 border-4 border-blue-500 rounded-full animate-[ping_1s_ease-in-out_infinite]"></div>
+            <div className="absolute inset-0 border-4 border-blue-500 rounded-full"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-8 h-8 text-blue-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-white animate-pulse">
+            Preparing your workspace...
+          </h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex bg-gradient-to-br from-[var(--background-start)] to-[var(--background-end)] relative overflow-hidden">
