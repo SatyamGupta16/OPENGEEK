@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { getCurrentUser } from './supabase';
+import { getCurrentUser, onAuthStateChange } from './supabase';
 
 type AuthContextType = {
   user: User | null;
@@ -26,7 +26,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Subscribe to auth state changes
+    const { data: { subscription } } = onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+      setLoading(false);
+    });
+
+    // Check initial auth state
     checkUser();
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const value = {

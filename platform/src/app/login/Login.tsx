@@ -83,17 +83,18 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const { error } = await signIn(usernameOrEmail, password);
+      const { data, error } = await signIn(usernameOrEmail, password);
       
       if (error) {
         toast.error('Login failed', {
           description: error.message || 'Please check your credentials and try again.'
         });
-      } else {
+      } else if (data?.user) {
         toast.success('Welcome back!', {
           description: 'Successfully logged in to your account.'
         });
-        navigate('/');
+        // Navigate immediately after successful sign in
+        navigate('/', { replace: true });
       }
     } catch (err) {
       console.error("Failed to login", err);
