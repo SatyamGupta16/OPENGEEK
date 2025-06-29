@@ -73,13 +73,13 @@ function SidebarNavigation() {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-      </div>
+                </div>
 
       {/* Projects Section */}
       <div>
         <div className="px-4 py-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-[#7d8590]">Projects</h2>
-        </div>
+                </div>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>

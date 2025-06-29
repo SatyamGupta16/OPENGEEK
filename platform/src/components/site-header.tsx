@@ -103,9 +103,9 @@ export function SiteHeader() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button
-                variant="ghost"
-                size="icon"
+        <Button
+          variant="ghost"
+          size="icon"
                 className="h-8 w-8 text-[#8b949e] hover:text-[#c9d1d9] relative"
               >
                 <BellIcon className="h-4 w-4" />
@@ -178,7 +178,7 @@ export function SiteHeader() {
                 asChild
               >
                 <a href="/login">Sign in</a>
-              </Button>
+        </Button>
             )}
           </div>
         </div>

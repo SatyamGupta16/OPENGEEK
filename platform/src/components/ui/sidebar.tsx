@@ -37,12 +37,12 @@ interface SidebarContentProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function SidebarContent({ className, ...props }: SidebarContentProps) {
   return (
-    <div 
+    <div
       className={cn(
         "h-full overflow-y-auto",
         className
-      )} 
-      {...props} 
+      )}
+      {...props}
     />
   )
 }

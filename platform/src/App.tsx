@@ -4,6 +4,7 @@ import Login from './app/login/Login';
 import DashboardPage from './app/dashboard/Page';
 import ProjectsPage from './app/projects/page';
 import LearnPage from './app/learn/page';
+import ProfilePage from './app/profile/page';
 import { AuthProvider } from './lib/auth-context';
 import { ProtectedRoute } from './components/auth/protected-route';
 import { ClientLayout } from './components/layout/ClientLayout';
@@ -34,6 +35,7 @@ function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/learn" element={<LearnPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/community" element={<div className="p-8">Community Page</div>} />
             <Route path="/documentation" element={<div className="p-8">Documentation Page</div>} />
             <Route path="/recent-updates" element={<div className="p-8">Recent Updates Page</div>} />

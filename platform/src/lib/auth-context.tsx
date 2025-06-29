@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { getCurrentUser, onAuthStateChange } from './supabase';
+import { toast } from 'sonner';
 
 type AuthContextType = {
   user: User | null;
@@ -14,39 +15,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Check current auth status
     const checkUser = async () => {
       try {
-        const { user: currentUser } = await getCurrentUser();
-        setUser(currentUser || null);
+        console.log('Checking current user...');
+        const { user: currentUser, error } = await getCurrentUser();
+        
+        if (error) {
+          console.error('Error getting current user:', error);
+          if (mounted) setUser(null);
+          return;
+        }
+
+        console.log('Current user data:', currentUser);
+        if (mounted) setUser(currentUser);
       } catch (error) {
-        setUser(null);
+        console.error('Error in checkUser:', error);
+        if (mounted) setUser(null);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     // Subscribe to auth state changes
-    const { data: { subscription } } = onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      setLoading(false);
+    const { data: { subscription } } = onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', { event, session });
+      if (mounted) {
+        setUser(session?.user || null);
+        setLoading(false);
+      }
+
+      // Show appropriate toast messages
+      switch (event) {
+        case 'SIGNED_IN':
+          toast.success('Successfully signed in!');
+          break;
+        case 'SIGNED_OUT':
+          toast.info('Signed out');
+          break;
+        case 'USER_UPDATED':
+          toast.success('Profile updated');
+          break;
+      }
     });
 
     // Check initial auth state
     checkUser();
 
-    // Cleanup subscription
+    // Cleanup subscription and prevent memory leaks
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
-  const value = {
-    user,
-    loading,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export const useAuth = () => {
