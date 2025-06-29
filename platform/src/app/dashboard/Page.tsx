@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { 
+import {
   RocketIcon, 
   BookOpenIcon, 
   UsersIcon, 
@@ -87,7 +87,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4 p-4 rounded-md hover:bg-[#1f2937] transition-colors">
             <div className="p-2 rounded-full bg-[#238636]/10">
               <GitForkIcon className="h-5 w-5 text-[#2ea043]" />
-            </div>
+              </div>
             <div>
               <p className="text-[#c9d1d9]">You forked <span className="text-[#58a6ff]">awesome/project</span></p>
               <p className="text-sm text-[#8b949e]">5 hours ago</p>

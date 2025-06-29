@@ -1,6 +1,5 @@
-import { SearchIcon, BellIcon, PlusIcon } from "lucide-react"
+import { SearchIcon, BellIcon, PlusIcon, MenuIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useSidebar, SidebarTrigger } from "@/components/ui/sidebar"
 import { useAuth } from "@/lib/auth-context"
 import { signOut } from "@/lib/supabase"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -15,11 +14,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+import { Sheet, SheetTrigger } from "@/components/ui/sheet"
+import { useMediaQuery } from "@/hooks/use-mobile"
 
 export function SiteHeader() {
   const { user } = useAuth()
-  const { isOpen } = useSidebar()
+  const isMobile = useMediaQuery("(max-width: 1024px)")
 
   const handleSignOut = async () => {
     try {
@@ -34,19 +34,28 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b border-[#21262d] bg-[#0d1117]">
       <div className="flex h-14 w-full items-center justify-between gap-4 px-4">
         <div className="flex items-center gap-4">
-          <SidebarTrigger 
-            className={cn(
-              "text-[#8b949e] hover:text-[#c9d1d9]",
-              "focus-visible:ring-offset-[#0d1117]"
-            )} 
-          />
+          {isMobile && (
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-[#8b949e] hover:text-[#c9d1d9]"
+                >
+                  <MenuIcon className="h-5 w-5" />
+                  <span className="sr-only">Toggle Menu</span>
+                </Button>
+              </SheetTrigger>
+            </Sheet>
+          )}
           <div className="text-lg font-semibold text-[#c9d1d9] flex items-center gap-2">
-            OpenGeek Platform
+            <span className="hidden sm:inline">OpenGeek Community Platform</span>
+            <span className="sm:hidden">OG</span>
           </div>
         </div>
 
         <div className="flex items-center gap-4 flex-1 justify-end">
-          <div className="max-w-[24rem] min-w-[20rem] relative">
+          <div className="hidden md:block max-w-[24rem] min-w-[20rem] relative">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8b949e]" />
             <Input 
               className="w-full bg-[#0d1117] border-[#30363d] pl-10 text-[#c9d1d9] placeholder:text-[#8b949e] focus:border-[#58a6ff] h-8"
@@ -56,6 +65,15 @@ export function SiteHeader() {
               <span className="text-xs">⌘</span>K
             </kbd>
           </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden h-8 w-8 text-[#8b949e] hover:text-[#c9d1d9]"
+          >
+            <SearchIcon className="h-4 w-4" />
+            <span className="sr-only">Search</span>
+          </Button>
 
           {user && (
             <>

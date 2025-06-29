@@ -2,8 +2,6 @@ import * as React from "react"
 import { type LucideIcon } from "lucide-react"
 
 import {
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -11,6 +9,7 @@ import {
 
 export function NavSecondary({
   items,
+  className,
   ...props
 }: {
   items: {
@@ -18,23 +17,21 @@ export function NavSecondary({
     url: string
     icon: LucideIcon
   }[]
-} & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <SidebarGroup {...props}>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild size="sm">
-                <a href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+    <div className={className} {...props}>
+      <SidebarMenu>
+        {items.map((item) => (
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton asChild>
+              <a href={item.url} className="flex items-center text-[#c9d1d9] hover:bg-[#1f2937] hover:text-white rounded-md text-sm">
+                <item.icon className="mr-3 h-4 w-4" />
+                <span>{item.title}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+    </div>
   )
 }

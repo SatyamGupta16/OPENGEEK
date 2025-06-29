@@ -1,80 +1,35 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { PanelLeftIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { useMediaQuery } from "@/hooks/use-mobile"
 
-interface SidebarContextType {
-  isOpen: boolean
-  toggleSidebar: () => void
-}
-
-const SidebarContext = React.createContext<SidebarContextType | undefined>(undefined)
-
-interface SidebarProviderProps extends React.HTMLAttributes<HTMLDivElement> {
+interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
   children: React.ReactNode
 }
 
-export function SidebarProvider({ children, className, ...props }: SidebarProviderProps) {
-  const [isOpen, setIsOpen] = React.useState(true)
-  const toggleSidebar = React.useCallback(() => setIsOpen(prev => !prev), [])
+export function Sidebar({ children, className, ...props }: SidebarProps) {
+  const isMobile = useMediaQuery("(max-width: 1024px)")
 
-  return (
-    <SidebarContext.Provider value={{ isOpen, toggleSidebar }}>
-      {children}
-    </SidebarContext.Provider>
-  )
-}
-
-export function useSidebar() {
-  const context = React.useContext(SidebarContext)
-  if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider")
+  if (isMobile) {
+    return (
+      <Sheet>
+        <SheetContent side="left" className={cn("w-64 p-0 bg-[#0d1117]", className)}>
+          {children}
+        </SheetContent>
+      </Sheet>
+    )
   }
-  return context
-}
-
-interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
-  variant?: "default" | "overlay"
-}
-
-export function Sidebar({ className, variant = "default", ...props }: SidebarProps) {
-  const { isOpen } = useSidebar()
 
   return (
-    <>
-      <aside
-        className={cn(
-          "fixed left-0 top-14 z-40 w-64 h-[calc(100vh-3.5rem)] bg-[#0d1117] border-r border-[#21262d] transition-transform duration-200 ease-in-out lg:relative lg:top-0 lg:h-full lg:translate-x-0",
-          !isOpen && "-translate-x-full",
-          className
-        )}
-        {...props}
-      />
-      {isOpen && variant === "overlay" && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
-          onClick={() => useSidebar().toggleSidebar()}
-          aria-hidden="true"
-        />
+    <aside
+      className={cn(
+        "sticky top-0 h-[calc(100vh-3.5rem)] w-64 bg-[#0d1117]",
+        className
       )}
-    </>
-  )
-}
-
-export function SidebarTrigger({ className, ...props }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar()
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className={cn("h-8 w-8", className)}
-      onClick={toggleSidebar}
       {...props}
     >
-      <PanelLeftIcon className="h-5 w-5" />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
+      {children}
+    </aside>
   )
 }
 
@@ -127,12 +82,12 @@ interface SidebarInsetProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function SidebarInset({ className, ...props }: SidebarInsetProps) {
   return (
-    <div 
+    <div
       className={cn(
         "flex-1 overflow-y-auto",
         className
-      )} 
-      {...props} 
+      )}
+      {...props}
     />
   )
 }
