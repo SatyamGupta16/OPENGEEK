@@ -1,4 +1,6 @@
-import { SearchIcon, BellIcon, PlusIcon, MenuIcon } from "lucide-react"
+import React from "react"
+import { SearchIcon, BellIcon, PlusIcon, MenuIcon, UserIcon, LogOutIcon, SettingsIcon, StarIcon, FolderIcon } from "lucide-react"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 import { signOut } from "@/lib/supabase"
@@ -7,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuShortcut,
@@ -20,15 +21,50 @@ import { useMediaQuery } from "@/hooks/use-mobile"
 export function SiteHeader() {
   const { user } = useAuth()
   const isMobile = useMediaQuery("(max-width: 1024px)")
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const handleSignOut = async () => {
     try {
       await signOut()
       toast.success("Signed out successfully")
+      navigate('/login')
     } catch (error) {
       toast.error("Error signing out")
     }
   }
+
+  const menuItems = [
+    {
+      label: "Your Profile",
+      icon: UserIcon,
+      href: `/profile`,
+      shortcut: "",
+    },
+    {
+      label: "Your Projects",
+      icon: FolderIcon,
+      href: "/projects",
+      count: "12",
+      shortcut: "",
+    },
+    {
+      label: "Your Stars",
+      icon: StarIcon,
+      href: "/stars",
+      count: "48",
+      shortcut: "",
+    },
+    {
+      label: "Settings",
+      icon: SettingsIcon,
+      href: "/settings",
+      shortcut: "⌘,",
+      divider: true,
+    },
+  ]
+
+  const isActive = (path: string) => location.pathname === path
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#21262d] bg-[#0d1117]">
@@ -48,10 +84,10 @@ export function SiteHeader() {
               </SheetTrigger>
             </Sheet>
           )}
-          <div className="text-lg font-semibold text-[#c9d1d9] flex items-center gap-2">
+          <Link to="/" className="text-lg font-semibold text-[#c9d1d9] flex items-center gap-2 hover:text-white transition-colors">
             <span className="hidden sm:inline">OpenGeek Community Platform</span>
             <span className="sm:hidden">OG</span>
-          </div>
+          </Link>
         </div>
 
         <div className="flex items-center gap-4 flex-1 justify-end">
@@ -89,29 +125,37 @@ export function SiteHeader() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 bg-[#161b22] border-[#21262d]" align="end">
-                  <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
-                    New Project
-                    <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
-                    New Discussion
-                  </DropdownMenuItem>
+                  <Link to="/projects/new">
+                    <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white cursor-pointer">
+                      New Project
+                      <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link to="/discussions/new">
+                    <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white cursor-pointer">
+                      New Discussion
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator className="bg-[#21262d]" />
-                  <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
-                    Import Project
-                  </DropdownMenuItem>
+                  <Link to="/projects/import">
+                    <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white cursor-pointer">
+                      Import Project
+                    </DropdownMenuItem>
+                  </Link>
                 </DropdownMenuContent>
               </DropdownMenu>
 
-        <Button
-          variant="ghost"
-          size="icon"
-                className="h-8 w-8 text-[#8b949e] hover:text-[#c9d1d9] relative"
-              >
-                <BellIcon className="h-4 w-4" />
-                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#1f6feb]" />
-                <span className="sr-only">Notifications</span>
-              </Button>
+              <Link to="/notifications">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-[#8b949e] hover:text-[#c9d1d9] relative"
+                >
+                  <BellIcon className="h-4 w-4" />
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#1f6feb]" />
+                  <span className="sr-only">Notifications</span>
+                </Button>
+              </Link>
             </>
           )}
 
@@ -121,52 +165,90 @@ export function SiteHeader() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="relative h-8 w-8 rounded-full"
+                    className="relative h-9 rounded-full ring-offset-background transition-all hover:ring-2 hover:ring-[#1f6feb] hover:ring-offset-2"
                   >
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-8 w-8 transition-all">
                       <AvatarImage
                         src={user.user_metadata?.avatar_url}
                         alt={user.user_metadata?.full_name || user.email}
+                        className="object-cover"
                       />
-                      <AvatarFallback className="bg-[#1f6feb] text-white">
+                      <AvatarFallback className="bg-gradient-to-br from-[#1f6feb] to-[#1f8feb] text-white">
                         {(user.user_metadata?.full_name?.[0] ||
                           user.email?.[0] ||
                           "U").toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
+                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 bg-[#161b22] border-[#21262d]" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none text-[#c9d1d9]">
-                        {user.user_metadata?.full_name || "User"}
-                      </p>
-                      <p className="text-xs leading-none text-[#8b949e]">
-                        {user.email}
-                      </p>
+                <DropdownMenuContent 
+                  className="w-80 bg-[#161b22] border-[#21262d] p-2" 
+                  align="end" 
+                  forceMount
+                >
+                  
+                    <div className="flex items-center gap-4 p-2 rounded-md hover:bg-[#1f6feb]/10 transition-colors cursor-pointer">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage
+                          src={user.user_metadata?.avatar_url}
+                          alt={user.user_metadata?.full_name || user.email}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-[#1f6feb] to-[#1f8feb] text-xl text-white">
+                          {(user.user_metadata?.full_name?.[0] ||
+                            user.email?.[0] ||
+                            "U").toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-base font-medium leading-none text-[#c9d1d9]">
+                          {user.user_metadata?.full_name || "User"}
+                        </p>
+                        <p className="text-sm leading-none text-[#8b949e]">
+                          {user.email}
+                        </p>
+                        <div className="mt-2 flex items-center gap-1">
+                          <span className="h-2 w-2 rounded-full bg-green-500" />
+                          <span className="text-xs text-[#8b949e]">Active</span>
+                        </div>
+                      </div>
                     </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-[#21262d]" />
-                  <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
-                    Your Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
-                    Your Projects
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
-                    Your Stars
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-[#21262d]" />
-                  <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
-                    Settings
-                    <DropdownMenuShortcut>⌘,</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-[#21262d]" />
+                  
+
+                  <DropdownMenuSeparator className="my-2 bg-[#21262d]" />
+                  
+                  <div className="grid gap-1">
+                    {menuItems.map((item) => (
+                      <React.Fragment key={item.href}>
+                        <Link to={item.href}>
+                          <DropdownMenuItem 
+                            className={`flex items-center gap-2 rounded-md p-2 cursor-pointer ${
+                              isActive(item.href)
+                                ? 'bg-[#1f6feb] text-white'
+                                : 'text-[#c9d1d9] hover:bg-[#1f6feb]/10'
+                            }`}
+                          >
+                            <item.icon className="h-4 w-4" />
+                            {item.label}
+                            {item.count && (
+                              <span className="ml-auto text-xs text-[#8b949e]">{item.count}</span>
+                            )}
+                            {item.shortcut && (
+                              <DropdownMenuShortcut>{item.shortcut}</DropdownMenuShortcut>
+                            )}
+                          </DropdownMenuItem>
+                        </Link>
+                        {item.divider && <DropdownMenuSeparator className="my-2 bg-[#21262d]" />}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  
                   <DropdownMenuItem
-                    className="text-red-500 focus:bg-red-500/10 focus:text-red-500"
+                    className="flex items-center gap-2 rounded-md p-2 text-red-400 hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
                     onClick={handleSignOut}
                   >
+                    <LogOutIcon className="h-4 w-4" />
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -177,8 +259,8 @@ export function SiteHeader() {
                 className="border-[#21262d] bg-[#21262d] text-[#c9d1d9] hover:bg-[#30363d] hover:border-[#30363d]"
                 asChild
               >
-                <a href="/login">Sign in</a>
-        </Button>
+                <Link to="/login">Sign in</Link>
+              </Button>
             )}
           </div>
         </div>

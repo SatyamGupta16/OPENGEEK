@@ -90,40 +90,40 @@ export const signUpWithUsername = async (username: string, password: string) => 
   try {
     console.log('Starting signup process for username:', username);
 
-    // First check if username already exists in metadata
+  // First check if username already exists in metadata
     const { data: existingUsers, error: checkError } = await supabase
       .from('user_profiles')
-      .select('username')
-      .eq('username', username)
-      .single();
+    .select('username')
+    .eq('username', username)
+    .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
       console.error('Error checking existing username:', checkError);
       return { data: null, error: checkError };
     }
 
-    if (existingUsers) {
+  if (existingUsers) {
       console.log('Username already exists:', username);
-      return { data: null, error: { message: 'Username already taken' } };
-    }
+    return { data: null, error: { message: 'Username already taken' } };
+  }
 
-    // Convert username to our internal email format
-    const email = generateEmail(username);
+  // Convert username to our internal email format
+  const email = generateEmail(username);
     
     console.log('Creating auth user with email:', email);
-
-    // Sign up the user
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
+  
+  // Sign up the user
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
           username: username,
           full_name: '',
           avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random`,
-        },
       },
-    });
+    },
+  });
 
     if (error) {
       console.error('Error during signup:', error);
@@ -147,7 +147,7 @@ export const signOut = async () => {
       console.error('Error during sign out:', error);
       return { error };
     }
-    return { error: null };
+  return { error: null };
   } catch (error) {
     console.error('Unexpected error during sign out:', error);
     return { error: { message: 'An error occurred during sign out' } };
@@ -164,21 +164,21 @@ export const getCurrentUser = async () => {
       return { user: null, error: authError };
     }
 
-    if (user) {
+  if (user) {
       console.log('Found auth user:', user);
-      // Get the user's profile with username
+    // Get the user's profile with username
       const { data: profile, error: profileError } = await supabase
         .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    
       if (profileError) {
         console.error('Error fetching user profile:', profileError);
       }
 
       return { user: { ...user, ...profile }, error: null };
-    }
+  }
 
     return { user: null, error: null };
   } catch (error) {

@@ -4,12 +4,12 @@ import { AppSidebar } from "@/components/app-sidebar"
 
 export function ClientLayout() {
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col overflow-hidden">
       <SiteHeader />
       <div className="flex-1 overflow-hidden">
         <div className="flex h-full">
           <AppSidebar />
-          <main className="flex-1 overflow-y-auto bg-[#0d1117] p-6">
+          <main className="flex-1 bg-[#0d1117] ">
             <Outlet />
           </main>
         </div>

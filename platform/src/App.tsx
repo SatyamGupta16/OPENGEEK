@@ -8,6 +8,8 @@ import ProfilePage from './app/profile/page';
 import { AuthProvider } from './lib/auth-context';
 import { ProtectedRoute } from './components/auth/protected-route';
 import { ClientLayout } from './components/layout/ClientLayout';
+import HTMLCourseLayout from '@/app/learn/html/layout';
+import HTMLIntroductionPage from '@/app/learn/html/introduction/page';
 
 function App() {
   return (
@@ -32,16 +34,21 @@ function App() {
               </ProtectedRoute>
             }
           >
+            
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/learn" element={<LearnPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/community" element={<div className="p-8">Community Page</div>} />
             <Route path="/documentation" element={<div className="p-8">Documentation Page</div>} />
             <Route path="/recent-updates" element={<div className="p-8">Recent Updates Page</div>} />
             <Route path="/discussions" element={<div className="p-8">Discussions Page</div>} />
             <Route path="/settings" element={<div className="p-8">Settings Page</div>} />
             <Route path="/help" element={<div className="p-8">Help Center Page</div>} />
+            <Route path="/learn/html" element={<HTMLCourseLayout />}>
+              <Route path="introduction" element={<HTMLIntroductionPage />} />
+              {/* Add more HTML course routes here */}
+            </Route>
           </Route>
 
           {/* Catch all route */}

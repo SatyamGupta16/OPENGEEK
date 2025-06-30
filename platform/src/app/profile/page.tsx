@@ -4,6 +4,14 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { UserIcon, BriefcaseIcon, GlobeIcon, BookOpenIcon, LinkIcon } from 'lucide-react';
 import type { Database } from '@/lib/database.types';
 
 type Profile = Database['public']['Tables']['user_profiles']['Row'];
@@ -11,10 +19,11 @@ type Project = Database['public']['Tables']['projects']['Row'];
 
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [, setProfile] = useState<Profile | null>(null);
+  const [, setProjects] = useState<Project[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [, setActiveTab] = useState("personal");
   const [formData, setFormData] = useState({
     full_name: '',
     bio: '',
@@ -60,7 +69,7 @@ export default function ProfilePage() {
       console.log('Attempting to fetch profile for user:', user.id);
       
       // First, let's check if the profile exists
-      const { data: profileExists, error: checkError } = await supabase
+      const { error: checkError } = await supabase
         .from('user_profiles')
         .select('id')
         .eq('id', user.id)
@@ -196,330 +205,338 @@ export default function ProfilePage() {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Please Sign In</h2>
-          <p className="text-gray-400">You need to be signed in to view your profile.</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#1f6feb]"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <div className="bg-[#1f2937] rounded-lg shadow-lg overflow-hidden">
+    <ScrollArea className="flex-1 h-full">
+      <div className="min-h-full flex flex-col">
         {/* Profile Header */}
-        <div className="relative h-32 bg-gradient-to-r from-blue-600 to-blue-800">
-          <div className="absolute -bottom-16 left-8">
-            <div className="w-32 h-32 rounded-full border-4 border-[#1f2937] overflow-hidden bg-[#1f2937]">
-              <img
-                src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.full_name || 'User')}&background=random`}
-                alt={profile?.full_name || 'Profile'}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Profile Content */}
-        <div className="pt-20 px-8 pb-8">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-white">
-                {profile?.full_name || 'Anonymous User'}
-              </h1>
-              <p className="text-gray-400">@{profile?.username}</p>
-              {profile?.tagline && (
-                <p className="text-gray-300 mt-2">{profile.tagline}</p>
-              )}
-            </div>
-            <Button
-              onClick={() => setIsEditing(!isEditing)}
-              variant="outline"
-            >
-              {isEditing ? 'Cancel' : 'Edit Profile'}
-            </Button>
-          </div>
-
-          {isEditing ? (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Full Name
-                  </label>
-                  <Input
-                    value={formData.full_name}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      full_name: e.target.value
-                    }))}
-                    placeholder="Your full name"
-                  />
+        <div className="flex-none border-b border-[#30363d] bg-gradient-to-r from-[#0d1117] to-[#161b22] px-8 py-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+              <Avatar className="h-24 w-24 border-4 border-[#30363d] ring-2 ring-[#1f6feb]/20">
+                <AvatarImage
+                  src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.email || 'User')}&background=random`}
+                  alt={formData.full_name || user?.email}
+                />
+                <AvatarFallback className="bg-gradient-to-br from-[#1f6feb] to-[#58a6ff] text-2xl text-white">
+                  {(formData.full_name?.[0] || user?.email?.[0] || "U").toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-[#e6edf3] mb-2">{formData.full_name || "Your Name"}</h1>
+                <p className="text-lg text-[#7d8590] mb-4">{formData.tagline || "Add a tagline to your profile"}</p>
+                <div className="flex flex-wrap gap-2">
+                  {formData.current_position && (
+                    <Badge variant="secondary" className="bg-[#1f6feb]/10 text-[#58a6ff] border-[#1f6feb]/20">
+                      <BriefcaseIcon className="w-3 h-3 mr-1" />
+                      {formData.current_position} at {formData.company}
+                    </Badge>
+                  )}
+                  {formData.country && formData.city && (
+                    <Badge variant="secondary" className="bg-[#1f6feb]/10 text-[#58a6ff] border-[#1f6feb]/20">
+                      <GlobeIcon className="w-3 h-3 mr-1" />
+                      {formData.city}, {formData.country}
+                    </Badge>
+                  )}
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Tagline
-                  </label>
-                  <Input
-                    value={formData.tagline}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      tagline: e.target.value
-                    }))}
-                    placeholder="A brief description of yourself"
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Bio
-                  </label>
-                  <textarea
-                    value={formData.bio}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      bio: e.target.value
-                    }))}
-                    placeholder="Tell us about yourself"
-                    className="w-full px-3 py-2 bg-[#2d3748] text-white rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={4}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Current Position
-                  </label>
-                  <Input
-                    value={formData.current_position}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      current_position: e.target.value
-                    }))}
-                    placeholder="Your current role"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Company
-                  </label>
-                  <Input
-                    value={formData.company}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      company: e.target.value
-                    }))}
-                    placeholder="Your company"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Country
-                  </label>
-                  <Input
-                    value={formData.country}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      country: e.target.value
-                    }))}
-                    placeholder="Your country"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    City
-                  </label>
-                  <Input
-                    value={formData.city}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      city: e.target.value
-                    }))}
-                    placeholder="Your city"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Website
-                  </label>
-                  <Input
-                    value={formData.website_url}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      website_url: e.target.value
-                    }))}
-                    placeholder="Your website URL"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    GitHub
-                  </label>
-                  <Input
-                    value={formData.github_url}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      github_url: e.target.value
-                    }))}
-                    placeholder="Your GitHub URL"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    LinkedIn
-                  </label>
-                  <Input
-                    value={formData.linkedin_url}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      linkedin_url: e.target.value
-                    }))}
-                    placeholder="Your LinkedIn URL"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300">
-                    Twitter
-                  </label>
-                  <Input
-                    value={formData.twitter_url}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      twitter_url: e.target.value
-                    }))}
-                    placeholder="Your Twitter URL"
-                  />
-                </div>
-
-                <div className="md:col-span-2 flex justify-end space-x-4">
-                  <Button
-                    type="button"
-                    variant="outline"
+              </div>
+              {!isEditing ? (
+                <Button 
+                  onClick={() => setIsEditing(true)}
+                  className="bg-[#1f6feb] hover:bg-[#388bfd] text-[#f0f6fc] transition-colors"
+                >
+                  Edit Profile
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
                     onClick={() => setIsEditing(false)}
+                    className="border-[#30363d] hover:border-[#6e7681] hover:bg-[#30363d] text-[#7d8590] hover:text-[#e6edf3]"
                   >
                     Cancel
                   </Button>
-                  <Button
-                    type="submit"
+                  <Button 
+                    onClick={handleSubmit} 
                     disabled={loading}
+                    className="bg-[#1f6feb] hover:bg-[#388bfd] text-[#f0f6fc] transition-colors disabled:opacity-50"
                   >
                     {loading ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
-              </div>
-            </form>
-          ) : (
-            <div className="space-y-6">
-              {/* Bio Section */}
-              {profile?.bio && (
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-white">About</h3>
-                  <p className="text-gray-300">{profile.bio}</p>
-                </div>
-              )}
-
-              {/* Work & Education */}
-              <div className="space-y-4">
-                {(profile?.current_position || profile?.company) && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Work</h3>
-                    <p className="text-gray-300">
-                      {profile.current_position}
-                      {profile.company && ` at ${profile.company}`}
-                    </p>
-                  </div>
-                )}
-
-                {(profile?.education_level || profile?.institution) && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Education</h3>
-                    <p className="text-gray-300">
-                      {profile.education_level}
-                      {profile.institution && ` at ${profile.institution}`}
-                      {profile.graduation_year && ` (${profile.graduation_year})`}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Location */}
-              {(profile?.city || profile?.country) && (
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Location</h3>
-                  <p className="text-gray-300">
-                    {[profile.city, profile.state, profile.country].filter(Boolean).join(', ')}
-                  </p>
-                </div>
-              )}
-
-              {/* Skills & Interests */}
-              {profile?.skills && profile.skills.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Skills</h3>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {profile.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Projects */}
-              {projects.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Projects</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                    {projects.map((project) => (
-                      <div
-                        key={project.id}
-                        className="bg-[#2d3748] rounded-lg p-4"
-                      >
-                        <h4 className="text-white font-medium">{project.title}</h4>
-                        {project.description && (
-                          <p className="text-gray-400 text-sm mt-1">{project.description}</p>
-                        )}
-                        {project.technologies && project.technologies.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {project.technologies.map((tech, index) => (
-                              <span
-                                key={index}
-                                className="px-2 py-1 bg-[#374151] text-gray-300 rounded text-xs"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
               )}
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Tabs and Content */}
+        <div className="flex-1 px-8 py-6 bg-[#0d1117]">
+          <div className="max-w-7xl mx-auto">
+            <Tabs defaultValue="personal" className="space-y-6" onValueChange={setActiveTab}>
+              <TabsList className="bg-[#161b22] border border-[#30363d] p-1">
+                <TabsTrigger 
+                  value="personal" 
+                  className="data-[state=active]:bg-[#1f6feb] data-[state=active]:text-[#f0f6fc] text-[#7d8590] hover:text-[#e6edf3]"
+                >
+                  <UserIcon className="w-4 h-4 mr-2" />
+                  Personal Info
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="professional" 
+                  className="data-[state=active]:bg-[#1f6feb] data-[state=active]:text-[#f0f6fc] text-[#7d8590] hover:text-[#e6edf3]"
+                >
+                  <BriefcaseIcon className="w-4 h-4 mr-2" />
+                  Professional
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="social" 
+                  className="data-[state=active]:bg-[#1f6feb] data-[state=active]:text-[#f0f6fc] text-[#7d8590] hover:text-[#e6edf3]"
+                >
+                  <LinkIcon className="w-4 h-4 mr-2" />
+                  Social Links
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="education" 
+                  className="data-[state=active]:bg-[#1f6feb] data-[state=active]:text-[#f0f6fc] text-[#7d8590] hover:text-[#e6edf3]"
+                >
+                  <BookOpenIcon className="w-4 h-4 mr-2" />
+                  Education
+                </TabsTrigger>
+              </TabsList>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <TabsContent value="personal">
+                  <Card className="bg-[#161b22] border-[#30363d] shadow-lg">
+                    <CardHeader>
+                      <CardTitle className="text-[#e6edf3]">Personal Information</CardTitle>
+                      <CardDescription className="text-[#7d8590]">Update your personal details and bio</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Full Name</Label>
+                          <Input
+                            type="text"
+                            value={formData.full_name}
+                            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Tagline</Label>
+                          <Input
+                            type="text"
+                            value={formData.tagline}
+                            onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[#7d8590]">Bio</Label>
+                        <Textarea
+                          value={formData.bio}
+                          onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                          disabled={!isEditing}
+                          className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff] min-h-[100px]"
+                          placeholder="Tell us about yourself..."
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Country</Label>
+                          <Input
+                            type="text"
+                            value={formData.country}
+                            onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">City</Label>
+                          <Input
+                            type="text"
+                            value={formData.city}
+                            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">State</Label>
+                          <Input
+                            type="text"
+                            value={formData.state}
+                            onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="professional">
+                  <Card className="bg-[#161b22] border-[#30363d] shadow-lg">
+                    <CardHeader>
+                      <CardTitle className="text-[#e6edf3]">Professional Information</CardTitle>
+                      <CardDescription className="text-[#7d8590]">Your work experience and skills</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Current Position</Label>
+                          <Input
+                            type="text"
+                            value={formData.current_position}
+                            onChange={(e) => setFormData({ ...formData, current_position: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Company</Label>
+                          <Input
+                            type="text"
+                            value={formData.company}
+                            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[#7d8590]">Skills</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {formData.skills.map((skill, index) => (
+                            <Badge 
+                              key={index} 
+                              variant="secondary" 
+                              className="bg-[#1f6feb]/10 text-[#58a6ff] border-[#1f6feb]/20 hover:bg-[#1f6feb]/20"
+                            >
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="social">
+                  <Card className="bg-[#161b22] border-[#30363d] shadow-lg">
+                    <CardHeader>
+                      <CardTitle className="text-[#e6edf3]">Social Links</CardTitle>
+                      <CardDescription className="text-[#7d8590]">Connect your social media profiles</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">GitHub Profile</Label>
+                          <Input
+                            type="url"
+                            value={formData.github_url}
+                            onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                            placeholder="https://github.com/username"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">LinkedIn Profile</Label>
+                          <Input
+                            type="url"
+                            value={formData.linkedin_url}
+                            onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                            placeholder="https://linkedin.com/in/username"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Twitter Profile</Label>
+                          <Input
+                            type="url"
+                            value={formData.twitter_url}
+                            onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                            placeholder="https://twitter.com/username"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Portfolio Website</Label>
+                          <Input
+                            type="url"
+                            value={formData.portfolio_url}
+                            onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                            placeholder="https://your-portfolio.com"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="education">
+                  <Card className="bg-[#161b22] border-[#30363d] shadow-lg">
+                    <CardHeader>
+                      <CardTitle className="text-[#e6edf3]">Education</CardTitle>
+                      <CardDescription className="text-[#7d8590]">Your educational background</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Education Level</Label>
+                          <Input
+                            type="text"
+                            value={formData.education_level}
+                            onChange={(e) => setFormData({ ...formData, education_level: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Institution</Label>
+                          <Input
+                            type="text"
+                            value={formData.institution}
+                            onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[#7d8590]">Graduation Year</Label>
+                          <Input
+                            type="number"
+                            value={formData.graduation_year || ''}
+                            onChange={(e) => setFormData({ ...formData, graduation_year: parseInt(e.target.value) || null })}
+                            disabled={!isEditing}
+                            className="bg-[#0d1117] border-[#30363d] text-[#e6edf3] focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                            min="1900"
+                            max="2100"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </form>
+            </Tabs>
+          </div>
         </div>
       </div>
-    </div>
+    </ScrollArea>
   );
-} 
+}

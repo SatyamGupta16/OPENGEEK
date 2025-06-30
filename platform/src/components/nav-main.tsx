@@ -64,8 +64,8 @@ export function NavMain({
                       {item.items?.map((subItem) => (
                         <SidebarMenuButton key={subItem.title} asChild>
                           <a href={subItem.url} className="flex items-center text-[#c9d1d9] hover:bg-[#1f2937] hover:text-white rounded-md">
-                            <span>{subItem.title}</span>
-                          </a>
+                              <span>{subItem.title}</span>
+                            </a>
                         </SidebarMenuButton>
                       ))}
                     </div>
