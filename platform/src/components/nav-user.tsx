@@ -29,17 +29,19 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useMediaQuery } from "@/hooks/use-mobile"
+import { Link } from 'react-router-dom'
+import { useAuth } from '@/lib/auth-context'
+import { signOut } from '@/lib/supabase'
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser() {
   const isMobile = useMediaQuery("(max-width: 1024px)")
+  const { user: authUser } = useAuth()
+
+  const handleSignOut = async () => {
+    await signOut()
+  }
+
+  if (!authUser) return null
 
   return (
     <SidebarMenu>
@@ -49,14 +51,14 @@ export function NavUser({
             <SidebarMenuButton asChild>
               <button className="flex w-full items-center gap-3 rounded-md p-2 text-[#c9d1d9] hover:bg-[#1f2937] hover:text-white">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={authUser.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${authUser.email}`} alt={authUser.email || ''} />
                   <AvatarFallback className="rounded-lg bg-[#1f6feb] text-white">
-                    {user.name.slice(0, 2).toUpperCase()}
+                    {authUser.email?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-[#8b949e]">{user.email}</span>
+                  <span className="truncate font-medium">{authUser.user_metadata?.full_name || 'User'}</span>
+                  <span className="truncate text-xs text-[#8b949e]">{authUser.email}</span>
                 </div>
                 <ChevronsUpDown className="ml-auto h-4 w-4" />
               </button>
@@ -71,14 +73,14 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-3 p-3">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={authUser.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${authUser.email}`} alt={authUser.email || ''} />
                   <AvatarFallback className="rounded-lg bg-[#1f6feb] text-white">
-                    {user.name.slice(0, 2).toUpperCase()}
+                    {authUser.email?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium text-[#c9d1d9]">{user.name}</span>
-                  <span className="truncate text-xs text-[#8b949e]">{user.email}</span>
+                  <span className="truncate font-medium text-[#c9d1d9]">{authUser.user_metadata?.full_name || 'User'}</span>
+                  <span className="truncate text-xs text-[#8b949e]">{authUser.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -105,7 +107,23 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator className="bg-[#21262d]" />
-            <DropdownMenuItem className="text-red-500 focus:bg-red-500/10 focus:text-red-500">
+            <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
+              <Link to="/profile">
+                Profile
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
+              <Link to="/dashboard">
+                Dashboard
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-[#c9d1d9] focus:bg-[#1f6feb] focus:text-white">
+              <Link to="/settings">
+                Settings
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-[#21262d]" />
+            <DropdownMenuItem className="text-red-500 focus:bg-red-500/10 focus:text-red-500" onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>

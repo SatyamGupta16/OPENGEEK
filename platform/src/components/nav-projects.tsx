@@ -83,7 +83,7 @@ export function NavProjects({
           <SidebarMenuButton asChild>
             <a href="/more" className="flex items-center text-[#c9d1d9] hover:bg-[#1f2937] hover:text-white rounded-md">
               <MoreHorizontal className="mr-3 h-4 w-4" />
-              <span>More</span>
+            <span>More</span>
             </a>
           </SidebarMenuButton>
         </SidebarMenuItem>

@@ -11,6 +11,12 @@ node_modules
 dist
 dist-ssr
 
+# Environment files
+.env
+.env.production
+.env.development
+.env.test
+# Intentionally NOT ignoring .env.local for workspace visibility
 
 # Editor directories and files
 .vscode/*
