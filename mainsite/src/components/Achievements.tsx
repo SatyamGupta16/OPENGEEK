@@ -29,18 +29,18 @@ type CarouselItemType = {
 const carouselItems: CarouselItemType[] = [
   {
     type: "image",
-    title: "Hackathon Victory I",
-    subtitle: "Smart India Hackathon 2023",
+    title: "Techathon 2024",
+    subtitle: "First hackathon in Invertis University",
     image: "/ab.png",
-    description: "Won first place in Smart India Hackathon 2023",
-    longDescription: "Led a team of 6 developers to create an innovative solution for Smart India Hackathon 2023. Our project focused on solving real-world problems using cutting-edge technology, resulting in first place recognition among 500+ teams."
+      description: "Won first place in TECHATHON 2024",
+      longDescription: "Led a team of 5 student developers to create an innovative solution for Techathon 2024. Our project focused on solving real-world problems using cutting-edge technology, resulting in first place recognition among 50 teams."
   },
   {
     type: "image",
-    title: "Hackathon Victory II",
-    subtitle: "Code For Good 2024",
-    image: "/aa.png",
-    description: "First place in Code For Good Hackathon",
+    title: "Inverthon 2025",
+    subtitle: "Second hackathon in Invertis University",
+    image: "/he2.jpg",
+    description: "Again won first place in Hackathon, for best business model and a working Paas solution.",
     longDescription: "Developed a high-impact solution during Code For Good 2024, addressing critical social challenges. Our team's innovative approach and technical excellence earned us the top position, competing against teams from across the country."
   },
   {
@@ -60,7 +60,7 @@ const carouselItems: CarouselItemType[] = [
   {
     type: "achievement",
     icon: <Target className="h-6 w-6 text-purple-400" />,
-    title: "500+ Members",
+    title: "50+ Members",
     description: "Growing tech community with active participation and collaboration",
     longDescription: "Built a thriving community of over 500 tech enthusiasts, developers, and industry professionals. Our platform facilitates knowledge sharing, collaboration, and professional growth through various initiatives and events."
   }

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Link from "next/link";
-import { BookOpen, Briefcase, Users2, Calendar, MessageSquare } from "lucide-react";
+import { BookOpen, Briefcase, Users2, Calendar, MessageSquare, LogIn } from "lucide-react";
 
 const navItems = [
   {
@@ -60,7 +60,7 @@ export function Navbar() {
         className="relative z-10 flex items-center gap-1 xs:gap-2 text-lg xs:text-xl font-semibold text-white"
       >
         <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
-          OPENGEEK
+          OPENGEEK <span className="text-xs sm:text-sm text-white/40">Community</span>
         </span>
         <span className="hidden xs:inline-block text-xs sm:text-sm text-white/50">Community</span>
       </Link>
@@ -88,7 +88,8 @@ export function Navbar() {
           <Button
             className="relative text-sm sm:text-base font-medium bg-gradient-to-r from-white/90 via-white/90 to-white/90 text-black hover:from-white hover:via-white hover:to-white transition-all duration-300 h-8 xs:h-9 sm:h-10 px-3 xs:px-4 sm:px-5 rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_0_2px_rgba(255,255,255,0.4),0_4px_6px_-1px_rgba(255,255,255,0.1),0_2px_4px_-1px_rgba(255,255,255,0.06)] backdrop-blur-sm"
           >
-            Sign In
+            <LogIn className="w-4 h-4" />
+            Log In
           </Button>
         </Link>
       </div>
