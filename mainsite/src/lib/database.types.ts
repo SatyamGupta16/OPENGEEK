@@ -86,6 +86,29 @@ export interface Database {
           email_sent_at?: string | null
         }
       }
+      messages: {
+        Row: {
+          id: string
+          content: string
+          user_name: string
+          created_at: string
+          user_avatar_url: string | null
+        }
+        Insert: {
+          id?: string
+          content: string
+          user_name: string
+          created_at?: string
+          user_avatar_url?: string | null
+        }
+        Update: {
+          id?: string
+          content?: string
+          user_name?: string
+          created_at?: string
+          user_avatar_url?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never

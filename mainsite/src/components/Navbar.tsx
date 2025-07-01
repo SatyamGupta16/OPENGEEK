@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Link from "next/link";
-import { BookOpen, Briefcase, Users2, Calendar } from "lucide-react";
+import { BookOpen, Briefcase, Users2, Calendar, MessageSquare } from "lucide-react";
 
 const navItems = [
   {
@@ -27,6 +27,11 @@ const navItems = [
     name: "Community",
     href: "/community",
     icon: Users2,
+  },
+  {
+    name: "Chat",
+    href: "/chat",
+    icon: MessageSquare,
   },
 ];
 
