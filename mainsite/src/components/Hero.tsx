@@ -67,13 +67,20 @@ export function Hero() {
           transition={{ delay: 0.8, duration: 0.8 }}
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 px-4"
         >
-          <Link href="/internships">
+          <Link href="/chat">
           <Button 
             size="lg" 
             className="group relative w-full sm:w-auto text-base font-medium bg-gradient-to-r from-white/90 via-white/90 to-white/90 text-black hover:from-white hover:via-white hover:to-white transition-all duration-300 h-12 px-6 sm:px-8 overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_0_2px_rgba(255,255,255,0.4),0_4px_6px_-1px_rgba(255,255,255,0.1),0_2px_4px_-1px_rgba(255,255,255,0.06)] backdrop-blur-sm"
           >
             <span className="relative z-10 flex items-center justify-center">
-              Find Internship
+              <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                Live Chat
+                
+              </div>
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </span>
           </Button>

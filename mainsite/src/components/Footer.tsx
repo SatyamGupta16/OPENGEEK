@@ -6,22 +6,21 @@ import { Button } from "@/components/ui/button";
 
 const footerLinks = {
   platform: [
-    { name: "About Us", href: "#about" },
     
+    { name: "Join Us", href: "/join" },
     { name: "Community", href: "/community" },
-    { name: "Achievements", href: "#achievements" },
+    { name: "Events", href: "/events" },
+    { name: "Internships", href: "/internships" }
   ],
   resources: [
-    { name: "Documentation", href: "#docs" },
-    { name: "Learning Path", href: "#learn" },
     { name: "Blog", href: "/blog" },
-    { name: "FAQ", href: "/faq" },
+    { name: "Global Chat", href: "/chat" },
+    { name: "FAQ", href: "/faq" }
   ],
   legal: [
     { name: "Privacy Policy", href: "/privacy-policy" },
-    { name: "Terms of Service", href: "#terms" },
-    
-    { name: "Contact", href: "/contact" },
+    { name: "Terms of Service", href: "/terms" },
+    { name: "Contact", href: "/contact" }
   ],
 };
 
@@ -42,7 +41,7 @@ export function Footer() {
             </p>
             <div className="flex gap-4">
               <Link 
-                href="https://github.com" 
+                href="https://github.com/opengeekv2" 
                 target="_blank"
                 className="text-white/70 hover:text-white transition-colors"
               >
@@ -50,15 +49,7 @@ export function Footer() {
                 <span className="sr-only">GitHub</span>
               </Link>
               <Link 
-                href="https://twitter.com" 
-                target="_blank"
-                className="text-white/70 hover:text-white transition-colors"
-              >
-                <Twitter className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
-              </Link>
-              <Link 
-                href="https://linkedin.com" 
+                href="https://linkedin.com/company/opengeek" 
                 target="_blank"
                 className="text-white/70 hover:text-white transition-colors"
               >
@@ -66,7 +57,7 @@ export function Footer() {
                 <span className="sr-only">LinkedIn</span>
               </Link>
               <Link 
-                href="https://instagram.com" 
+                href="https://instagram.com/opengeek.in" 
                 target="_blank"
                 className="text-white/70 hover:text-white transition-colors"
               >
@@ -134,15 +125,15 @@ export function Footer() {
             © {new Date().getFullYear()} OpenGeek. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <Button variant="link" className="text-sm text-white/70 hover:text-white">
+            <Link href="/privacy-policy" className="text-sm text-white/70 hover:text-white">
               Privacy
-            </Button>
-            <Button variant="link" className="text-sm text-white/70 hover:text-white">
+            </Link>
+            <Link href="/terms" className="text-sm text-white/70 hover:text-white">
               Terms
-            </Button>
-            <Button variant="link" className="text-sm text-white/70 hover:text-white">
-              Cookies
-            </Button>
+            </Link>
+            <Link href="/contact" className="text-sm text-white/70 hover:text-white">
+              Contact
+            </Link>
           </div>
         </div>
       </div>

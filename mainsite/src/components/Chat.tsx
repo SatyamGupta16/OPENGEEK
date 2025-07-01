@@ -8,16 +8,29 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Send, AlertCircle, Info, Shield } from "lucide-react"
+import { Send, AlertCircle, Info, Shield, Users, Bot } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
+import type { RealtimePresenceState } from '@supabase/supabase-js'
 
 interface Message {
   id: number
   created_at: string
   content: string
   username: string
+}
+
+interface MessageGroup {
+  username: string
+  isOwn: boolean
+  messages: Message[]
+}
+
+interface ActiveUser {
+  username: string
+  lastActive: string
 }
 
 export default function Chat() {
@@ -28,7 +41,9 @@ export default function Chat() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [activeUsers, setActiveUsers] = useState<Record<string, ActiveUser>>({})
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const [initialScrollDone, setInitialScrollDone] = useState(false)
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -57,13 +72,18 @@ export default function Chat() {
       console.log('Fetched messages:', data)
       setMessages(data || [])
       setLoading(false)
-      setTimeout(scrollToBottom, 100)
+      
+      // Only scroll on initial load
+      if (!initialScrollDone) {
+        setTimeout(scrollToBottom, 100)
+        setInitialScrollDone(true)
+      }
     } catch (error: any) {
       console.error('Error in fetchMessages:', error)
       setError(error.message)
       setLoading(false)
     }
-  }, [supabase, scrollToBottom])
+  }, [supabase, scrollToBottom, initialScrollDone])
 
   useEffect(() => {
     console.log('Setting up subscription...')
@@ -79,7 +99,6 @@ export default function Chat() {
       }, (payload) => {
         console.log('Received new message:', payload)
         setMessages(current => [...current, payload.new as Message])
-        setTimeout(scrollToBottom, 100)
       })
       .subscribe((status) => {
         console.log('Subscription status:', status)
@@ -89,7 +108,23 @@ export default function Chat() {
       console.log('Cleaning up subscription...')
       subscription.unsubscribe()
     }
-  }, [supabase, fetchMessages, scrollToBottom])
+  }, [supabase, fetchMessages])
+
+  // Update active users whenever messages change
+  useEffect(() => {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const recentMessages = messages.filter(msg => msg.created_at > fiveMinutesAgo);
+    
+    const newActiveUsers = recentMessages.reduce((acc, msg) => {
+      acc[msg.username] = {
+        username: msg.username,
+        lastActive: msg.created_at
+      };
+      return acc;
+    }, {} as Record<string, ActiveUser>);
+
+    setActiveUsers(newActiveUsers);
+  }, [messages]);
 
   const sendMessage = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -112,13 +147,13 @@ export default function Chat() {
 
       console.log('Message sent:', data)
       setNewMessage("")
-      
-      fetchMessages()
+      // Only scroll when sending a message
+      setTimeout(scrollToBottom, 100)
     } catch (error: any) {
       console.error('Error in sendMessage:', error)
       setError(error.message)
     }
-  }, [newMessage, username, supabase, fetchMessages])
+  }, [newMessage, username, supabase, scrollToBottom])
 
   const handleDialogClose = (open: boolean) => {
     if (!open && (!username.trim() || !acceptedTerms)) {
@@ -128,7 +163,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto px-7">
+    <div className="relative w-full max-w-[1200px] mx-auto">
       <Dialog open={showDialog} onOpenChange={handleDialogClose}>
         <DialogContent className="bg-black/95 border-white/10 max-h-[500px] w-[700px] p-5" onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogHeader className="pb-1">
@@ -198,107 +233,186 @@ export default function Chat() {
       </Dialog>
 
       <Card className={cn(
-        "h-[calc(100vh-9rem)] flex flex-col bg-black/40 backdrop-blur-xl border-white/10 relative overflow-hidden p-0",
+        "h-[calc(100vh-9rem)] flex flex-col bg-black/40 backdrop-blur-xl border-white/10 relative overflow-hidden p-0 rounded-xl",
         showDialog && "pointer-events-none select-none blur-lg"
       )}>
         {/* Header */}
-        <div className="p-4 border-b border-white/10 bg-white/5">
+        <div className="px-3 py-3 border-b border-white/10 bg-gradient-to-r from-white/10 via-white/5 to-white/10">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-white">Community Chat</h2>
-              <p className="text-xs text-gray-400">Connect with fellow developers in real-time</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-white/10">
+                <Bot className="h-5 w-5 text-white/80" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white flex items-center gap-3">
+                  Public Live Chat
+                  <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                    <div className="relative flex items-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      <div className="absolute w-1.5 h-1.5 rounded-full bg-green-500 animate-ping" />
+                    </div>
+                    <span className="text-xs font-medium text-white/90">
+                      {Object.keys(activeUsers).length} active now
+                    </span>
+                  </div>
+                </h2>
+                <p className="text-xs text-gray-400">Connect with fellow developers in real-time</p>
+              </div>
             </div>
             {username && (
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
+              <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full">
+                <Avatar className="h-6 w-6 border border-white/20">
                   <AvatarFallback className="bg-white/10 text-white text-xs">
-                    {username[0]}
+                    {username[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm text-white">{username}</span>
+                <span className="text-sm text-white/90">{username}</span>
               </div>
             )}
           </div>
         </div>
 
         {error && (
-          <Alert variant="destructive" className="m-2 bg-red-900/50 border-red-500/50">
+          <Alert variant="destructive" className="mx-3 mt-2 bg-red-900/50 border-red-500/50">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-xs">{error}</AlertDescription>
           </Alert>
         )}
 
-        {/* Messages */}
+        {/* Messages Container */}
         <div 
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
+          className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth"
         >
-          {loading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-start gap-3 animate-pulse">
-                  <div className="w-8 h-8 rounded-full bg-white/10" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-24 bg-white/10 rounded" />
-                    <div className="h-4 w-48 bg-white/10 rounded" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className="flex items-start gap-3 group hover:bg-white/5 rounded-lg p-2 transition-colors"
-                >
-                  <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarFallback className="bg-white/10 text-white">
-                      {msg.username[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm text-white truncate max-w-[150px]">
-                        {msg.username}
-                      </span>
-                      <span className="text-[10px] text-gray-400 shrink-0">
-                        {new Date(msg.created_at).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
+          <div className="flex flex-col justify-end min-h-full">
+            <div className="w-full px-3">
+              {loading ? (
+                <div className="space-y-4 py-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-start gap-2 animate-pulse opacity-40">
+                      <div className="w-7 h-7 rounded-full bg-white/10 border border-white/5" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-2.5 w-24 bg-white/10 rounded-full" />
+                        <div className="h-10 w-64 bg-white/10 rounded-2xl" />
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-200">
-                      <span className="break-words whitespace-pre-wrap inline-block max-w-full">
-                        {msg.content}
-                      </span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="py-3 space-y-4">
+                  {messages.reduce<MessageGroup[]>((groups, msg, index) => {
+                    const isOwnMessage = msg.username === username;
+                    const prevMessage = messages[index - 1];
+                    const isSameUser = prevMessage && prevMessage.username === msg.username;
+                    
+                    if (!isSameUser) {
+                      groups.push({
+                        username: msg.username,
+                        isOwn: isOwnMessage,
+                        messages: [msg]
+                      });
+                    } else {
+                      groups[groups.length - 1].messages.push(msg);
+                    }
+                    
+                    return groups;
+                  }, []).map((group, groupIndex) => (
+                    <div 
+                      key={groupIndex} 
+                      className={cn(
+                        "flex items-start gap-2 animate-in fade-in-0 duration-300",
+                        group.isOwn && "flex-row-reverse"
+                      )}
+                    >
+                      <div className="pt-4">
+                        <Avatar className={cn(
+                          "h-7 w-7 border ring-1 ring-offset-1 ring-offset-black/40",
+                          group.isOwn ? "border-white/20 ring-white/20" : "border-white/10 ring-white/10"
+                        )}>
+                          <AvatarFallback className={cn(
+                            "text-xs font-medium",
+                            group.isOwn ? "bg-white/20 text-white" : "bg-white/10 text-white/90"
+                          )}>
+                            {group.username[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+
+                      <div className={cn(
+                        "flex flex-col min-w-0 max-w-[75%] pt-0.5",
+                        group.isOwn && "items-end"
+                      )}>
+                        <span className={cn(
+                          "text-xs font-medium mb-1 px-0.5",
+                          group.isOwn ? "text-white/90" : "text-white/80"
+                        )}>
+                          {group.username}
+                        </span>
+
+                        <div className="space-y-0.5">
+                          {group.messages.map((msg, msgIndex) => (
+                            <div key={msg.id} className="group relative animate-in slide-in-from-bottom-1">
+                              <div className={cn(
+                                "px-3 py-2 rounded-2xl text-[13px] break-words",
+                                group.isOwn 
+                                  ? "bg-gradient-to-br from-white/20 to-white/15 text-white shadow-sm shadow-white/5" 
+                                  : "bg-gradient-to-br from-white/10 to-white/5 text-white/90",
+                                msgIndex === 0 && (group.isOwn ? "rounded-tr-sm" : "rounded-tl-sm"),
+                                "hover:translate-x-0 transition-all duration-200",
+                                group.isOwn ? "hover:-translate-x-0.5" : "hover:translate-x-0.5"
+                              )}>
+                                <p className="whitespace-pre-wrap leading-relaxed">
+                                  {msg.content}
+                                </p>
+                              </div>
+                              <div className={cn(
+                                "flex items-center gap-1 text-[10px] text-white/40 mt-0.5 px-1",
+                                "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+                                group.isOwn && "justify-end"
+                              )}>
+                                <span>
+                                  {new Date(msg.created_at).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Message Input */}
-        <div className="border-t border-white/10 bg-white/5 p-4">
-          <form onSubmit={sendMessage} className="flex gap-2">
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 bg-white/5 border-white/10 text-white text-sm h-10"
-            />
-            <Button 
-              type="submit"
-              size="default"
-              className="bg-white/10 hover:bg-white/20 text-white px-4 h-10 transition-colors"
-              disabled={!newMessage.trim()}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
+        <div className="border-t border-white/10 bg-black/40">
+          <div className="w-full px-3 py-3">
+            <form onSubmit={sendMessage} className="flex gap-2 items-center">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/40 text-[13px] h-10 rounded-full px-4 focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all duration-200"
+              />
+              <Button 
+                type="submit"
+                size="default"
+                className={cn(
+                  "bg-white/10 hover:bg-white/20 text-white h-10 w-10 rounded-full p-0 flex items-center justify-center shrink-0",
+                  "transition-all duration-200 hover:scale-105 active:scale-95",
+                  !newMessage.trim() && "opacity-50 cursor-not-allowed hover:scale-100"
+                )}
+                disabled={!newMessage.trim()}
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          </div>
         </div>
       </Card>
     </div>
