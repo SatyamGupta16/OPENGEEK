@@ -9,6 +9,50 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          message: string
+          type: 'update' | 'event' | 'feature' | 'mention' | 'reply' | 'system'
+          category: 'system' | 'community' | 'learning' | 'achievement' | 'announcement'
+          priority: 'low' | 'normal' | 'high' | 'urgent'
+          read: boolean
+          link: string | null
+          is_public: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          message: string
+          type: 'update' | 'event' | 'feature' | 'mention' | 'reply' | 'system'
+          category: 'system' | 'community' | 'learning' | 'achievement' | 'announcement'
+          priority?: 'low' | 'normal' | 'high' | 'urgent'
+          read?: boolean
+          link?: string | null
+          is_public?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          message?: string
+          type?: 'update' | 'event' | 'feature' | 'mention' | 'reply' | 'system'
+          category?: 'system' | 'community' | 'learning' | 'achievement' | 'announcement'
+          priority?: 'low' | 'normal' | 'high' | 'urgent'
+          read?: boolean
+          link?: string | null
+          is_public?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
       user_profiles: {
         Row: {
           id: string

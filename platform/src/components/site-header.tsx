@@ -1,28 +1,147 @@
 import React from "react"
-import { SearchIcon, BellIcon, PlusIcon, MenuIcon, UserIcon, LogOutIcon, SettingsIcon, StarIcon, FolderIcon } from "lucide-react"
+import { SearchIcon, BellIcon, PlusIcon, MenuIcon, UserIcon, LogOutIcon, SettingsIcon, StarIcon, FolderIcon, Bell, MessageSquare, AlertCircle, RefreshCw, Calendar, Sparkles, AtSign } from "lucide-react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/lib/auth-context"
-import { signOut } from "@/lib/supabase"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { motion, AnimatePresence } from "framer-motion"
+import { formatDistanceToNow } from "date-fns"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
   DropdownMenuShortcut,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+import { useAuth } from "@/lib/auth-context"
+import { useNotifications } from "@/lib/notifications-context"
+import { signOut } from "@/lib/supabase"
 import { toast } from "sonner"
 import { Sheet, SheetTrigger } from "@/components/ui/sheet"
 import { useMediaQuery } from "@/hooks/use-mobile"
+import { Input } from "@/components/ui/input"
+
+interface NotificationItemProps {
+  notification: {
+    id: string;
+    title: string;
+    message: string;
+    type: 'system' | 'update' | 'event' | 'feature' | 'mention' | 'reply';
+    category?: 'system' | 'community' | 'learning' | 'achievement' | 'announcement';
+    priority?: 'low' | 'normal' | 'high' | 'urgent';
+    icon?: string;
+    link?: string;
+    is_public?: boolean;
+    read: boolean;
+    created_at: string;
+  };
+  onMarkAsRead: (id: string) => void;
+}
+
+const NotificationItem = ({ notification, onMarkAsRead }: NotificationItemProps) => {
+  const getIcon = () => {
+    switch (notification.type) {
+      case 'system':
+        return <AlertCircle className="h-4 w-4" />;
+      case 'update':
+        return <RefreshCw className="h-4 w-4" />;
+      case 'event':
+        return <Calendar className="h-4 w-4" />;
+      case 'feature':
+        return <Sparkles className="h-4 w-4" />;
+      case 'mention':
+        return <AtSign className="h-4 w-4" />;
+      case 'reply':
+        return <MessageSquare className="h-4 w-4" />;
+      default:
+        return <Bell className="h-4 w-4" />;
+    }
+  };
+
+  const getIconColor = () => {
+    switch (notification.category || 'system') {
+      case 'system':
+        return 'text-blue-400';
+      case 'community':
+        return 'text-green-400';
+      case 'learning':
+        return 'text-purple-400';
+      case 'achievement':
+        return 'text-yellow-400';
+      case 'announcement':
+        return 'text-orange-400';
+      default:
+        return 'text-gray-400';
+    }
+  };
+
+  const getBgColor = () => {
+    switch (notification.category || 'system') {
+      case 'system':
+        return 'bg-blue-400/10';
+      case 'community':
+        return 'bg-green-400/10';
+      case 'learning':
+        return 'bg-purple-400/10';
+      case 'achievement':
+        return 'bg-yellow-400/10';
+      case 'announcement':
+        return 'bg-orange-400/10';
+      default:
+        return 'bg-gray-400/10';
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className={`p-4 border-b border-[#21262d] hover:bg-[#1f6feb]/5 transition-colors cursor-pointer ${
+        !notification.read ? 'bg-[#1f6feb]/10' : ''
+      }`}
+      onClick={() => onMarkAsRead(notification.id)}
+    >
+      <div className="flex items-start gap-3">
+        <div className={`p-2 rounded-lg ${getBgColor()}`}>
+          <div className={getIconColor()}>{getIcon()}</div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-sm font-medium text-[#c9d1d9] line-clamp-2">
+              {notification.title}
+            </p>
+            <span className="text-xs text-[#8b949e] whitespace-nowrap">
+              {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+            </span>
+          </div>
+          <p className="text-xs text-[#8b949e] mt-1 line-clamp-2">
+            {notification.message}
+          </p>
+          {notification.link && (
+            <Link 
+              to={notification.link}
+              className="text-xs text-[#58a6ff] hover:text-[#58a6ff]/80 hover:underline mt-2 inline-block"
+              onClick={(e) => e.stopPropagation()}
+            >
+              View details
+            </Link>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 export function SiteHeader() {
   const { user } = useAuth()
+  const { notifications, unreadCount, markAsRead } = useNotifications()
   const isMobile = useMediaQuery("(max-width: 1024px)")
   const navigate = useNavigate()
   const location = useLocation()
+  const [isOpen, setIsOpen] = React.useState(false)
 
   const handleSignOut = async () => {
     try {
@@ -145,17 +264,94 @@ export function SiteHeader() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Link to="/notifications">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-[#8b949e] hover:text-[#c9d1d9] relative"
+              <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-[#8b949e] hover:text-[#c9d1d9] relative"
+                  >
+                    <AnimatePresence>
+                      {unreadCount > 0 && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                          className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center"
+                        >
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1f6feb] opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-4 w-4 bg-[#1f6feb] text-[10px] text-white items-center justify-center">
+                            {unreadCount}
+                          </span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <BellIcon className="h-4 w-4" />
+                    <span className="sr-only">Notifications</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  className="w-[400px] bg-[#161b22] border-[#21262d]" 
+                  align="end"
+                  forceMount
                 >
-                  <BellIcon className="h-4 w-4" />
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#1f6feb]" />
-                  <span className="sr-only">Notifications</span>
-                </Button>
-              </Link>
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#21262d]">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-medium text-[#c9d1d9]">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <Badge variant="secondary" className="bg-[#1f6feb]/20 text-[#58a6ff]">
+                          {unreadCount} new
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {unreadCount > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-[#8b949e] hover:text-[#c9d1d9]"
+                          onClick={() => notifications.filter(n => !n.read).forEach(n => markAsRead(n.id))}
+                        >
+                          Mark all as read
+                        </Button>
+                      )}
+                      <Link 
+                        to="/notifications"
+                        className="text-xs text-[#58a6ff] hover:text-[#58a6ff]/80 hover:underline"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        See all
+                      </Link>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-[400px] overflow-y-auto">
+                    <AnimatePresence>
+                      {notifications.length === 0 ? (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="p-8 text-center"
+                        >
+                          <BellIcon className="h-8 w-8 text-[#8b949e] mx-auto mb-3" />
+                          <p className="text-sm text-[#8b949e]">No notifications yet</p>
+                          <p className="text-xs text-[#8b949e] mt-1">
+                            We'll notify you when something important happens
+                          </p>
+                        </motion.div>
+                      ) : (
+                        notifications.slice(0, 5).map((notification) => (
+                          <NotificationItem
+                            key={notification.id}
+                            notification={notification}
+                            onMarkAsRead={markAsRead}
+                          />
+                        ))
+                      )}
+                    </AnimatePresence>
+                  </ScrollArea>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
 
