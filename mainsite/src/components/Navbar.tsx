@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Link from "next/link";
-import { BookOpen, Briefcase, Users2, Calendar, MessageSquare, LogIn } from "lucide-react";
+import { BookOpen, Briefcase, Users2, Calendar, MessageSquare, LogIn, Menu } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const navItems = [
   {
@@ -82,9 +89,10 @@ export function Navbar() {
         </ul>
       </nav>
 
-      {/* Join Us Button - Visible on both Mobile and Desktop */}
+      {/* Desktop Login Button and Mobile Menu */}
       <div className="flex items-center gap-3">
-        <Link href="https://platform.opengeek.in" target="_blank">
+        {/* Login Button - Hidden on Mobile */}
+        <Link href="https://platform.opengeek.in" target="_blank" className="hidden lg:block">
           <Button
             className="relative text-sm sm:text-base font-medium bg-gradient-to-r from-white/90 via-white/90 to-white/90 text-black hover:from-white hover:via-white hover:to-white transition-all duration-300 h-8 xs:h-9 sm:h-10 px-3 xs:px-4 sm:px-5 rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_0_2px_rgba(255,255,255,0.4),0_4px_6px_-1px_rgba(255,255,255,0.1),0_2px_4px_-1px_rgba(255,255,255,0.06)] backdrop-blur-sm"
           >
@@ -92,6 +100,53 @@ export function Navbar() {
             Log In
           </Button>
         </Link>
+
+        {/* Mobile Menu Button - Visible only on mobile */}
+        <div className="lg:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/10"
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] bg-black/95 border-white/10">
+              <SheetHeader>
+                <SheetTitle className="text-white">Menu</SheetTitle>
+              </SheetHeader>
+              <nav className="mt-8">
+                <ul className="flex flex-col gap-4">
+                  {navItems.map((item) => (
+                    <li key={item.name}>
+                      <Link
+                        href={item.href}
+                        className="flex items-center gap-3 text-base text-white/70 transition-colors hover:text-white group p-2 rounded-lg hover:bg-white/10"
+                      >
+                        <item.icon className="h-5 w-5 transition-colors group-hover:text-white" />
+                        {item.name}
+                      </Link>
+                    </li>
+                  ))}
+                  {/* Login Button in Mobile Menu */}
+                  <li>
+                    <Link
+                      href="https://platform.opengeek.in"
+                      target="_blank"
+                      className="flex items-center gap-3 text-base text-white/70 transition-colors hover:text-white group p-2 rounded-lg hover:bg-white/10"
+                    >
+                      <LogIn className="h-5 w-5 transition-colors group-hover:text-white" />
+                      Log In
+                    </Link>
+                  </li>
+                </ul>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </motion.div>
   );
