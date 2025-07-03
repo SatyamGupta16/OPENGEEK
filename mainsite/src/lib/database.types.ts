@@ -109,6 +109,47 @@ export interface Database {
           user_avatar_url?: string | null
         }
       }
+      leaderboards: {
+        Row: {
+          id: string
+          name: string
+          tier: 'Luminary' | 'Virtuoso' | 'Apprentice'
+          rank: number
+          avatar_url: string | null
+          github_url: string | null
+          points: number
+          achievements: Json
+          created_at: string
+          updated_at: string
+          tag: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          tier: 'Luminary' | 'Virtuoso' | 'Apprentice'
+          rank: number
+          avatar_url?: string | null
+          github_url?: string | null
+          points?: number
+          achievements?: Json
+          created_at?: string
+          updated_at?: string
+          tag?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          tier?: 'Luminary' | 'Virtuoso' | 'Apprentice'
+          rank?: number
+          avatar_url?: string | null
+          github_url?: string | null
+          points?: number
+          achievements?: Json
+          created_at?: string
+          updated_at?: string
+          tag?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -117,7 +158,7 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      member_tier: 'Luminary' | 'Virtuoso' | 'Apprentice'
     }
   }
 } 
