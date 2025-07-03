@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Link from "next/link";
-import { BookOpen, Briefcase, Users2, Calendar, MessageSquare, LogIn, Menu } from "lucide-react";
+import { BookOpen, Trophy, Users2, Calendar, MessageSquare, LogIn, Menu } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -20,20 +20,16 @@ const navItems = [
     href: "/events",
     icon: Calendar,
   },
-  {
-    name: "Internships",
-    href: "/internships",
-    icon: Briefcase,
-  },
+  
   {
     name: "Blog",
     href: "/blog",
     icon: BookOpen,
   },
   {
-    name: "Community",
-    href: "/community",
-    icon: Users2,
+    name: "Leaderboards",
+    href: "/leaderboards",
+    icon: Trophy,
   },
   {
     name: "Chat",
@@ -74,15 +70,16 @@ export function Navbar() {
 
       {/* Desktop Navigation - Hidden on Mobile */}
       <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden lg:block">
-        <ul className="flex items-center gap-6 sm:gap-8">
+        <ul className="flex items-center gap-5 sm:gap-8">
           {navItems.map((item) => (
-            <li key={item.name}>
+            <li key={item.name} className="relative group">
               <Link
                 href={item.href}
-                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-white/70 transition-colors hover:text-white group"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-white/70 transition-colors hover:text-white group relative px-3 py-2"
               >
-                <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors group-hover:text-white" />
-                {item.name}
+                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 rounded-lg transition-all duration-300 transform origin-center scale-75 group-hover:scale-110"></div>
+                <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-all duration-300 group-hover:scale-110 relative z-10" />
+                <span className="relative z-10">{item.name}</span>
               </Link>
             </li>
           ))}

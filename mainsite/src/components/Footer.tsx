@@ -10,7 +10,7 @@ const footerLinks = {
     { name: "Join Us", href: "/join" },
     { name: "Community", href: "/community" },
     { name: "Events", href: "/events" },
-    { name: "Internships", href: "/internships" }
+    
   ],
   resources: [
     { name: "Blog", href: "/blog" },
@@ -33,7 +33,7 @@ export function Footer() {
           <div className="flex flex-col gap-4 col-span-2 sm:col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 text-xl font-semibold text-white">
               <span className="bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent">
-                OPENGEEK
+                OPENGEEK <span className="text-xs sm:text-sm text-white/40">Community</span>
               </span>
             </Link>
             <p className="text-xs sm:text-sm text-white/70">
