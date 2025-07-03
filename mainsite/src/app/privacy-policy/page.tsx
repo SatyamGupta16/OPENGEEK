@@ -146,7 +146,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <p className="mt-4 text-neutral-400 text-sm">
               If you have any questions about our privacy policy, please{" "}
-              <a href="mailto:contact@opengeek.dev" className="text-blue-400 hover:text-blue-300">
+              <a href="mailto:support@opengeek.in" className="text-blue-400 hover:text-blue-300">
                 contact us
               </a>
               .
