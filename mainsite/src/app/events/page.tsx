@@ -12,24 +12,24 @@ import Squares from "@/components/ui/Squares";
 const upcomingEvents = [
   {
     title: "OpenGeek Platform Launch",
-    date: "April 20, 2024",
-    attendees: "Limited to 100",
+    date: "July 9, 2025",
+    attendees: "All are welcome",
     description: "Join us for the launch of OpenGeek platform! Learn about our learning paths, projects, and how to make the most of our community.",
     registrationLink: "/events/launch",
     tags: ["Community"]
   },
   {
     title: "Web Dev Fundamentals",
-    date: "May 1, 2024",
-    attendees: "Limited to 50",
+    date: "July 11, 2025",
+    attendees: "Beginner and Intermediate groups.",
     description: "Master the basics of modern web development with hands-on coding sessions and live mentorship.",
     registrationLink: "/events/webdev",
     tags: ["Workshop"]
   },
   {
     title: "Code Review Session",
-    date: "May 15, 2024",
-    attendees: "Limited to 30",
+    date: "July 13, 2025",
+    attendees: "All are welcome",
     description: "Get your code reviewed by experienced developers and learn best practices in a collaborative environment.",
     registrationLink: "/events/code-review",
     tags: ["Mentorship"]
@@ -46,7 +46,7 @@ const upcomingEvents = [
 
 const pastEvents = [
   {
-    title: "Git & GitHub Basics",
+    title: "Inverthon 2025",
     date: "March 15, 2024",
     attendees: "45 Attended",
     description: "Introduction to version control with Git and collaboration using GitHub. Covered basic commands and workflow.",
@@ -70,7 +70,7 @@ export default function EventsPage() {
           <Squares 
             speed={0.5} 
             squareSize={40}
-            direction='up'
+            direction='diagonal'
             borderColor='#fff'
             hoverFillColor='#222'
           />
@@ -88,7 +88,7 @@ export default function EventsPage() {
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6 tracking-tight">
             Tech Events & Meetups
           </h1>
-          <p className="text-white/60 text-lg max-w-2xl mx-auto">
+          <p className="text-white/60 text-lg  mx-auto">
             Join our online workshops and events to learn and grow with fellow developers.
           </p>
         </motion.div>
