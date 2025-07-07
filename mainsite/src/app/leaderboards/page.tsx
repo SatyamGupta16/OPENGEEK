@@ -5,6 +5,7 @@ import { Github, Trophy, Star, Award, Code2, Terminal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from '@/lib/supabase';
+import Squares from "@/components/ui/Squares";
 import {
   Table,
   TableBody,
@@ -65,8 +66,7 @@ export default function LeaderboardsPage() {
     <div className="min-h-screen bg-black text-white pt-24 pb-16 relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-black to-black opacity-50"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+        <Squares direction="diagonal" speed={0.5} borderColor="rgba(255,255,255,0.1)" squareSize={50} hoverFillColor="rgba(255,255,255,0.05)" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
