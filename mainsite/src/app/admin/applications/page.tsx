@@ -153,8 +153,9 @@ export default function AdminApplicationsPage() {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to update status')
+        const errorData = await response.json()
+        console.error('Error response:', errorData)
+        throw new Error(errorData.error || 'Failed to update status')
       }
 
       const { application } = await response.json()
