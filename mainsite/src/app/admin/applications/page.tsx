@@ -144,7 +144,7 @@ export default function AdminApplicationsPage() {
     try {
       console.log('Updating status:', { id, newStatus })
       
-      const response = await fetch('/api/join/status', {
+      const response = await fetch(`/api/join/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
