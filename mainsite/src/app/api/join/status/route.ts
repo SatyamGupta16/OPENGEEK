@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin as supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { Resend } from 'resend'
 import { WelcomeEmail } from '@/lib/email-templates'
 
@@ -117,8 +117,13 @@ export async function PUT(req: Request) {
     })
   } catch (error) {
     console.error('Error updating application status:', error)
+    // Log more details about the error
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return NextResponse.json(
-      { error: 'Failed to update application status' },
+      { error: 'Failed to update application status', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
