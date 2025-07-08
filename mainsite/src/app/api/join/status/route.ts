@@ -8,9 +8,12 @@ const WHATSAPP_GROUP_LINK = 'https://chat.whatsapp.com/HXQnlpYjI1tELYU2zUgCe7'
 
 export async function PUT(req: Request) {
   try {
+    console.log('Starting status update request...')
     const { id, status } = await req.json()
+    console.log('Received data:', { id, status })
 
     if (!id || !status) {
+      console.log('Missing required fields:', { id, status })
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -18,6 +21,7 @@ export async function PUT(req: Request) {
     }
 
     if (!['pending', 'approved', 'rejected'].includes(status)) {
+      console.log('Invalid status value:', status)
       return NextResponse.json(
         { error: 'Invalid status value' },
         { status: 400 }
@@ -25,6 +29,7 @@ export async function PUT(req: Request) {
     }
 
     // First get the application details including the temporary password
+    console.log('Fetching application details...')
     const { data: application, error: fetchError } = await supabase
       .from('applications')
       .select('*')
@@ -34,12 +39,15 @@ export async function PUT(req: Request) {
     if (fetchError) {
       console.error('Error fetching application:', fetchError)
       return NextResponse.json(
-        { error: 'Failed to fetch application' },
+        { error: 'Failed to fetch application', details: fetchError },
         { status: 500 }
       )
     }
 
+    console.log('Application found:', application?.id)
+
     // Update the status
+    console.log('Updating application status...')
     const { data: updatedApplication, error } = await supabase
       .from('applications')
       .update({ 
@@ -53,7 +61,7 @@ export async function PUT(req: Request) {
     if (error) {
       console.error('Error updating application:', error)
       return NextResponse.json(
-        { error: 'Failed to update application status' },
+        { error: 'Failed to update application status', details: error },
         { status: 500 }
       )
     }
