@@ -2,13 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from './supabase'
 
 interface AdminAuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  logout: () => Promise<void>
+  login: (password: string) => Promise<boolean>
+  logout: () => void
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | null>(null)
@@ -27,66 +26,59 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        const isAdmin = session?.user?.email === 'ahqafaliofficial@gmail.com'
-        setIsAuthenticated(isAdmin)
-      } catch (error) {
-        console.error('Auth check error:', error)
-        setIsAuthenticated(false)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    checkAuth()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const isAdmin = session?.user?.email === 'ahqafaliofficial@gmail.com'
-      setIsAuthenticated(isAdmin)
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
-
-  const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true)
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      if (error) throw error
-
-      const isAdmin = data.user?.email === 'ahqafaliofficial@gmail.com'
-      setIsAuthenticated(isAdmin)
-
-      if (isAdmin) {
-        router.push('/admin')
-        return true
+      // Check if admin is authenticated on mount
+      const adminAuth = localStorage.getItem('adminAuth')
+      if (adminAuth) {
+        const { expiresAt } = JSON.parse(adminAuth)
+        if (new Date().getTime() < expiresAt) {
+          setIsAuthenticated(true)
+        } else {
+          localStorage.removeItem('adminAuth')
+          if (window.location.pathname.startsWith('/admin') && 
+              window.location.pathname !== '/admin/login') {
+            router.push('/admin/login')
+          }
+        }
+      } else if (window.location.pathname.startsWith('/admin') && 
+                 window.location.pathname !== '/admin/login') {
+        router.push('/admin/login')
       }
-
-      return false
     } catch (error) {
-      console.error('Login error:', error)
-      return false
+      console.error('Error checking auth:', error)
+      localStorage.removeItem('adminAuth')
+      if (window.location.pathname.startsWith('/admin') && 
+          window.location.pathname !== '/admin/login') {
+        router.push('/admin/login')
+      }
     } finally {
       setIsLoading(false)
     }
+  }, [router])
+
+  const login = async (password: string) => {
+    try {
+      // In a real app, this would be an API call to verify credentials
+      if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+        const expiresAt = new Date().getTime() + (24 * 60 * 60 * 1000) // 24 hours
+        localStorage.setItem('adminAuth', JSON.stringify({ expiresAt }))
+        setIsAuthenticated(true)
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error during login:', error)
+      return false
+    }
   }
 
-  const logout = async () => {
+  const logout = () => {
     try {
-      await supabase.auth.signOut()
+      localStorage.removeItem('adminAuth')
       setIsAuthenticated(false)
       router.push('/admin/login')
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error('Error during logout:', error)
     }
   }
 

@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Users, FileText, Calendar, Settings, Home, LogOut } from 'lucide-react'
+import { useEffect } from 'react'
 import { AdminAuthProvider, useAdminAuth } from '@/lib/admin-auth'
 import { Button } from '@/components/ui/button'
 
@@ -21,9 +22,16 @@ function AdminLayoutContent({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const { isAuthenticated, isLoading, logout } = useAdminAuth()
 
-  // Show loading state
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && pathname !== '/admin/login') {
+      router.push('/admin/login')
+    }
+  }, [isAuthenticated, isLoading, pathname, router])
+
+  // Show nothing while checking auth status
   if (isLoading) {
     return (
       <div className="min-h-screen w-full bg-neutral-950 flex items-center justify-center">
@@ -37,7 +45,7 @@ function AdminLayoutContent({
     return children
   }
 
-  // Show nothing while not authenticated
+  // Show nothing while redirecting
   if (!isAuthenticated) {
     return null
   }

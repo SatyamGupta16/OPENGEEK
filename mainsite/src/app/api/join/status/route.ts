@@ -8,12 +8,9 @@ const WHATSAPP_GROUP_LINK = 'https://chat.whatsapp.com/HXQnlpYjI1tELYU2zUgCe7'
 
 export async function PUT(req: Request) {
   try {
-    console.log('Starting status update request...')
     const { id, status } = await req.json()
-    console.log('Received data:', { id, status })
 
     if (!id || !status) {
-      console.log('Missing required fields:', { id, status })
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -21,7 +18,6 @@ export async function PUT(req: Request) {
     }
 
     if (!['pending', 'approved', 'rejected'].includes(status)) {
-      console.log('Invalid status value:', status)
       return NextResponse.json(
         { error: 'Invalid status value' },
         { status: 400 }
@@ -29,7 +25,6 @@ export async function PUT(req: Request) {
     }
 
     // First get the application details including the temporary password
-    console.log('Fetching application details...')
     const { data: application, error: fetchError } = await supabase
       .from('applications')
       .select('*')
@@ -39,15 +34,12 @@ export async function PUT(req: Request) {
     if (fetchError) {
       console.error('Error fetching application:', fetchError)
       return NextResponse.json(
-        { error: 'Failed to fetch application', details: fetchError },
+        { error: 'Failed to fetch application' },
         { status: 500 }
       )
     }
 
-    console.log('Application found:', application?.id)
-
     // Update the status
-    console.log('Updating application status...')
     const { data: updatedApplication, error } = await supabase
       .from('applications')
       .update({ 
@@ -61,7 +53,7 @@ export async function PUT(req: Request) {
     if (error) {
       console.error('Error updating application:', error)
       return NextResponse.json(
-        { error: 'Failed to update application status', details: error },
+        { error: 'Failed to update application status' },
         { status: 500 }
       )
     }
@@ -125,13 +117,8 @@ export async function PUT(req: Request) {
     })
   } catch (error) {
     console.error('Error updating application status:', error)
-    // Log more details about the error
-    if (error instanceof Error) {
-      console.error('Error message:', error.message)
-      console.error('Error stack:', error.stack)
-    }
     return NextResponse.json(
-      { error: 'Failed to update application status', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Failed to update application status' },
       { status: 500 }
     )
   }

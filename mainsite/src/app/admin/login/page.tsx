@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,32 +10,25 @@ import { toast } from 'sonner'
 import { useAdminAuth } from '@/lib/admin-auth'
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('ahqafaliofficial@gmail.com')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { login, isAuthenticated } = useAdminAuth()
   const router = useRouter()
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/admin')
-    }
-  }, [isAuthenticated, router])
+  const { login } = useAdminAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      const success = await login(email, password)
-      
+      const success = await login(password)
       if (success) {
         toast.success('Login successful')
+        router.push('/admin')
       } else {
-        toast.error('Invalid credentials')
+        toast.error('Invalid password')
       }
     } catch (error) {
-      console.error('Login error:', error)
+      console.error(error); 
       toast.error('An error occurred')
     } finally {
       setIsLoading(false)
@@ -56,27 +49,18 @@ export default function AdminLoginPage() {
               Admin Login
             </CardTitle>
             <CardDescription className="text-center text-neutral-400">
-              Enter your admin credentials to continue
+              Enter your admin password to continue
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Input
-                  type="email"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-neutral-800 border-neutral-700 text-white"
-                  disabled={true}
-                />
-                <Input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Enter admin password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-neutral-800 border-neutral-700 text-white"
-                  disabled={isLoading}
                 />
               </div>
               <Button
