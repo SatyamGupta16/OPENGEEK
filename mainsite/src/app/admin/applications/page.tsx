@@ -144,28 +144,27 @@ export default function AdminApplicationsPage() {
     try {
       console.log('Updating status:', { id, newStatus })
       
-      const { data, error } = await supabase
-        .from('applications')
-        .update({ 
-          status: newStatus,
-          last_updated: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single()
+      const response = await fetch('/api/join/status', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, status: newStatus }),
+      })
 
-      if (error) {
-        console.error('Error updating status:', error)
-        toast.error('Failed to update status')
-        return
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to update status')
       }
 
+      const { application } = await response.json()
+
       setApplications(prev => prev.map(app => 
-        app.id === id ? { ...app, status: newStatus, last_updated: data.last_updated } : app
+        app.id === id ? { ...app, status: newStatus, last_updated: application.last_updated } : app
       ))
 
       const statusConfig = {
-        approved: { message: 'Application approved', icon: '✅' },
+        approved: { message: 'Application approved and welcome email sent', icon: '✅' },
         rejected: { message: 'Application rejected', icon: '❌' },
         pending: { message: 'Application marked as pending', icon: '⏳' },
       }
