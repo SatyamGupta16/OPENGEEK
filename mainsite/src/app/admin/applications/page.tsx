@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { supabase } from '@/lib/supabase'
+import { useAdminAuth } from '@/lib/admin-auth'
+import { readApplications, updateApplicationStatus } from '@/lib/application-utils'
 
 import {
   Table,
@@ -103,36 +106,32 @@ export default function AdminApplicationsPage() {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const { isAuthenticated } = useAdminAuth()
 
   useEffect(() => {
-    fetchApplications()
-  }, [])
+    if (isAuthenticated) {
+      fetchApplications()
+    }
+  }, [isAuthenticated])
 
   const fetchApplications = async () => {
     try {
       setLoading(true)
       console.log('Fetching applications...')
       
-      const response = await fetch('/api/join')
-      console.log('Response status:', response.status)
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error('Error response:', errorData)
-        throw new Error(errorData.error || 'Failed to fetch applications')
-      }
-      
-      const data = await response.json()
-      console.log('Received data:', data)
-      
-      if (!Array.isArray(data)) {
-        console.error('Expected array but got:', typeof data, data)
-        toast.error('Invalid data format received')
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*')
+        .order('submitted_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching applications:', error)
+        toast.error('Failed to load applications')
         return
       }
       
-      setApplications(data)
-      console.log('Applications set:', data.length, 'items')
+      setApplications(data || [])
+      console.log('Applications loaded:', data?.length || 0, 'items')
     } catch (error) {
       console.error('Error in fetchApplications:', error)
       toast.error('Failed to load applications')
@@ -141,28 +140,28 @@ export default function AdminApplicationsPage() {
     }
   }
 
-  const updateApplicationStatus = async (id: string, newStatus: 'pending' | 'approved' | 'rejected') => {
+  const handleUpdateStatus = async (id: string, newStatus: 'pending' | 'approved' | 'rejected') => {
     try {
       console.log('Updating status:', { id, newStatus })
       
-      const response = await fetch('/api/join/status', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id, status: newStatus }),
-      })
+      const { data, error } = await supabase
+        .from('applications')
+        .update({ 
+          status: newStatus,
+          last_updated: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single()
 
-      console.log('Update response status:', response.status)
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error('Error updating status:', errorData)
-        throw new Error(errorData.error || 'Failed to update status')
+      if (error) {
+        console.error('Error updating status:', error)
+        toast.error('Failed to update status')
+        return
       }
 
       setApplications(prev => prev.map(app => 
-        app.id === id ? { ...app, status: newStatus } : app
+        app.id === id ? { ...app, status: newStatus, last_updated: data.last_updated } : app
       ))
 
       const statusConfig = {
@@ -173,7 +172,7 @@ export default function AdminApplicationsPage() {
 
       toast.success(statusConfig[newStatus].message)
     } catch (error) {
-      console.error('Error in updateApplicationStatus:', error)
+      console.error('Error in handleUpdateStatus:', error)
       toast.error('Failed to update status')
     }
   }
@@ -183,6 +182,11 @@ export default function AdminApplicationsPage() {
     (app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
      app.email.toLowerCase().includes(searchTerm.toLowerCase()))
   )
+
+  // If not authenticated, show nothing
+  if (!isAuthenticated) {
+    return null
+  }
 
   return (
     <div className="space-y-6">
@@ -324,7 +328,7 @@ export default function AdminApplicationsPage() {
                         <Select
                           value={application.status}
                           onValueChange={(value: 'pending' | 'approved' | 'rejected') => 
-                            updateApplicationStatus(application.id, value)
+                            handleUpdateStatus(application.id, value)
                           }
                         >
                           <SelectTrigger className="w-[130px]">
@@ -465,7 +469,7 @@ export default function AdminApplicationsPage() {
               <div className="flex justify-end gap-3 mt-6">
                 <Button
                   onClick={() => {
-                    updateApplicationStatus(selectedApplication.id, 'rejected')
+                    handleUpdateStatus(selectedApplication.id, 'rejected')
                     setIsDialogOpen(false)
                   }}
                   className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20"
@@ -474,7 +478,7 @@ export default function AdminApplicationsPage() {
                 </Button>
                 <Button
                   onClick={() => {
-                    updateApplicationStatus(selectedApplication.id, 'approved')
+                    handleUpdateStatus(selectedApplication.id, 'approved')
                     setIsDialogOpen(false)
                   }}
                   className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
