@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Application data
 public/_data/
+
+
+.env.local
