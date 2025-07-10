@@ -141,15 +141,13 @@ export default function Login() {
     <div className="min-h-screen w-full flex bg-black relative overflow-hidden">
       {/* Cosmic Background Effects */}
       <div className="absolute inset-0 w-full h-full">
-        {/* Aurora effect */}
         <Aurora
           colorStops={["#3A29FF", "#FF94B4", "#FF3232"]}
           blend={0.5}
-          amplitude={1.0}
+          amplitude={0.4}
           speed={0.5}
         />
         
-        {/* Static stars effect */}
         <SparklesCore
           className="absolute inset-0 w-full h-full opacity-50"
           background="transparent"
@@ -160,12 +158,13 @@ export default function Login() {
           speed={0}
         />
 
-        {/* Subtle nebula effect */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-b from-white/10 via-white/5 to-transparent blur-3xl" />
           <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-gradient-to-t from-white/10 via-white/5 to-transparent blur-3xl" />
         </div>
       </div>
+
+      
 
       {/* Right side - Content */}
       <div className="hidden lg:flex relative flex-1 items-center justify-center">
@@ -175,9 +174,19 @@ export default function Login() {
               OPENGEEK COMMUNITY
             </span>
           </h1>
-          <p className="text-zinc-400 text-xl font-light leading-relaxed animate-fade-in-up">
-            Where passionate developers unite to create, learn, and grow together.
-          </p>
+          <div className="space-y-6">
+            <p className="text-zinc-400 text-xl font-light leading-relaxed animate-fade-in-up">
+              Where passionate developers unite to create, learn, and grow together.
+            </p>
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10 animate-fade-in-up">
+              <h3 className="text-white font-semibold mb-2">✨ New Platform Experience</h3>
+              <p className="text-zinc-400 text-sm">
+                We've redesigned our platform UI with a fresh new look and enhanced features. 
+                Join our community to explore interactive learning paths, real-world projects, 
+                and connect with fellow developers.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
