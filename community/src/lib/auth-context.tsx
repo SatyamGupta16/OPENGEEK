@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { getCurrentUser, onAuthStateChange } from './supabase';
 import { toast } from 'sonner';
@@ -13,6 +13,7 @@ const AuthContext = createContext<AuthContextType>({ user: null, loading: true }
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastEventRef = useRef<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -20,7 +21,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check current auth status
     const checkUser = async () => {
       try {
-        console.log('Checking current user...');
         const { user: currentUser, error } = await getCurrentUser();
         
         if (error) {
@@ -29,7 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        console.log('Current user data:', currentUser);
         if (mounted) setUser(currentUser);
       } catch (error) {
         console.error('Error in checkUser:', error);
@@ -41,23 +40,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Subscribe to auth state changes
     const { data: { subscription } } = onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', { event, session });
       if (mounted) {
         setUser(session?.user || null);
         setLoading(false);
       }
 
-      // Show appropriate toast messages
-      switch (event) {
-        case 'SIGNED_IN':
-          toast.success('Successfully signed in!');
-          break;
-        case 'SIGNED_OUT':
-          toast.info('Signed out');
-          break;
-        case 'USER_UPDATED':
-          toast.success('Profile updated');
-          break;
+      // Only show toast if this is a new event (not just a tab focus)
+      if (event !== lastEventRef.current) {
+        switch (event) {
+          case 'SIGNED_IN':
+            toast.success('Successfully signed in!');
+            break;
+          case 'SIGNED_OUT':
+            toast.info('Signed out');
+            break;
+          case 'USER_UPDATED':
+            toast.success('Profile updated');
+            break;
+        }
+        lastEventRef.current = event;
       }
     });
 
