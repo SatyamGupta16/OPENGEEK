@@ -1,15 +1,31 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell,
   User,
   Menu,
   X,
   Search,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useAuth } from '../lib/auth-context';
+import { signOut } from '../lib/supabase';
+import { Avatar } from './ui/avatar';
+import { Button } from './ui/button';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(3); // Example notification count
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (!error) {
+      navigate('/login');
+    }
+  };
 
   return (
     <nav className="fixed top-0 w-full bg-black border-b border-zinc-800 z-50">
@@ -17,11 +33,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <Link to="/" className="flex-shrink-0">
               <h1 className="text-2xl font-bold tracking-tighter text-white">
                 OPENGEEK
               </h1>
-            </div>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -40,25 +56,54 @@ const Navbar = () => {
 
           {/* Right section */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors">
-              <Bell className="h-5 w-5 text-zinc-400" />
-            </button>
-            <button className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors">
-              <User className="h-5 w-5 text-zinc-400" />
-            </button>
-            <button className="px-4 py-1.5 text-sm font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors">
-              Join Community
-            </button>
+            {user ? (
+              <>
+                <div className="relative">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5 text-zinc-400" />
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {notificationCount}
+                      </span>
+                    )}
+                  </Button>
+                </div>
+                <Avatar className="h-8 w-8">
+                  <Avatar.Image 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
+                    alt={user.email || 'User avatar'} 
+                  />
+                  <Avatar.Fallback>
+                    {user.email ? user.email[0].toUpperCase() : 'U'}
+                  </Avatar.Fallback>
+                </Avatar>
+                <Button
+                  onClick={handleSignOut}
+                  variant="ghost"
+                  size="icon"
+                >
+                  <LogOut className="h-5 w-5 text-zinc-400" />
+                </Button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="px-4 py-1.5 text-sm font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
           <div className="flex md:hidden">
-            <button
+            <Button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 focus:outline-none"
+              variant="ghost"
+              size="icon"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -77,15 +122,41 @@ const Navbar = () => {
 
             {/* Mobile Navigation */}
             <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
-              <button className="p-2 rounded-md hover:bg-zinc-800 transition-colors">
-                <Bell className="h-5 w-5 text-zinc-400" />
-              </button>
-              <button className="p-2 rounded-md hover:bg-zinc-800 transition-colors">
-                <User className="h-5 w-5 text-zinc-400" />
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors w-full ml-4">
-                Join Community
-              </button>
+              {user ? (
+                <>
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5 text-zinc-400" />
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {notificationCount}
+                      </span>
+                    )}
+                  </Button>
+                  <Avatar className="h-8 w-8">
+                    <Avatar.Image 
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
+                      alt={user.email || 'User avatar'} 
+                    />
+                    <Avatar.Fallback>
+                      {user.email ? user.email[0].toUpperCase() : 'U'}
+                    </Avatar.Fallback>
+                  </Avatar>
+                  <Button
+                    onClick={handleSignOut}
+                    variant="ghost"
+                    size="icon"
+                  >
+                    <LogOut className="h-5 w-5 text-zinc-400" />
+                  </Button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  className="w-full px-4 py-2 text-sm font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors"
+                >
+                  Sign In
+                </Link>
+              )}
             </div>
           </div>
         </div>
