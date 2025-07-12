@@ -11,9 +11,12 @@ import {
 import { cn } from '../lib/utils';
 import { useAuth } from '../lib/auth-context';
 import { signOut } from '../lib/supabase';
+import { Avatar } from './ui/avatar';
+import { Button } from './ui/button';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(3); // Example notification count
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -55,18 +58,32 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <button className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors">
-                  <Bell className="h-5 w-5 text-zinc-400" />
-                </button>
-                <button className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors">
-                  <User className="h-5 w-5 text-zinc-400" />
-                </button>
-                <button
+                <div className="relative">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5 text-zinc-400" />
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {notificationCount}
+                      </span>
+                    )}
+                  </Button>
+                </div>
+                <Avatar className="h-8 w-8">
+                  <Avatar.Image 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
+                    alt={user.email || 'User avatar'} 
+                  />
+                  <Avatar.Fallback>
+                    {user.email ? user.email[0].toUpperCase() : 'U'}
+                  </Avatar.Fallback>
+                </Avatar>
+                <Button
                   onClick={handleSignOut}
-                  className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors"
+                  variant="ghost"
+                  size="icon"
                 >
                   <LogOut className="h-5 w-5 text-zinc-400" />
-                </button>
+                </Button>
               </>
             ) : (
               <Link
@@ -80,12 +97,13 @@ const Navbar = () => {
 
           {/* Mobile menu button */}
           <div className="flex md:hidden">
-            <button
+            <Button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 focus:outline-none"
+              variant="ghost"
+              size="icon"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -106,18 +124,30 @@ const Navbar = () => {
             <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
               {user ? (
                 <>
-                  <button className="p-2 rounded-md hover:bg-zinc-800 transition-colors">
+                  <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5 text-zinc-400" />
-                  </button>
-                  <button className="p-2 rounded-md hover:bg-zinc-800 transition-colors">
-                    <User className="h-5 w-5 text-zinc-400" />
-                  </button>
-                  <button
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {notificationCount}
+                      </span>
+                    )}
+                  </Button>
+                  <Avatar className="h-8 w-8">
+                    <Avatar.Image 
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
+                      alt={user.email || 'User avatar'} 
+                    />
+                    <Avatar.Fallback>
+                      {user.email ? user.email[0].toUpperCase() : 'U'}
+                    </Avatar.Fallback>
+                  </Avatar>
+                  <Button
                     onClick={handleSignOut}
-                    className="p-2 rounded-md hover:bg-zinc-800 transition-colors"
+                    variant="ghost"
+                    size="icon"
                   >
                     <LogOut className="h-5 w-5 text-zinc-400" />
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <Link
