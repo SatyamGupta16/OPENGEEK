@@ -1,6 +1,6 @@
 import { Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardFooter } from './card';
-import { Avatar } from './avatar';
+import { Avatar, AvatarImage, AvatarFallback } from './avatar';
 import { Button } from './button';
 
 interface PostCardProps {
@@ -21,8 +21,8 @@ export function PostCard({ user, content, timestamp, likes, comments, image }: P
     <Card className="w-full bg-black border-zinc-800">
       <CardHeader className="flex flex-row items-center gap-4">
         <Avatar className="h-10 w-10">
-          <Avatar.Image src={user.avatarUrl} alt={user.name} />
-          <Avatar.Fallback>{user.name[0]}</Avatar.Fallback>
+          <AvatarImage src={user.avatarUrl} alt={user.name} />
+          <AvatarFallback>{user.name[0]}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
           <div className="flex items-center gap-2">

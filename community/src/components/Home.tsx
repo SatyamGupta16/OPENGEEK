@@ -1,4 +1,8 @@
 import { PostCard } from './ui/post-card';
+import { useAuth } from '../lib/auth-context';
+import { useNavigate } from 'react-router-dom';
+import { Button } from './ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
 // Sample data - in a real app, this would come from an API
 const samplePosts = [
@@ -43,30 +47,85 @@ const samplePosts = [
 ];
 
 export default function Home() {
-  return (
-    <div className="max-w-2xl mx-auto">
-      <div className="space-y-6">
-        {/* Create Post Section */}
-        <div className="bg-black rounded-lg border border-zinc-800 p-4">
-          <textarea
-            placeholder="What's on your mind?"
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={3}
-          />
-          <div className="mt-3 flex justify-end">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-              Post
-            </button>
-          </div>
-        </div>
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-        {/* Feed */}
-        <div className="space-y-6">
-          {samplePosts.map((post) => (
-            <PostCard key={post.id} {...post} />
-          ))}
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <img 
+          src="logo.png" 
+          alt="OPENGEEK" 
+          className="w-12 h-12 rounded-full border-2 border-emerald-500/20"
+        />
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">
+            OPENGEEK Community
+          </h1>
+          <p className="text-zinc-400 text-sm">Let's make magic together ✨</p>
         </div>
       </div>
+
+      {/* Welcome Section for non-logged in users */}
+      {!user && (
+        <div className="bg-black/50 border border-zinc-800/50 rounded-xl p-8 text-white mb-8 backdrop-blur-sm">
+          <h2 className="text-2xl font-bold mb-3 text-white">Welcome to OPENGEEK Community! 👋</h2>
+          <p className="text-zinc-400 mb-6">Join our community of developers, share your projects, and connect with others.</p>
+          <Button
+            variant="outline"
+            className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/50"
+            onClick={() => navigate('/login')}
+          >
+            Get Started
+          </Button>
+        </div>
+      )}
+
+      {/* Feed Tabs */}
+      <Tabs defaultValue="top" className="w-full">
+        <TabsList className="w-full justify-start border-b border-zinc-800 rounded-none h-auto p-0 bg-transparent mb-2">
+          <TabsTrigger 
+            value="top" 
+            className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-6 py-3 text-sm font-medium"
+          >
+            Top Posts
+          </TabsTrigger>
+          <TabsTrigger 
+            value="newest"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-6 py-3 text-sm font-medium"
+          >
+            Newest
+          </TabsTrigger>
+          <TabsTrigger 
+            value="following"
+            className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-6 py-3 text-sm font-medium"
+          >
+            Following
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="top" className="mt-6">
+          <div className="space-y-4">
+            {samplePosts.map((post) => (
+              <PostCard key={post.id} {...post} />
+            ))}
+          </div>
+        </TabsContent>
+        <TabsContent value="newest" className="mt-6">
+          <div className="space-y-4">
+            {[...samplePosts].reverse().map((post) => (
+              <PostCard key={post.id} {...post} />
+            ))}
+          </div>
+        </TabsContent>
+        <TabsContent value="following" className="mt-6">
+          <div className="space-y-4">
+            {samplePosts.slice(0, 2).map((post) => (
+              <PostCard key={post.id} {...post} />
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 } 
