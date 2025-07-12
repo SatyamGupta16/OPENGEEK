@@ -60,7 +60,7 @@ const ClientLayout = () => {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}>
           <div className="h-full overflow-y-auto">
-            <Sidebar isOpen={isSidebarOpen} />
+            <Sidebar />
           </div>
         </aside>
 

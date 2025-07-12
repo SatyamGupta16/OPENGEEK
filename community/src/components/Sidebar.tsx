@@ -48,10 +48,9 @@ const NavItem = ({ icon: Icon, label, to = "#", isActive, badge }: NavItemProps)
 };
 
 interface SidebarProps {
-  isOpen: boolean;
 }
 
-const Sidebar = ({ isOpen }: SidebarProps) => {
+const Sidebar = ({}: SidebarProps) => {
   const location = useLocation();
 
   const mainNavItems = [

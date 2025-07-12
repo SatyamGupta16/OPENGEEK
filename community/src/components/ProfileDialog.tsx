@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Settings, User, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '../lib/auth-context';
 import { signOut } from '../lib/supabase';
-import { Avatar } from './ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -30,11 +30,11 @@ export function ProfileDialog() {
       <DialogTrigger asChild>
         <button className="flex items-center space-x-2">
           <Avatar className="h-8 w-8 cursor-pointer">
-            <Avatar.Image
+            <AvatarImage
               src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`}
               alt={user.email || 'User avatar'}
             />
-            <Avatar.Fallback>{user.email ? user.email[0].toUpperCase() : 'U'}</Avatar.Fallback>
+            <AvatarFallback>{user.email ? user.email[0].toUpperCase() : 'U'}</AvatarFallback>
           </Avatar>
         </button>
       </DialogTrigger>
@@ -46,11 +46,11 @@ export function ProfileDialog() {
           {/* Profile Info */}
           <div className="flex items-center space-x-4">
             <Avatar className="h-16 w-16">
-              <Avatar.Image
+              <AvatarImage
                 src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`}
                 alt={user.email || 'User avatar'}
               />
-              <Avatar.Fallback>{user.email ? user.email[0].toUpperCase() : 'U'}</Avatar.Fallback>
+              <AvatarFallback>{user.email ? user.email[0].toUpperCase() : 'U'}</AvatarFallback>
             </Avatar>
             <div>
               <h4 className="text-lg font-semibold text-zinc-100">{user.email?.split('@')[0]}</h4>
