@@ -1,15 +1,28 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell,
   User,
   Menu,
   X,
   Search,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useAuth } from '../lib/auth-context';
+import { signOut } from '../lib/supabase';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (!error) {
+      navigate('/login');
+    }
+  };
 
   return (
     <nav className="fixed top-0 w-full bg-black border-b border-zinc-800 z-50">
@@ -17,11 +30,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <Link to="/" className="flex-shrink-0">
               <h1 className="text-2xl font-bold tracking-tighter text-white">
                 OPENGEEK
               </h1>
-            </div>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -40,15 +53,29 @@ const Navbar = () => {
 
           {/* Right section */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors">
-              <Bell className="h-5 w-5 text-zinc-400" />
-            </button>
-            <button className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors">
-              <User className="h-5 w-5 text-zinc-400" />
-            </button>
-            <button className="px-4 py-1.5 text-sm font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors">
-              Join Community
-            </button>
+            {user ? (
+              <>
+                <button className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors">
+                  <Bell className="h-5 w-5 text-zinc-400" />
+                </button>
+                <button className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors">
+                  <User className="h-5 w-5 text-zinc-400" />
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors"
+                >
+                  <LogOut className="h-5 w-5 text-zinc-400" />
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="px-4 py-1.5 text-sm font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -77,15 +104,29 @@ const Navbar = () => {
 
             {/* Mobile Navigation */}
             <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
-              <button className="p-2 rounded-md hover:bg-zinc-800 transition-colors">
-                <Bell className="h-5 w-5 text-zinc-400" />
-              </button>
-              <button className="p-2 rounded-md hover:bg-zinc-800 transition-colors">
-                <User className="h-5 w-5 text-zinc-400" />
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors w-full ml-4">
-                Join Community
-              </button>
+              {user ? (
+                <>
+                  <button className="p-2 rounded-md hover:bg-zinc-800 transition-colors">
+                    <Bell className="h-5 w-5 text-zinc-400" />
+                  </button>
+                  <button className="p-2 rounded-md hover:bg-zinc-800 transition-colors">
+                    <User className="h-5 w-5 text-zinc-400" />
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="p-2 rounded-md hover:bg-zinc-800 transition-colors"
+                  >
+                    <LogOut className="h-5 w-5 text-zinc-400" />
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  className="w-full px-4 py-2 text-sm font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors"
+                >
+                  Sign In
+                </Link>
+              )}
             </div>
           </div>
         </div>
