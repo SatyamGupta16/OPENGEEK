@@ -89,7 +89,7 @@ export function Navbar() {
       {/* Desktop Login Button and Mobile Menu */}
       <div className="flex items-center gap-3">
         {/* Login Button - Hidden on Mobile */}
-        <Link href="https://platform.opengeek.in" target="_blank" className="hidden lg:block">
+        <Link href="https://community.opengeek.in" target="_blank" className="hidden lg:block">
           <Button
             className="relative text-sm sm:text-base font-medium bg-gradient-to-r from-white/90 via-white/90 to-white/90 text-black hover:from-white hover:via-white hover:to-white transition-all duration-300 h-8 xs:h-9 sm:h-10 px-3 xs:px-4 sm:px-5 rounded-lg shadow-[0_0_0_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_0_2px_rgba(255,255,255,0.4),0_4px_6px_-1px_rgba(255,255,255,0.1),0_2px_4px_-1px_rgba(255,255,255,0.06)] backdrop-blur-sm"
           >
@@ -131,7 +131,7 @@ export function Navbar() {
                   {/* Login Button in Mobile Menu */}
                   <li>
                     <Link
-                      href="https://platform.opengeek.in"
+                      href="https://community.opengeek.in"
                       target="_blank"
                       className="flex items-center gap-3 text-base text-white/70 transition-colors hover:text-white group p-2 rounded-lg hover:bg-white/10"
                     >
