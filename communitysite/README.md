@@ -1,0 +1,1 @@
+This is the new version of community platform site... with next app and only frontnend files are here... will make a new express js backend server with the folder name communityserver.
