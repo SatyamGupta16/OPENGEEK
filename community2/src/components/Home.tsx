@@ -1,11 +1,8 @@
-'use client';
-
-import { useAuth } from '@/lib/auth-context';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { PostCard } from '@/components/ui/post-card';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { PostCard } from './ui/post-card';
+import { useAuth } from '../lib/auth-context';
+import { useNavigate } from 'react-router-dom';
+import { Button } from './ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 
 // Sample data - in a real app, this would come from an API
 const samplePosts = [
@@ -51,18 +48,16 @@ const samplePosts = [
 
 export default function Home() {
   const { user } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Image 
-          src="/logo.png" 
+        <img 
+          src="logo.png" 
           alt="OPENGEEK" 
-          width={48}
-          height={48}
-          className="rounded-full border-2 border-emerald-500/20"
+          className="w-12 h-12 rounded-full border-2 border-emerald-500/20"
         />
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
@@ -80,7 +75,7 @@ export default function Home() {
           <Button
             variant="outline"
             className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/50"
-            onClick={() => router.push('/login')}
+            onClick={() => navigate('/login')}
           >
             Get Started
           </Button>
@@ -133,4 +128,4 @@ export default function Home() {
       </Tabs>
     </div>
   );
-}
+} 
