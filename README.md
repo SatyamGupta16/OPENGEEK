@@ -1,49 +1,64 @@
-# 🧠 OPENGEEK – Monorepo for Community Projects
+# 🌟 OPENGEEK Monorepo – The Dev Community Powerhouse 🚀  
+![Stars](https://img.shields.io/github/stars/AhqafCoder/OPENGEEK?style=social)
+![Forks](https://img.shields.io/github/forks/AhqafCoder/OPENGEEK?style=social)
+![Repo Size](https://img.shields.io/github/repo-size/AhqafCoder/OPENGEEK)
+![Contributors](https://img.shields.io/github/contributors/AhqafCoder/OPENGEEK)
+![License](https://img.shields.io/github/license/AhqafCoder/OPENGEEK)
 
-Welcome to the official **OpenGeek** GitHub repository — a monorepo containing all community-driven apps and tools that power the OpenGeek tech ecosystem.
+> 🧠 *Welcome to the official monorepo of [OpenGeek](https://www.opengeek.in) — A student-led tech community where ideas meet execution.*
+
+---
 
 ## 📁 Repository Structure
 
-This monorepo contains multiple independent projects under the OpenGeek initiative.
+This monorepo contains all apps, platforms, and tools under the OpenGeek initiative.
 
 ```
 OPENGEEK/
-├── community/              # First Next.js community project (WIP or legacy)
-├── community2/             # Second version or iteration
-├── communitysite/          # Main Next.js + Tailwind + TS community platform
+├── community/              # First Next.js community project (legacy or WIP)
+├── community2/             # Second iteration with experimental features
+├── communitysite/          # ✅ Production-grade site (Next.js + Tailwind + TS)
 │   ├── public/
 │   ├── src/
 │   ├── next.config.ts
 │   ├── tailwind.config.js
 │   ├── tsconfig.json
 │   └── ...
-├── mainsite/               # Reserved for future OpenGeek main website
-├── Retarded_versions/      # Archived or older experimental versions
+├── mainsite/               # Reserved for the future official opengeek.in site
+├── Retarded_versions/      # Archived experimental/abandoned builds
 ├── LICENSE
 └── README.md
 ```
 
+---
+
 ## ⚙️ Tech Stack
 
-- **Framework**: [Next.js](https://nextjs.org/)
-- **Styling**: Tailwind CSS
-- **Language**: TypeScript
-- **Tooling**: ESLint, PostCSS, Prettier
-- **Bundler (where applicable)**: Vite
+| Tool            | Description                          |
+|-----------------|--------------------------------------|
+| Next.js         | React Framework for SSR & SSG        |
+| Tailwind CSS    | Utility-first CSS for styling        |
+| TypeScript      | Static typing for scalable code      |
+| ESLint + Prettier | Code linting & formatting          |
+| Vite (optional) | Fast bundler for specific apps       |
 
-## 📌 Project Overview
+---
+
+## 🌐 Project Overview
 
 | Folder              | Description |
 |---------------------|-------------|
-| `community`         | Initial or legacy Next.js-based community version |
-| `community2`        | Alternate build or improved experimental version |
-| `communitysite`     | ✅ Main production-grade community site (Next.js + TS + Tailwind) |
-| `mainsite`          | Placeholder for OpenGeek's official site |
-| `Retarded_versions` | Old or experimental broken builds, kept for reference |
+| `community`         | Legacy version of the community site (archived) |
+| `community2`        | An improved but experimental version (playground) |
+| `communitysite`     | ✅ **Main OpenGeek community platform** (actively maintained) |
+| `mainsite`          | Placeholder for the main [www.opengeek.in](https://www.opengeek.in) website |
+| `Retarded_versions` | ⚠️ Older builds and scrapped ideas (kept for reference) |
+
+---
 
 ## 🧪 Getting Started
 
-To run any project:
+To run any of the projects locally:
 
 ```bash
 cd <project-folder>
@@ -51,25 +66,54 @@ npm install
 npm run dev
 ```
 
-> Example:
-> ```bash
-> cd communitysite
-> npm install
-> npm run dev
-> ```
+Example:
+
+```bash
+cd communitysite
+npm install
+npm run dev
+```
+
+---
+
+## 🚀 About OpenGeek
+
+**OpenGeek** is not just a community — it's a movement.  
+We are a developer-driven, student-powered tech collective focused on:
+
+- 🌱 Learning by **Building**
+- 🤝 Collaboration over Competition
+- 🧩 Solving Real-World Problems
+- 💡 Hackathons, Open Source, and Innovation
+
+Join our mission at 👉 **[www.opengeek.in](https://www.opengeek.in)**
+
+Stay connected:
+
+- 🌐 Website: [www.opengeek.in](https://www.opengeek.in)
+- 📸 Instagram: [@opengeek.in](https://instagram.com/opengeek.in)
+- 💬 Discord: [OPENGEEK](https://discord.gg/WsmZ6eupnk)
+- ✨ GitHub Org: [[OPENGEEK COMMUNITY]([https://github.com/OpenGeek-In](https://github.com/OPENGEEK-COMMUNITY))](https://github.com/OPENGEEK-COMMUNITY)
+
+---
 
 ## 🤝 Contributing
 
-We’re building this together!  
-If you have ideas, feedback, or want to contribute, feel free to open an issue or pull request.
+We love contributions from the community! Here's how you can help:
+
+1. Fork this repo 🍴
+2. Create a new branch 🔧
+3. Make your changes 💻
+4. Open a Pull Request ✅
+
+For major changes, please open an issue first to discuss what you'd like to change.
+
+---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+Licensed under the [MIT License](LICENSE).
 
-## 🌐 About OpenGeek
+---
 
-**OpenGeek** is a developer-led student community focused on learning by building.  
-We encourage real projects, peer collaboration, and technical growth — beyond just academic placements.
-
-> Built with ❤️ by the OpenGeek Community
+> Made with ❤️ by the **OpenGeek Community** — because we believe in coding not just for placements, but for **purpose.**
