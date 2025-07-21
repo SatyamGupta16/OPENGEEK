@@ -43,3 +43,6 @@ next-env.d.ts
 
 # Application data
 public/_data/
+
+# supabase
+supabase/
