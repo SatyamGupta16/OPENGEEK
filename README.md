@@ -1,13 +1,25 @@
-# 🌟 OPENGEEK Monorepo – The Dev Community Powerhouse 🚀  
-![Stars](https://img.shields.io/github/stars/AhqafCoder/OPENGEEK?style=social)
-![Forks](https://img.shields.io/github/forks/AhqafCoder/OPENGEEK?style=social)
-![Repo Size](https://img.shields.io/github/repo-size/AhqafCoder/OPENGEEK)
-![Contributors](https://img.shields.io/github/contributors/AhqafCoder/OPENGEEK)
-![License](https://img.shields.io/github/license/AhqafCoder/OPENGEEK)
 
-> 🧠 *Welcome to the official monorepo of [OpenGeek](https://www.opengeek.in) — A student-led tech community where ideas meet execution.*
+  <img src="https://www.opengeek.in/banner.png" alt="OpenGeek Banner" style="width:100%; max-width:800px;"/>
+<br>
+<div align="center">
 
----
+# 🌟 OPENGEEK – The Tech Community 🚀
+<br>
+
+[![Stars](https://img.shields.io/github/stars/AhqafCoder/OPENGEEK?style=social)](https://github.com/AhqafCoder/OPENGEEK/stargazers)
+[![Forks](https://img.shields.io/github/forks/AhqafCoder/OPENGEEK?style=social)](https://github.com/AhqafCoder/OPENGEEK/network)
+[![Contributors](https://img.shields.io/github/contributors/AhqafCoder/OPENGEEK)](https://github.com/AhqafCoder/OPENGEEK/graphs/contributors)
+
+</div>
+
+
+
+<br>
+<br>
+
+
+ Welcome to the official monorepo of **[OpenGeek](https://www.opengeek.in)** — a student-led tech community where ideas meet execution and collaboration builds careers. 
+
 
 ## 📁 Repository Structure
 
