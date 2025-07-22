@@ -1,8 +1,10 @@
+'use client';
+
 import { PostCard } from './ui/post-card';
-import { useAuth } from '../lib/auth-context';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
+import Image from 'next/image';
 
 // Sample data - in a real app, this would come from an API
 const samplePosts = [
@@ -47,17 +49,18 @@ const samplePosts = [
 ];
 
 export default function Home() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <img 
-          src="logo.png" 
+        <Image 
+          src="/logo.png" 
           alt="OPENGEEK" 
-          className="w-12 h-12 rounded-full border-2 border-emerald-500/20"
+          width={48}
+          height={48}
+          className="rounded-full border-2 border-emerald-500/20"
         />
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
@@ -67,20 +70,18 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Welcome Section for non-logged in users */}
-      {!user && (
-        <div className="bg-black/50 border border-zinc-800/50 rounded-xl p-8 text-white mb-8 backdrop-blur-sm">
-          <h2 className="text-2xl font-bold mb-3 text-white">Welcome to OPENGEEK Community! 👋</h2>
-          <p className="text-zinc-400 mb-6">Join our community of developers, share your projects, and connect with others.</p>
-          <Button
-            variant="outline"
-            className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/50"
-            onClick={() => navigate('/login')}
-          >
-            Get Started
-          </Button>
-        </div>
-      )}
+      {/* Welcome Section */}
+      <div className="bg-black/50 border border-zinc-800/50 rounded-xl p-8 text-white mb-8 backdrop-blur-sm">
+        <h2 className="text-2xl font-bold mb-3 text-white">Welcome to OPENGEEK Community! 👋</h2>
+        <p className="text-zinc-400 mb-6">Join our community of developers, share your projects, and connect with others.</p>
+        <Button
+          variant="outline"
+          className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/50"
+          onClick={() => router.push('/login')}
+        >
+          Get Started
+        </Button>
+      </div>
 
       {/* Feed Tabs */}
       <Tabs defaultValue="top" className="w-full">

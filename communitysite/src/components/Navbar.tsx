@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Search } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { useAuth } from '../lib/auth-context';
-import { Button } from './ui/button';
-import { NotificationDropdown } from './NotificationDropdown';
-import { ProfileDropdown } from './ProfileDropdown';
-import { CreateDropdown } from './ui/create-dropdown';
+import { cn } from '../../../community2/src/lib/utils';
+import { useAuth } from '../../../community2/src/lib/auth-context';
+import { Button } from '../../../community2/src/components/ui/button';
+import { NotificationDropdown } from '../../../community2/src/components/NotificationDropdown';
+import { ProfileDropdown } from '../../../community2/src/components/ProfileDropdown';
+import { CreateDropdown } from '../../../community2/src/components/ui/create-dropdown';
 
 interface NavbarProps {
   onSidebarToggle: () => void;

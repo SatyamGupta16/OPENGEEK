@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Home,
   Trophy,
@@ -11,8 +13,9 @@ import {
   Bookmark,
   HelpCircle,
 } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface NavItemProps {
   icon: any;
@@ -27,8 +30,7 @@ const NavItem = ({ icon: Icon, label, to = "#", isActive, badge }: NavItemProps)
   
   return (
     <Component
-      to={to}
-      href={to === "#" ? "#" : undefined}
+      href={to}
       className={cn(
         'flex items-center py-2 px-3 rounded-md text-sm group transition-colors',
         isActive
@@ -51,12 +53,12 @@ interface SidebarProps {
 }
 
 const Sidebar = ({}: SidebarProps) => {
-  const location = useLocation();
+  const pathname = usePathname();
 
   const mainNavItems = [
-    { icon: Home, label: 'Home', to: '/', isActive: location.pathname === '/' },
+    { icon: Home, label: 'Home', to: '/', isActive: pathname === '/' },
     { icon: Trophy, label: 'Leaderboards', badge: 'New' },
-    { icon: Monitor, label: 'Project Showcase', to: '/projects', isActive: location.pathname === '/projects' },
+    { icon: Monitor, label: 'Project Showcase', to: '/projects', isActive: pathname === '/projects' },
     { icon: Calendar, label: 'Monthly Challenge' },
     { icon: Code, label: '#30NitesOfCode' },
     { icon: MessageSquare, label: 'General' },
