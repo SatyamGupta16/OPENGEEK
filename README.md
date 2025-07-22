@@ -27,19 +27,37 @@ This monorepo contains all apps, platforms, and tools under the OpenGeek initiat
 
 ```
 OPENGEEK/
-├── community/              # First Next.js community project (legacy or WIP)
-├── community2/             # Second iteration with experimental features
-├── communitysite/          # ✅ Production-grade site (Next.js + Tailwind + TS)
-│   ├── public/
-│   ├── src/
-│   ├── next.config.ts
-│   ├── tailwind.config.js
-│   ├── tsconfig.json
-│   └── ...
-├── mainsite/               # Reserved for the future official opengeek.in site
-├── Retarded_versions/      # Archived experimental/abandoned builds
-├── LICENSE
-└── README.md
+├── community/              # (Legacy / React + Vite + Tailwindcss + shadcnui)
+│
+├── communitysite/          # ✅ Frontend (Next.js + Tailwind CSS + TypeScript)
+│   ├── .next/              # Next.js build output
+│   ├── node_modules/       # Frontend dependencies
+│   ├── public/             # Static assets (favicon, images, etc.)
+│   ├── src/                # Main frontend source code
+│   │   ├── components.json # Custom components config
+│   ├── .gitignore
+│   ├── eslint.config.mjs   # ESLint config
+│   ├── next-env.d.ts       # TypeScript env types
+│   ├── next.config.ts      # Next.js configuration
+│   ├── postcss.config.mjs  # PostCSS config
+│   ├── tailwind.config.js  # Tailwind CSS configuration
+│   ├── tsconfig.json       # TypeScript config
+│   ├── package.json
+│   └── package-lock.json
+│
+├── server/                 # ✅ Backend (Express.js API server)
+│   ├── node_modules/
+│   ├── index.js            # Entry point (Express app)
+│   ├── .env                # Environment variables (ignored by git)
+│   ├── .gitignore
+│   ├── package.json
+│   └── package-lock.json
+│
+├── mainsite/               # Marketing site for opengeek 
+│
+├── LICENSE                 # License file
+└── README.md               # You're reading it 🙂
+
 ```
 
 ---
@@ -60,11 +78,9 @@ OPENGEEK/
 
 | Folder              | Description |
 |---------------------|-------------|
-| `community`         | Legacy version of the community site (archived) |
-| `community2`        | An improved but experimental version (playground) |
-| `communitysite`     | ✅ **Main OpenGeek community platform** (actively maintained) |
+| `community`         | Legacy version of the community site (maintained)  |
+| `communitysite`     | ✅ **Main OpenGeek community platform** (under development)|
 | `mainsite`          | Placeholder for the main [www.opengeek.in](https://www.opengeek.in) website |
-| `Retarded_versions` | ⚠️ Older builds and scrapped ideas (kept for reference) |
 
 ---
 
@@ -128,4 +144,4 @@ Licensed under the [MIT License](LICENSE).
 
 ---
 
-> Made with ❤️ by the **OpenGeek Community** — because we believe in coding not just for placements, but for **purpose.**
+> Made with ❤️ by the **AhqafCoder & Vivek12coder** — because we believe in coding not just for placements, but for **purpose.**
