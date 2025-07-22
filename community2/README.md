@@ -1,1 +1,0 @@
-this is copy of community app for nextapp.. we are shifting the whole tech stack to next , has some errors... maybe make a new version as coomunitysite..
