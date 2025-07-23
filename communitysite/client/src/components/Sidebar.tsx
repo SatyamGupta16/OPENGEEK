@@ -12,25 +12,26 @@ import {
   Users,
   Bookmark,
   HelpCircle,
+  type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 interface NavItemProps {
-  icon: any;
+  icon: LucideIcon;
   label: string;
-  to?: string;
+  href?: string;
   isActive?: boolean;
   badge?: string | number;
 }
 
-const NavItem = ({ icon: Icon, label, to = "#", isActive, badge }: NavItemProps) => {
-  const Component = to === "#" ? "a" : Link;
+const NavItem = ({ icon: Icon, label, href = "#", isActive, badge }: NavItemProps) => {
+  const Component = href === "#" ? "a" : Link;
   
   return (
     <Component
-      href={to}
+      href={href}
       className={cn(
         'flex items-center py-2 px-3 rounded-md text-sm group transition-colors',
         isActive
@@ -49,16 +50,13 @@ const NavItem = ({ icon: Icon, label, to = "#", isActive, badge }: NavItemProps)
   );
 };
 
-interface SidebarProps {
-}
-
-const Sidebar = ({}: SidebarProps) => {
+export default function Sidebar() {
   const pathname = usePathname();
 
   const mainNavItems = [
-    { icon: Home, label: 'Home', to: '/', isActive: pathname === '/' },
+    { icon: Home, label: 'Home', href: '/', isActive: pathname === '/' },
     { icon: Trophy, label: 'Leaderboards', badge: 'New' },
-    { icon: Monitor, label: 'Project Showcase', to: '/projects', isActive: pathname === '/projects' },
+    { icon: Monitor, label: 'Project Showcase', href: '/projects', isActive: pathname === '/projects' },
     { icon: Calendar, label: 'Monthly Challenge' },
     { icon: Code, label: '#30NitesOfCode' },
     { icon: MessageSquare, label: 'General' },
@@ -78,9 +76,7 @@ const Sidebar = ({}: SidebarProps) => {
   ];
 
   return (
-    <div
-      className="h-full bg-black"
-    >
+    <div className="h-full bg-black">
       <div className="flex flex-col h-full">
         {/* Main navigation - Scrollable */}
         <div className="flex-1 overflow-y-auto py-6 px-3 no-scrollbar">
@@ -96,7 +92,7 @@ const Sidebar = ({}: SidebarProps) => {
                     key={index}
                     icon={item.icon}
                     label={item.label}
-                    to={item.to}
+                    href={item.href}
                     isActive={item.isActive}
                     badge={item.badge}
                   />
@@ -137,6 +133,4 @@ const Sidebar = ({}: SidebarProps) => {
       </div>
     </div>
   );
-};
-
-export default Sidebar; 
+} 

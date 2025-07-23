@@ -1,5 +1,6 @@
+'use client';
 
-import { Link } from "react-router-dom"
+import Link from "next/link";
 
 type NewsItem = {
   id: string
@@ -81,7 +82,7 @@ export function AdsSection() {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-zinc-100">OPENGEEK News</h3>
           <Link 
-            to="/news" 
+            href="/news" 
             className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
           >
             See all
@@ -91,7 +92,7 @@ export function AdsSection() {
           {newsItems.map((item) => (
             <Link 
               key={item.id}
-              to={`/blog/${item.id}`}
+              href={`/blog/${item.id}`}
               className="block group"
             >
               <div className="flex gap-3 items-start">
@@ -119,7 +120,7 @@ export function AdsSection() {
           {events.map((event) => (
             <Link
               key={event.id}
-              to={`/events/${event.id}`}
+              href={`/events/${event.id}`}
               className="block group"
             >
               <div className="flex gap-3 items-start">

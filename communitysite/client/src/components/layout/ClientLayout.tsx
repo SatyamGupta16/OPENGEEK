@@ -1,52 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+'use client';
+
+import { useState } from 'react';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
-import { cn } from '../../lib/utils';
+import { cn } from '@/lib/utils';
 import { AdsSection } from '../ui/ads-section';
 
-const ClientLayout = () => {
+interface ClientLayoutProps {
+  children: React.ReactNode;
+}
+
+export function ClientLayout({ children }: ClientLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const location = useLocation();
-  const isProjectShowcase = location.pathname === '/projects';
-
-  // Close sidebar when screen size changes to desktop
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsSidebarOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Close sidebar when clicking outside on mobile
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const sidebar = document.getElementById('sidebar');
-      const navbarToggle = document.getElementById('navbar-toggle');
-
-      if (
-        isSidebarOpen &&
-        sidebar &&
-        !sidebar.contains(event.target as Node) &&
-        navbarToggle &&
-        !navbarToggle.contains(event.target as Node)
-      ) {
-        setIsSidebarOpen(false);
-      }
-    };
-
-    if (isSidebarOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isSidebarOpen]);
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -67,24 +32,15 @@ const ClientLayout = () => {
         {/* Main Content Area */}
         <main className={cn(
           "flex-1 min-h-[calc(100vh-64px)] transition-all duration-300 pt-[64px]",
-          isProjectShowcase 
-            ? "lg:ml-64" // Only left margin for project showcase
-            : "lg:ml-64 lg:mr-80" // Both margins for other pages
+          "lg:ml-64 lg:mr-80" // Both margins for other pages
         )}>
-          <div className={cn(
-            isProjectShowcase 
-              ? "w-full" // Full width for project showcase
-              : "max-w-2xl mx-auto px-4 py-6" // Contained width for other pages
-          )}>
-            <Outlet />
+          <div className="max-w-2xl mx-auto px-4 py-6">
+            {children}
           </div>
         </main>
 
         {/* Right Sidebar */}
-        <aside className={cn(
-          "hidden lg:block fixed right-0 top-16 w-80 h-[calc(100vh-4rem)] bg-black border-l border-zinc-800/50",
-          isProjectShowcase && "lg:hidden" // Hide right sidebar for project showcase
-        )}>
+        <aside className="hidden lg:block fixed right-0 top-16 w-80 h-[calc(100vh-4rem)] bg-black border-l border-zinc-800/50">
           <div className="h-full p-6">
             <AdsSection />
           </div>
@@ -100,6 +56,4 @@ const ClientLayout = () => {
       )}
     </div>
   );
-};
-
-export default ClientLayout; 
+} 

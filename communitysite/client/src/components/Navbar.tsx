@@ -1,21 +1,18 @@
+'use client';
+
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Menu, X, Search } from 'lucide-react';
-import { cn } from '../../../community2/src/lib/utils';
-import { useAuth } from '../../../community2/src/lib/auth-context';
-import { Button } from '../../../community2/src/components/ui/button';
-import { NotificationDropdown } from '../../../community2/src/components/NotificationDropdown';
-import { ProfileDropdown } from '../../../community2/src/components/ProfileDropdown';
-import { CreateDropdown } from '../../../community2/src/components/ui/create-dropdown';
+import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
 
 interface NavbarProps {
   onSidebarToggle: () => void;
   isSidebarOpen: boolean;
 }
 
-const Navbar = ({ onSidebarToggle, isSidebarOpen }: NavbarProps) => {
+export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { user } = useAuth();
 
   return (
     <nav className="fixed top-0 w-full bg-black border-b border-zinc-800 z-50">
@@ -35,7 +32,7 @@ const Navbar = ({ onSidebarToggle, isSidebarOpen }: NavbarProps) => {
                 <Menu className="h-5 w-5 text-zinc-400" />
               )}
             </Button>
-            <Link to="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2">
               <h1 className="text-2xl font-bold tracking-tighter text-white">
                 OPENGEEK
               </h1>
@@ -69,20 +66,14 @@ const Navbar = ({ onSidebarToggle, isSidebarOpen }: NavbarProps) => {
               <Search className="h-5 w-5 text-zinc-400" />
             </Button>
 
-            {user ? (
-              <>
-                <CreateDropdown />
-                <NotificationDropdown />
-                <ProfileDropdown />
-              </>
-            ) : (
-              <Link
-                to="/login"
-                className="px-4 py-1.5 text-sm font-medium text-white bg-zinc-800 hover:bg-zinc-700 rounded-full transition-colors"
-              >
+            <Button
+              asChild
+              className="px-4 py-1.5 text-sm font-medium text-white bg-zinc-800 hover:bg-zinc-700 rounded-full transition-colors"
+            >
+              <Link href="/login">
                 Sign In
               </Link>
-            )}
+            </Button>
           </div>
         </div>
 
@@ -105,6 +96,4 @@ const Navbar = ({ onSidebarToggle, isSidebarOpen }: NavbarProps) => {
       </div>
     </nav>
   );
-};
-
-export default Navbar; 
+} 
