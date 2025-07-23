@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { Button } from './button';
 import { Card } from './card';
 import { Heart, MessageCircle, Share2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface PostCardProps {
   user: {
@@ -39,8 +40,14 @@ export function PostCard({ user, content, timestamp, likes, comments, image }: P
 
         {/* Image */}
         {image && (
-          <div className="mb-4 rounded-lg overflow-hidden">
-            <img src={image} alt="Post content" className="w-full h-auto" />
+          <div className="mb-4 rounded-lg overflow-hidden relative aspect-[16/9]">
+            <Image 
+              src={image} 
+              alt="Post content" 
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
           </div>
         )}
 

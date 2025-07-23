@@ -66,7 +66,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             OPENGEEK Community
           </h1>
-          <p className="text-zinc-400 text-sm">Let's make magic together ✨</p>
+          <p className="text-zinc-400 text-sm">Lets make magic together ✨</p>
         </div>
       </div>
 
