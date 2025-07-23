@@ -26,37 +26,40 @@
 This monorepo contains all apps, platforms, and tools under the OpenGeek initiative.
 
 ```
+
 OPENGEEK/
-├── community/              # (Legacy / React + Vite + Tailwindcss + shadcnui)
+├── community/                  # (Legacy project or experiments)
 │
-├── communitysite/          # ✅ Frontend (Next.js + Tailwind CSS + TypeScript)
-│   ├── .next/              # Next.js build output
-│   ├── node_modules/       # Frontend dependencies
-│   ├── public/             # Static assets (favicon, images, etc.)
-│   ├── src/                # Main frontend source code
-│   │   ├── components.json # Custom components config
-│   ├── .gitignore
-│   ├── eslint.config.mjs   # ESLint config
-│   ├── next-env.d.ts       # TypeScript env types
-│   ├── next.config.ts      # Next.js configuration
-│   ├── postcss.config.mjs  # PostCSS config
-│   ├── tailwind.config.js  # Tailwind CSS configuration
-│   ├── tsconfig.json       # TypeScript config
-│   ├── package.json
-│   └── package-lock.json
+├── communitysite/             # ✅ Main fullstack app (Client + Server)
+│   ├── client/                # — Frontend (Next.js + Tailwind + TS)
+│   │   ├── .next/             # Next.js build output
+│   │   ├── node_modules/      # Frontend dependencies
+│   │   ├── public/            # Static assets (favicon, logos, images)
+│   │   ├── src/               # Main app source code (components, pages, utils)
+│   │   ├── .gitignore
+│   │   ├── components.json    # UI/component library config
+│   │   ├── eslint.config.mjs  # ESLint config
+│   │   ├── next-env.d.ts      # Next.js type declarations
+│   │   ├── next.config.ts     # Next.js configuration
+│   │   ├── postcss.config.mjs # PostCSS config (Tailwind plugin usage)
+│   │   ├── tailwind.config.js # Tailwind CSS config
+│   │   ├── tsconfig.json      # TypeScript config
+│   │   ├── package.json
+│   │   └── package-lock.json
+│   │
+│   └── server/              # ✅ Backend (Express.js + PostgreSQL)
+│       ├── node_modules/
+│       ├── index.js           # API entry point (Express app)
+│       ├── .env               # Server environment variables (DB_URL, etc.)
+│       ├── .gitignore
+│       ├── package.json
+│       └── package-lock.json
 │
-├── server/                 # ✅ Backend (Express.js API server)
-│   ├── node_modules/
-│   ├── index.js            # Entry point (Express app)
-│   ├── .env                # Environment variables (ignored by git)
-│   ├── .gitignore
-│   ├── package.json
-│   └── package-lock.json
+├── mainsite/                  # (Marketing or landing site for opengeek.in)
 │
-├── mainsite/               # Marketing site for opengeek 
-│
-├── LICENSE                 # License file
-└── README.md               # You're reading it 🙂
+├── LICENSE
+└── README.md                  # Project overview, setup, usage
+
 
 ```
 
