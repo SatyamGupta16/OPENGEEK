@@ -47,7 +47,7 @@ export function Login() {
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10 animate-fade-in-up">
               <h3 className="text-white font-semibold mb-2">✨ New Platform Experience</h3>
               <p className="text-zinc-400 text-sm">
-                We've redesigned our platform UI with a fresh new look and enhanced features. 
+                We have redesigned our platform UI with a fresh new look and enhanced features. 
                 Join our community to explore interactive learning paths, real-world projects, 
                 and connect with fellow developers.
               </p>
