@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { ClientLayoutWrapper } from "@/components/layout/ClientLayoutWrapper";
 import { Toaster } from "@/components/ui/toaster";
 import { ConnectionStatus } from "@/components/ui/connection-status";
+import { AuthProvider } from "@/components/providers/auth-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +33,11 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <ClientLayoutWrapper>
-            {children}
-          </ClientLayoutWrapper>
+          <AuthProvider>
+            <ClientLayoutWrapper>
+              {children}
+            </ClientLayoutWrapper>
+          </AuthProvider>
           <Toaster />
           <ConnectionStatus />
         </body>

@@ -44,7 +44,7 @@ const seedData = {
       is_verified: false
     }
   ],
-  
+
   // Sample posts
   posts: [
     {
@@ -80,7 +80,7 @@ const seedData = {
       comments_count: 22
     }
   ],
-  
+
   // Sample projects
   projects: [
     {
@@ -129,12 +129,12 @@ const seedData = {
 
 async function seedDatabase() {
   const client = await pool.connect();
-  
+
   try {
     console.log('🌱 Starting database seeding...');
-    
+
     await client.query('BEGIN');
-    
+
     // Clear existing data (in reverse order due to foreign keys)
     console.log('🧹 Clearing existing data...');
     await client.query('DELETE FROM comment_likes');
@@ -144,7 +144,7 @@ async function seedDatabase() {
     await client.query('DELETE FROM projects');
     await client.query('DELETE FROM posts');
     await client.query('DELETE FROM users');
-    
+
     // Seed users
     console.log('👥 Seeding users...');
     for (const user of seedData.users) {
@@ -156,7 +156,7 @@ async function seedDatabase() {
         user.full_name, user.image_url, user.bio, user.location, user.github_username, user.is_verified
       ]);
     }
-    
+
     // Seed posts
     console.log('📝 Seeding posts...');
     for (const post of seedData.posts) {
@@ -165,7 +165,7 @@ async function seedDatabase() {
         VALUES ($1, $2, $3, $4, $5)
       `, [post.user_id, post.content, post.image_url, post.likes_count, post.comments_count]);
     }
-    
+
     // Seed projects
     console.log('🚀 Seeding projects...');
     for (const project of seedData.projects) {
@@ -178,19 +178,19 @@ async function seedDatabase() {
         project.stars_count, project.forks_count, project.is_featured, project.is_approved
       ]);
     }
-    
+
     // Create some sample likes and comments
     console.log('❤️  Seeding interactions...');
-    
+
     // Get post IDs
     const postsResult = await client.query('SELECT id, user_id FROM posts ORDER BY created_at');
     const posts = postsResult.rows;
-    
+
     // Add some likes
     for (let i = 0; i < posts.length; i++) {
       const post = posts[i];
       const likers = seedData.users.filter(u => u.id !== post.user_id).slice(0, 2);
-      
+
       for (const liker of likers) {
         await client.query(`
           INSERT INTO post_likes (post_id, user_id) VALUES ($1, $2)
@@ -198,7 +198,7 @@ async function seedDatabase() {
         `, [post.id, liker.id]);
       }
     }
-    
+
     // Add some comments
     if (posts.length > 0) {
       await client.query(`
@@ -209,12 +209,12 @@ async function seedDatabase() {
           ($4, $2, 'I''ve been looking for something like this. Awesome job!')
       `, [posts[0].id, 'user_sample_2', 'user_sample_3', posts[1]?.id || posts[0].id]);
     }
-    
+
     await client.query('COMMIT');
-    
+
     console.log('✅ Database seeding completed successfully!');
     console.log(`📊 Seeded: ${seedData.users.length} users, ${seedData.posts.length} posts, ${seedData.projects.length} projects`);
-    
+
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('❌ Seeding failed:', error);

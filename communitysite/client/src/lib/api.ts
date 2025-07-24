@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthToken } from './token-manager';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -14,14 +14,10 @@ const api = axios.create({
 // Add Clerk token to requests
 api.interceptors.request.use(async (config) => {
   try {
-    // For client-side requests
-    if (typeof window !== 'undefined') {
-      const { getToken } = await import('@clerk/nextjs');
-      const token = await getToken();
-      
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const token = getAuthToken();
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
   } catch (error) {
     console.error('Error getting auth token:', error);
