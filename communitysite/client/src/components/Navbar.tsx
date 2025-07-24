@@ -57,7 +57,9 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
             </Link>
 
             <div className="hidden md:flex items-center space-x-1">
-              <Button variant="ghost" className="text-zinc-400 hover:text-white">Projects</Button>
+              <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
+                <Link href="/projects">Projects</Link>
+              </Button>
               <Button variant="ghost" className="text-zinc-400 hover:text-white">Discussions</Button>
               <Button variant="ghost" className="text-zinc-400 hover:text-white">Blog</Button>
             </div>
@@ -79,7 +81,7 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
           </div>
 
           {/* Right section */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               size="icon"
