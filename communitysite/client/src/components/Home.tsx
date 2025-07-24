@@ -55,9 +55,9 @@ export default function Home() {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Image 
-          src="/logo.png" 
-          alt="OPENGEEK" 
+        <Image
+          src="/logo.png"
+          alt="OPENGEEK"
           width={48}
           height={48}
           className="rounded-full border-2 border-emerald-500/20"
@@ -86,19 +86,19 @@ export default function Home() {
       {/* Feed Tabs */}
       <Tabs defaultValue="top" className="w-full">
         <TabsList className="w-full justify-start border-b border-zinc-800 rounded-none h-auto p-0 bg-transparent mb-2">
-          <TabsTrigger 
-            value="top" 
+          <TabsTrigger
+            value="top"
             className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-6 py-3 text-sm font-medium"
           >
             Top Posts
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="newest"
             className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-6 py-3 text-sm font-medium"
           >
             Newest
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="following"
             className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-6 py-3 text-sm font-medium"
           >

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 import { cn } from '@/lib/utils';
 import { AdsSection } from '../ui/ads-section';
+import { usePreventScrollLock } from '@/hooks/usePreventScrollLock';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -12,6 +14,13 @@ interface ClientLayoutProps {
 
 export function ClientLayout({ children }: ClientLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const pathname = usePathname();
+  
+  // Check if we're on the home page
+  const isHomePage = pathname === '/';
+  
+  // Prevent scroll lock from dropdown menus
+  usePreventScrollLock();
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -32,19 +41,25 @@ export function ClientLayout({ children }: ClientLayoutProps) {
         {/* Main Content Area */}
         <main className={cn(
           "flex-1 min-h-[calc(100vh-64px)] transition-all duration-300 pt-[64px]",
-          "lg:ml-64 lg:mr-80" // Both margins for other pages
+          "lg:ml-64", // Left margin for sidebar
+          isHomePage ? "lg:mr-80" : "lg:mr-0" // Right margin only on home page
         )}>
-          <div className="max-w-2xl mx-auto px-4 py-6">
+          <div className={cn(
+            "h-full",
+            isHomePage ? "max-w-2xl mx-auto px-4 py-6" : "px-6 py-6" // Full width for non-home pages
+          )}>
             {children}
           </div>
         </main>
 
-        {/* Right Sidebar */}
-        <aside className="hidden lg:block fixed right-0 top-16 w-80 h-[calc(100vh-4rem)] bg-black border-l border-zinc-800/50">
-          <div className="h-full p-6">
-            <AdsSection />
-          </div>
-        </aside>
+        {/* Right Sidebar - Only show on home page */}
+        {isHomePage && (
+          <aside className="hidden lg:block fixed right-0 top-16 w-80 h-[calc(100vh-4rem)] bg-black border-l border-zinc-800/50">
+            <div className="h-full p-6">
+              <AdsSection />
+            </div>
+          </aside>
+        )}
       </div>
 
       {/* Mobile overlay */}
