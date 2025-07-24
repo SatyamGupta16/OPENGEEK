@@ -28,7 +28,6 @@ This monorepo contains all apps, platforms, and tools under the OpenGeek initiat
 ```
 
 OPENGEEK/
-├── community/                  # (Legacy project or experiments)
 │
 ├── communitysite/             # ✅ Main fullstack app (Client + Server)
 │   ├── client/                # — Frontend (Next.js + Tailwind + TS)
