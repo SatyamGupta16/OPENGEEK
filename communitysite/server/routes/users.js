@@ -1,30 +1,57 @@
 const express = require('express');
-const { query } = require('../config/database');
-const { authenticateToken, optionalAuth } = require('../middleware/auth');
-const { validateUserUpdate, validateUUID, validatePagination } = require('../middleware/validation');
+const { pool } = require('../config/database');
+const { requireAuth, optionalAuth, getUserInfo } = require('../middleware/auth');
+const { body, param, query, validationResult } = require('express-validator');
 
 const router = express.Router();
 
+// Validation middleware
+const validateUUID = [
+  param('id').isUUID().withMessage('Invalid user ID format')
+];
+
+const validateUsername = [
+  param('username').isLength({ min: 3, max: 30 }).withMessage('Username must be between 3 and 30 characters')
+];
+
+const validateUserUpdate = [
+  body('bio').optional().isLength({ max: 500 }).withMessage('Bio must be less than 500 characters'),
+  body('location').optional().isLength({ max: 100 }).withMessage('Location must be less than 100 characters'),
+  body('website').optional().isURL().withMessage('Website must be a valid URL'),
+  body('githubUsername').optional().isLength({ max: 50 }).withMessage('GitHub username must be less than 50 characters'),
+  body('twitterUsername').optional().isLength({ max: 50 }).withMessage('Twitter username must be less than 50 characters'),
+  body('linkedinUsername').optional().isLength({ max: 50 }).withMessage('LinkedIn username must be less than 50 characters')
+];
+
+const validatePagination = [
+  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100')
+];
+
+// Handle validation errors
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array()
+    });
+  }
+  next();
+};
+
 // Get user profile by username
-router.get('/:username', optionalAuth, async (req, res) => {
+router.get('/:username', validateUsername, handleValidationErrors, optionalAuth, async (req, res) => {
   try {
     const { username } = req.params;
 
-    const result = await query(
-      `SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.avatar_url,
-              u.github_username, u.linkedin_url, u.twitter_username, u.website_url,
-              u.location, u.skills, u.is_verified, u.reputation_score, u.created_at,
-              COUNT(DISTINCT p.id) as projects_count,
-              COUNT(DISTINCT po.id) as posts_count,
-              COUNT(DISTINCT f1.id) as followers_count,
-              COUNT(DISTINCT f2.id) as following_count
-       FROM users u
-       LEFT JOIN projects p ON u.id = p.author_id
-       LEFT JOIN posts po ON u.id = po.author_id
-       LEFT JOIN follows f1 ON u.id = f1.following_id
-       LEFT JOIN follows f2 ON u.id = f2.follower_id
-       WHERE u.username = $1 AND u.is_active = true
-       GROUP BY u.id`,
+    const result = await pool.query(
+      `SELECT id, username, first_name, last_name, full_name, email, image_url,
+              bio, location, website, github_username, twitter_username, 
+              linkedin_username, is_verified, created_at, updated_at
+       FROM users 
+       WHERE username = $1 AND is_active = true`,
       [username]
     );
 
@@ -37,15 +64,17 @@ router.get('/:username', optionalAuth, async (req, res) => {
 
     const user = result.rows[0];
 
-    // Check if current user is following this user
-    let isFollowing = false;
-    if (req.user) {
-      const followResult = await query(
-        'SELECT id FROM follows WHERE follower_id = $1 AND following_id = $2',
-        [req.user.id, user.id]
-      );
-      isFollowing = followResult.rows.length > 0;
-    }
+    // Get user's post count
+    const postsResult = await pool.query(
+      'SELECT COUNT(*) as count FROM posts WHERE user_id = $1 AND is_archived = false',
+      [user.id]
+    );
+
+    // Get user's project count
+    const projectsResult = await pool.query(
+      'SELECT COUNT(*) as count FROM projects WHERE user_id = $1 AND is_approved = true',
+      [user.id]
+    );
 
     res.json({
       success: true,
@@ -55,24 +84,22 @@ router.get('/:username', optionalAuth, async (req, res) => {
           username: user.username,
           firstName: user.first_name,
           lastName: user.last_name,
+          fullName: user.full_name,
+          email: user.email,
+          imageUrl: user.image_url,
           bio: user.bio,
-          avatarUrl: user.avatar_url,
-          githubUsername: user.github_username,
-          linkedinUrl: user.linkedin_url,
-          twitterUsername: user.twitter_username,
-          websiteUrl: user.website_url,
           location: user.location,
-          skills: user.skills || [],
+          website: user.website,
+          githubUsername: user.github_username,
+          twitterUsername: user.twitter_username,
+          linkedinUsername: user.linkedin_username,
           isVerified: user.is_verified,
-          reputationScore: user.reputation_score,
           createdAt: user.created_at,
+          updatedAt: user.updated_at,
           stats: {
-            projectsCount: parseInt(user.projects_count),
-            postsCount: parseInt(user.posts_count),
-            followersCount: parseInt(user.followers_count),
-            followingCount: parseInt(user.following_count)
-          },
-          isFollowing
+            postsCount: parseInt(postsResult.rows[0].count),
+            projectsCount: parseInt(projectsResult.rows[0].count)
+          }
         }
       }
     });
@@ -80,44 +107,100 @@ router.get('/:username', optionalAuth, async (req, res) => {
     console.error('Get user profile error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Failed to get user profile'
+    });
+  }
+});
+
+// Get current user profile
+router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, email, username, first_name, last_name, full_name, 
+              image_url, bio, location, website, github_username, 
+              twitter_username, linkedin_username, is_verified, is_active,
+              created_at, updated_at
+       FROM users WHERE id = $1`,
+      [req.userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const user = result.rows[0];
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          fullName: user.full_name,
+          imageUrl: user.image_url,
+          bio: user.bio,
+          location: user.location,
+          website: user.website,
+          githubUsername: user.github_username,
+          twitterUsername: user.twitter_username,
+          linkedinUsername: user.linkedin_username,
+          isVerified: user.is_verified,
+          isActive: user.is_active,
+          createdAt: user.created_at,
+          updatedAt: user.updated_at
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get current user profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get user profile'
     });
   }
 });
 
 // Update user profile
-router.put('/profile', authenticateToken, validateUserUpdate, async (req, res) => {
+router.put('/profile', requireAuth, getUserInfo, validateUserUpdate, handleValidationErrors, async (req, res) => {
   try {
     const {
-      firstName,
-      lastName,
       bio,
       location,
+      website,
       githubUsername,
       twitterUsername,
-      websiteUrl,
-      linkedinUrl,
-      skills
+      linkedinUsername
     } = req.body;
 
-    const result = await query(
+    const result = await pool.query(
       `UPDATE users SET
-        first_name = COALESCE($1, first_name),
-        last_name = COALESCE($2, last_name),
-        bio = COALESCE($3, bio),
-        location = COALESCE($4, location),
-        github_username = COALESCE($5, github_username),
-        twitter_username = COALESCE($6, twitter_username),
-        website_url = COALESCE($7, website_url),
-        linkedin_url = COALESCE($8, linkedin_url),
-        skills = COALESCE($9, skills),
+        bio = COALESCE($1, bio),
+        location = COALESCE($2, location),
+        website = COALESCE($3, website),
+        github_username = COALESCE($4, github_username),
+        twitter_username = COALESCE($5, twitter_username),
+        linkedin_username = COALESCE($6, linkedin_username),
         updated_at = CURRENT_TIMESTAMP
-       WHERE id = $10
-       RETURNING id, username, first_name, last_name, bio, location,
-                 github_username, twitter_username, website_url, linkedin_url, skills`,
-      [firstName, lastName, bio, location, githubUsername, twitterUsername,
-       websiteUrl, linkedinUrl, skills, req.user.id]
+       WHERE id = $7
+       RETURNING id, email, username, first_name, last_name, full_name, 
+                 image_url, bio, location, website, github_username, 
+                 twitter_username, linkedin_username, is_verified, is_active,
+                 created_at, updated_at`,
+      [bio, location, website, githubUsername, twitterUsername, linkedinUsername, req.userId]
     );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
     const user = result.rows[0];
 
@@ -127,16 +210,22 @@ router.put('/profile', authenticateToken, validateUserUpdate, async (req, res) =
       data: {
         user: {
           id: user.id,
+          email: user.email,
           username: user.username,
           firstName: user.first_name,
           lastName: user.last_name,
+          fullName: user.full_name,
+          imageUrl: user.image_url,
           bio: user.bio,
           location: user.location,
+          website: user.website,
           githubUsername: user.github_username,
           twitterUsername: user.twitter_username,
-          websiteUrl: user.website_url,
-          linkedinUrl: user.linkedin_url,
-          skills: user.skills || []
+          linkedinUsername: user.linkedin_username,
+          isVerified: user.is_verified,
+          isActive: user.is_active,
+          createdAt: user.created_at,
+          updatedAt: user.updated_at
         }
       }
     });
@@ -144,189 +233,139 @@ router.put('/profile', authenticateToken, validateUserUpdate, async (req, res) =
     console.error('Update profile error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Failed to update profile'
     });
   }
 });
 
-// Follow/Unfollow user
-router.post('/:id/follow', authenticateToken, validateUUID, async (req, res) => {
+// Get user's posts
+router.get('/:username/posts', validateUsername, handleValidationErrors, validatePagination, handleValidationErrors, async (req, res) => {
   try {
-    const { id: targetUserId } = req.params;
-    const currentUserId = req.user.id;
+    const { username } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const offset = (page - 1) * limit;
 
-    if (targetUserId === currentUserId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot follow yourself'
-      });
-    }
-
-    // Check if target user exists
-    const userExists = await query(
-      'SELECT id FROM users WHERE id = $1 AND is_active = true',
-      [targetUserId]
+    // First get user ID
+    const userResult = await pool.query(
+      'SELECT id FROM users WHERE username = $1 AND is_active = true',
+      [username]
     );
 
-    if (userExists.rows.length === 0) {
+    if (userResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
-    // Check if already following
-    const existingFollow = await query(
-      'SELECT id FROM follows WHERE follower_id = $1 AND following_id = $2',
-      [currentUserId, targetUserId]
+    const userId = userResult.rows[0].id;
+
+    // Get user's posts
+    const postsResult = await pool.query(
+      `SELECT p.*, u.username, u.full_name, u.image_url as user_image_url, u.is_verified
+       FROM posts p
+       JOIN users u ON p.user_id = u.id
+       WHERE p.user_id = $1 AND p.is_archived = false
+       ORDER BY p.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [userId, limit, offset]
     );
 
-    if (existingFollow.rows.length > 0) {
-      // Unfollow
-      await query(
-        'DELETE FROM follows WHERE follower_id = $1 AND following_id = $2',
-        [currentUserId, targetUserId]
-      );
+    // Get total count
+    const countResult = await pool.query(
+      'SELECT COUNT(*) as total FROM posts WHERE user_id = $1 AND is_archived = false',
+      [userId]
+    );
 
-      res.json({
-        success: true,
-        message: 'User unfollowed successfully',
-        data: { isFollowing: false }
-      });
-    } else {
-      // Follow
-      await query(
-        'INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)',
-        [currentUserId, targetUserId]
-      );
+    const total = parseInt(countResult.rows[0].total);
+    const totalPages = Math.ceil(total / limit);
 
-      res.json({
-        success: true,
-        message: 'User followed successfully',
-        data: { isFollowing: true }
+    res.json({
+      success: true,
+      data: {
+        posts: postsResult.rows,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get user posts error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get user posts'
+    });
+  }
+});
+
+// Get user's projects
+router.get('/:username/projects', validateUsername, handleValidationErrors, validatePagination, handleValidationErrors, async (req, res) => {
+  try {
+    const { username } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const offset = (page - 1) * limit;
+
+    // First get user ID
+    const userResult = await pool.query(
+      'SELECT id FROM users WHERE username = $1 AND is_active = true',
+      [username]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
-  } catch (error) {
-    console.error('Follow/unfollow error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
-    });
-  }
-});
 
-// Get user's followers
-router.get('/:id/followers', validateUUID, validatePagination, async (req, res) => {
-  try {
-    const { id: userId } = req.params;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const offset = (page - 1) * limit;
+    const userId = userResult.rows[0].id;
 
-    const result = await query(
-      `SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url,
-              u.bio, u.is_verified, f.created_at as followed_at
-       FROM follows f
-       JOIN users u ON f.follower_id = u.id
-       WHERE f.following_id = $1 AND u.is_active = true
-       ORDER BY f.created_at DESC
+    // Get user's projects
+    const projectsResult = await pool.query(
+      `SELECT p.*, u.username, u.full_name, u.image_url as user_image_url, u.is_verified
+       FROM projects p
+       JOIN users u ON p.user_id = u.id
+       WHERE p.user_id = $1 AND p.is_approved = true
+       ORDER BY p.created_at DESC
        LIMIT $2 OFFSET $3`,
       [userId, limit, offset]
     );
 
-    const countResult = await query(
-      'SELECT COUNT(*) FROM follows f JOIN users u ON f.follower_id = u.id WHERE f.following_id = $1 AND u.is_active = true',
+    // Get total count
+    const countResult = await pool.query(
+      'SELECT COUNT(*) as total FROM projects WHERE user_id = $1 AND is_approved = true',
       [userId]
     );
 
-    const totalCount = parseInt(countResult.rows[0].count);
-    const totalPages = Math.ceil(totalCount / limit);
+    const total = parseInt(countResult.rows[0].total);
+    const totalPages = Math.ceil(total / limit);
 
     res.json({
       success: true,
       data: {
-        followers: result.rows.map(user => ({
-          id: user.id,
-          username: user.username,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          avatarUrl: user.avatar_url,
-          bio: user.bio,
-          isVerified: user.is_verified,
-          followedAt: user.followed_at
-        })),
+        projects: projectsResult.rows,
         pagination: {
-          currentPage: page,
+          page,
+          limit,
+          total,
           totalPages,
-          totalCount,
           hasNext: page < totalPages,
           hasPrev: page > 1
         }
       }
     });
   } catch (error) {
-    console.error('Get followers error:', error);
+    console.error('Get user projects error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
-    });
-  }
-});
-
-// Get user's following
-router.get('/:id/following', validateUUID, validatePagination, async (req, res) => {
-  try {
-    const { id: userId } = req.params;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const offset = (page - 1) * limit;
-
-    const result = await query(
-      `SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url,
-              u.bio, u.is_verified, f.created_at as followed_at
-       FROM follows f
-       JOIN users u ON f.following_id = u.id
-       WHERE f.follower_id = $1 AND u.is_active = true
-       ORDER BY f.created_at DESC
-       LIMIT $2 OFFSET $3`,
-      [userId, limit, offset]
-    );
-
-    const countResult = await query(
-      'SELECT COUNT(*) FROM follows f JOIN users u ON f.following_id = u.id WHERE f.follower_id = $1 AND u.is_active = true',
-      [userId]
-    );
-
-    const totalCount = parseInt(countResult.rows[0].count);
-    const totalPages = Math.ceil(totalCount / limit);
-
-    res.json({
-      success: true,
-      data: {
-        following: result.rows.map(user => ({
-          id: user.id,
-          username: user.username,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          avatarUrl: user.avatar_url,
-          bio: user.bio,
-          isVerified: user.is_verified,
-          followedAt: user.followed_at
-        })),
-        pagination: {
-          currentPage: page,
-          totalPages,
-          totalCount,
-          hasNext: page < totalPages,
-          hasPrev: page > 1
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Get following error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
+      message: 'Failed to get user projects'
     });
   }
 });

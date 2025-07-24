@@ -1,176 +1,78 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { query, transaction } = require('../config/database');
-const { validateUserRegistration, validateUserLogin } = require('../middleware/validation');
-const { authenticateToken } = require('../middleware/auth');
+const { pool } = require('../config/database');
+const { requireAuth, getUserInfo } = require('../middleware/auth');
+const { clerkClient } = require('@clerk/backend');
 
 const router = express.Router();
 
-// Generate JWT token
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d'
-  });
-};
-
-// Register new user
-router.post('/register', validateUserRegistration, async (req, res) => {
+/**
+ * GET /api/auth/me - Get current user profile
+ * Requires Clerk authentication
+ */
+router.get('/me', requireAuth, getUserInfo, async (req, res) => {
   try {
-    const { username, email, password, firstName, lastName } = req.body;
-
-    // Check if user already exists
-    const existingUser = await query(
-      'SELECT id FROM users WHERE email = $1 OR username = $2',
-      [email, username]
-    );
-
-    if (existingUser.rows.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'User with this email or username already exists'
-      });
-    }
-
-    // Hash password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-
-    // Create user
-    const result = await query(
-      `INSERT INTO users (username, email, password_hash, first_name, last_name)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, username, email, first_name, last_name, role, created_at`,
-      [username, email, passwordHash, firstName, lastName]
-    );
-
-    const user = result.rows[0];
-    const token = generateToken(user.id);
-
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      data: {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role,
-          createdAt: user.created_at
-        },
-        token
-      }
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
-    });
-  }
-});
-
-// Login user
-router.post('/login', validateUserLogin, async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Find user by email
-    const result = await query(
-      'SELECT id, username, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = $1',
-      [email]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
-
-    const user = result.rows[0];
-
-    if (!user.is_active) {
-      return res.status(401).json({
-        success: false,
-        message: 'Account is deactivated'
-      });
-    }
-
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-
-    if (!isValidPassword) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
-
-    const token = generateToken(user.id);
-
-    res.json({
-      success: true,
-      message: 'Login successful',
-      data: {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role
-        },
-        token
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
-    });
-  }
-});
-
-// Get current user profile
-router.get('/me', authenticateToken, async (req, res) => {
-  try {
-    const result = await query(
-      `SELECT id, username, email, first_name, last_name, bio, avatar_url,
-              github_username, linkedin_url, twitter_username, website_url,
-              location, skills, role, is_verified, reputation_score,
+    // Get user from database (synced from Clerk)
+    const result = await pool.query(
+      `SELECT id, email, username, first_name, last_name, full_name, 
+              image_url, bio, location, website, github_username, 
+              twitter_username, linkedin_username, is_verified, is_active,
               created_at, updated_at
        FROM users WHERE id = $1`,
-      [req.user.id]
+      [req.userId]
     );
 
-    const user = result.rows[0];
+    let dbUser = result.rows[0];
+
+    // If user doesn't exist in database, create from Clerk data
+    if (!dbUser && req.user) {
+      const insertResult = await pool.query(`
+        INSERT INTO users (id, email, username, first_name, last_name, full_name, image_url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id, email, username, first_name, last_name, full_name, 
+                  image_url, bio, location, website, github_username, 
+                  twitter_username, linkedin_username, is_verified, is_active,
+                  created_at, updated_at
+      `, [
+        req.user.id,
+        req.user.email,
+        req.user.username,
+        req.user.firstName,
+        req.user.lastName,
+        req.user.fullName,
+        req.user.imageUrl
+      ]);
+
+      dbUser = insertResult.rows[0];
+    }
+
+    if (!dbUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
     res.json({
       success: true,
       data: {
         user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          bio: user.bio,
-          avatarUrl: user.avatar_url,
-          githubUsername: user.github_username,
-          linkedinUrl: user.linkedin_url,
-          twitterUsername: user.twitter_username,
-          websiteUrl: user.website_url,
-          location: user.location,
-          skills: user.skills || [],
-          role: user.role,
-          isVerified: user.is_verified,
-          reputationScore: user.reputation_score,
-          createdAt: user.created_at,
-          updatedAt: user.updated_at
+          id: dbUser.id,
+          email: dbUser.email,
+          username: dbUser.username,
+          firstName: dbUser.first_name,
+          lastName: dbUser.last_name,
+          fullName: dbUser.full_name,
+          imageUrl: dbUser.image_url,
+          bio: dbUser.bio,
+          location: dbUser.location,
+          website: dbUser.website,
+          githubUsername: dbUser.github_username,
+          twitterUsername: dbUser.twitter_username,
+          linkedinUsername: dbUser.linkedin_username,
+          isVerified: dbUser.is_verified,
+          isActive: dbUser.is_active,
+          createdAt: dbUser.created_at,
+          updatedAt: dbUser.updated_at
         }
       }
     });
@@ -178,36 +80,176 @@ router.get('/me', authenticateToken, async (req, res) => {
     console.error('Get profile error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Failed to get user profile'
     });
   }
 });
 
-// Refresh token
-router.post('/refresh', authenticateToken, async (req, res) => {
+/**
+ * PUT /api/auth/profile - Update user profile
+ * Requires Clerk authentication
+ */
+router.put('/profile', requireAuth, getUserInfo, async (req, res) => {
   try {
-    const newToken = generateToken(req.user.id);
+    const { bio, location, website, githubUsername, twitterUsername, linkedinUsername } = req.body;
+
+    // Update user in database
+    const result = await pool.query(`
+      UPDATE users 
+      SET bio = $1, location = $2, website = $3, github_username = $4, 
+          twitter_username = $5, linkedin_username = $6, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $7
+      RETURNING id, email, username, first_name, last_name, full_name, 
+                image_url, bio, location, website, github_username, 
+                twitter_username, linkedin_username, is_verified, is_active,
+                created_at, updated_at
+    `, [bio, location, website, githubUsername, twitterUsername, linkedinUsername, req.userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const user = result.rows[0];
 
     res.json({
       success: true,
+      message: 'Profile updated successfully',
       data: {
-        token: newToken
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          fullName: user.full_name,
+          imageUrl: user.image_url,
+          bio: user.bio,
+          location: user.location,
+          website: user.website,
+          githubUsername: user.github_username,
+          twitterUsername: user.twitter_username,
+          linkedinUsername: user.linkedin_username,
+          isVerified: user.is_verified,
+          isActive: user.is_active,
+          createdAt: user.created_at,
+          updatedAt: user.updated_at
+        }
       }
     });
   } catch (error) {
-    console.error('Token refresh error:', error);
+    console.error('Update profile error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Failed to update profile'
     });
   }
 });
 
-// Logout (client-side token removal)
-router.post('/logout', authenticateToken, (req, res) => {
+/**
+ * POST /api/auth/webhook - Clerk webhook handler
+ * Handles user creation, updates, and deletion from Clerk
+ */
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const payload = req.body;
+    const signature = req.headers['svix-signature'];
+
+    // Verify webhook signature (if webhook secret is configured)
+    if (process.env.CLERK_WEBHOOK_SECRET) {
+      const { Webhook } = require('svix');
+      const webhook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
+
+      try {
+        webhook.verify(payload, {
+          'svix-id': req.headers['svix-id'],
+          'svix-timestamp': req.headers['svix-timestamp'],
+          'svix-signature': signature,
+        });
+      } catch (err) {
+        console.error('Webhook signature verification failed:', err);
+        return res.status(400).json({ error: 'Invalid signature' });
+      }
+    }
+
+    const event = JSON.parse(payload);
+    const { type, data } = event;
+
+    switch (type) {
+      case 'user.created':
+        // Create user in database when created in Clerk
+        await pool.query(`
+          INSERT INTO users (id, email, username, first_name, last_name, full_name, image_url)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          ON CONFLICT (id) DO UPDATE SET
+            email = EXCLUDED.email,
+            username = EXCLUDED.username,
+            first_name = EXCLUDED.first_name,
+            last_name = EXCLUDED.last_name,
+            full_name = EXCLUDED.full_name,
+            image_url = EXCLUDED.image_url,
+            updated_at = CURRENT_TIMESTAMP
+        `, [
+          data.id,
+          data.email_addresses[0]?.email_address,
+          data.username || data.email_addresses[0]?.email_address?.split('@')[0],
+          data.first_name,
+          data.last_name,
+          `${data.first_name || ''} ${data.last_name || ''}`.trim(),
+          data.image_url
+        ]);
+        break;
+
+      case 'user.updated':
+        // Update user in database when updated in Clerk
+        await pool.query(`
+          UPDATE users 
+          SET email = $2, username = $3, first_name = $4, last_name = $5, 
+              full_name = $6, image_url = $7, updated_at = CURRENT_TIMESTAMP
+          WHERE id = $1
+        `, [
+          data.id,
+          data.email_addresses[0]?.email_address,
+          data.username || data.email_addresses[0]?.email_address?.split('@')[0],
+          data.first_name,
+          data.last_name,
+          `${data.first_name || ''} ${data.last_name || ''}`.trim(),
+          data.image_url
+        ]);
+        break;
+
+      case 'user.deleted':
+        // Soft delete user in database when deleted in Clerk
+        await pool.query(`
+          UPDATE users 
+          SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP
+          WHERE id = $1
+        `, [data.id]);
+        break;
+
+      default:
+        console.log(`Unhandled webhook event type: ${type}`);
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Webhook processing failed' });
+  }
+});
+
+/**
+ * GET /api/auth/status - Check authentication status
+ */
+router.get('/status', requireAuth, (req, res) => {
   res.json({
     success: true,
-    message: 'Logged out successfully'
+    data: {
+      authenticated: true,
+      userId: req.userId
+    }
   });
 });
 

@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult, param, query } = require('express-validator');
 const { pool } = require('../config/database');
 const { requireAuth, optionalAuth, getUserInfo } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
 const router = express.Router();
 
 // Validation middleware
@@ -157,11 +157,23 @@ router.get('/:id',
   }
 );
 
+// Middleware to handle optional image upload
+const handleImageUpload = (req, res, next) => {
+  // Check if Cloudinary is configured
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    console.warn('Cloudinary not configured - image uploads disabled');
+    return next();
+  }
+  
+  // Use upload middleware if Cloudinary is configured
+  return upload.single('image')(req, res, next);
+};
+
 // POST /api/posts - Create new post
 router.post('/',
   requireAuth,
   getUserInfo,
-  upload.single('image'),
+  handleImageUpload,
   validatePost,
   handleValidationErrors,
   async (req, res) => {
