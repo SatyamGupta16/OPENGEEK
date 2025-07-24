@@ -8,6 +8,8 @@ const dbConfig = {
   database: process.env.DB_NAME || 'opengeek_community',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD,
+  // SSL configuration for local development
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   // Connection pool settings
   max: 20, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
@@ -15,15 +17,13 @@ const dbConfig = {
   maxUses: 7500, // Close (and replace) a connection after it has been used 7500 times
 };
 
-// Use DATABASE_URL if provided (for production environments like Heroku)
+// Use DATABASE_URL if provided (for production environments like Render/Heroku)
 if (process.env.DATABASE_URL) {
   dbConfig.connectionString = process.env.DATABASE_URL;
-  // For production SSL
-  if (process.env.NODE_ENV === 'production') {
-    dbConfig.ssl = {
-      rejectUnauthorized: false
-    };
-  }
+  // Render and other cloud providers require SSL
+  dbConfig.ssl = {
+    rejectUnauthorized: false
+  };
 }
 
 // Create connection pool
