@@ -5,6 +5,7 @@ import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
 import { cn } from '@/lib/utils';
 import { AdsSection } from '../ui/ads-section';
+import { usePreventScrollLock } from '@/hooks/usePreventScrollLock';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,9 @@ interface ClientLayoutProps {
 
 export function ClientLayout({ children }: ClientLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Prevent scroll lock from dropdown menus
+  usePreventScrollLock();
 
   return (
     <div className="min-h-screen bg-zinc-950">

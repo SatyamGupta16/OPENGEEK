@@ -45,6 +45,69 @@ const samplePosts = [
     likes: 28,
     comments: 12,
     image: 'https://images.unsplash.com/photo-1661956602116-aa6865609028'
+  },
+  {
+    id: 4,
+    user: {
+      name: 'Sarah Wilson',
+      username: 'sarahw',
+      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah'
+    },
+    content: 'Learning TypeScript has been a game changer for my development workflow. The type safety and IntelliSense support make coding so much more enjoyable! 🔥 #typescript #javascript #webdev',
+    timestamp: '8 hours ago',
+    likes: 56,
+    comments: 15,
+    image: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea'
+  },
+  {
+    id: 5,
+    user: {
+      name: 'Mike Chen',
+      username: 'mikechen',
+      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mike'
+    },
+    content: 'Just open-sourced my CLI tool for managing environment variables across different projects. Hope it helps other developers! 🛠️ #opensource #cli #devtools',
+    timestamp: '12 hours ago',
+    likes: 73,
+    comments: 22
+  },
+  {
+    id: 6,
+    user: {
+      name: 'Emily Davis',
+      username: 'emilyd',
+      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emily'
+    },
+    content: 'Attending my first tech conference next week! Excited to learn about the latest trends in AI and machine learning. Any tips for first-time attendees? 🤖 #ai #machinelearning #conference',
+    timestamp: '1 day ago',
+    likes: 31,
+    comments: 18,
+    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e'
+  },
+  {
+    id: 7,
+    user: {
+      name: 'David Rodriguez',
+      username: 'davidr',
+      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David'
+    },
+    content: 'Finally mastered Docker containers! The deployment process is now so much smoother. Docker-compose makes multi-service apps a breeze 🐳 #docker #devops #containers',
+    timestamp: '1 day ago',
+    likes: 89,
+    comments: 31
+  },
+  {
+    id: 8,
+    user: {
+      name: 'Lisa Park',
+      username: 'lisap',
+      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa'
+    },
+    content: 'Working on a mobile app with React Native. The cross-platform development experience is incredible - write once, run everywhere! 📱 #reactnative #mobile #crossplatform',
+    timestamp: '2 days ago',
+    likes: 45,
+    comments: 12,
+    image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c'
   }
 ];
 
