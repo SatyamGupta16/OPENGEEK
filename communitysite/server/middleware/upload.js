@@ -1,10 +1,33 @@
-// Simplified upload middleware for basic deployment (no image uploads)
+const multer = require('multer');
+
+// Configure multer for basic form parsing (no file storage)
+const storage = multer.memoryStorage();
+const multerUpload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  }
+});
+
+// Upload middleware that properly handles multipart forms
 const upload = {
   single: (fieldName) => (req, res, next) => {
-    // Skip file upload for basic deployment
-    // Ensure req.file is undefined so the post creation logic works
-    req.file = undefined;
-    next();
+    // Use multer to parse multipart form data
+    multerUpload.single(fieldName)(req, res, (err) => {
+      if (err) {
+        console.error('Multer error:', err);
+        return res.status(400).json({
+          success: false,
+          message: 'Form parsing error',
+          error: 'FORM_PARSE_ERROR'
+        });
+      }
+      
+      // For basic deployment, we don't store files
+      // but we still need to parse the form data
+      req.file = undefined;
+      next();
+    });
   }
 };
 

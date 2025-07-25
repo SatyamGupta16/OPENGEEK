@@ -112,8 +112,12 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
       }
     } catch (error: unknown) {
       console.error('Error creating post:', error);
-      console.error('Full error response:', (error as any)?.response?.data);
-      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to create post';
+      
+      // Type-safe error handling
+      const errorResponse = error as { response?: { data?: { message?: string } } };
+      console.error('Full error response:', errorResponse?.response?.data);
+      
+      const errorMessage = errorResponse?.response?.data?.message || 'Failed to create post';
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
