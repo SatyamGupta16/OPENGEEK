@@ -2,6 +2,8 @@
 const upload = {
   single: (fieldName) => (req, res, next) => {
     // Skip file upload for basic deployment
+    // Ensure req.file is undefined so the post creation logic works
+    req.file = undefined;
     next();
   }
 };
