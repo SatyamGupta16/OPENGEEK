@@ -1,125 +1,117 @@
-const jwt = require('jsonwebtoken');
-const { query } = require('../config/database');
+const { createClerkClient, verifyToken } = require('@clerk/backend');
 
-// Middleware to verify JWT token
-const authenticateToken = async (req, res, next) => {
+// Initialize Clerk client with secret key
+const clerkClient = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY
+});
+
+/**
+ * Middleware to verify Clerk authentication
+ */
+const requireAuth = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Access token required'
-      });
-    }
-
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const authHeader = req.headers.authorization;
     
-    // Get user from database
-    const result = await query(
-      'SELECT id, username, email, first_name, last_name, role, is_active FROM users WHERE id = $1',
-      [decoded.userId]
-    );
-
-    if (result.rows.length === 0) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
-        message: 'User not found'
+        message: 'Authentication required',
+        error: 'UNAUTHORIZED'
       });
     }
 
-    const user = result.rows[0];
-
-    if (!user.is_active) {
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    
+    // Verify the session token with Clerk
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY
+    });
+    
+    if (!payload || !payload.sub) {
       return res.status(401).json({
         success: false,
-        message: 'Account is deactivated'
+        message: 'Invalid authentication token',
+        error: 'INVALID_TOKEN'
       });
     }
 
-    req.user = user;
+    // Add user info to request object
+    req.userId = payload.sub;
+    req.auth = payload;
+    
     next();
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token'
-      });
-    }
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token expired'
-      });
-    }
-
     console.error('Auth middleware error:', error);
-    res.status(500).json({
+    return res.status(401).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Invalid authentication token',
+      error: 'INVALID_TOKEN'
     });
   }
 };
 
-// Middleware to check if user is admin
-const requireAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({
-      success: false,
-      message: 'Admin access required'
-    });
-  }
-  next();
-};
-
-// Middleware to check if user is moderator or admin
-const requireModerator = (req, res, next) => {
-  if (!['admin', 'moderator'].includes(req.user.role)) {
-    return res.status(403).json({
-      success: false,
-      message: 'Moderator access required'
-    });
-  }
-  next();
-};
-
-// Optional authentication (doesn't fail if no token)
+/**
+ * Optional authentication middleware - doesn't fail if no auth
+ */
 const optionalAuth = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-      req.user = null;
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next();
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const token = authHeader.substring(7);
     
-    const result = await query(
-      'SELECT id, username, email, first_name, last_name, role, is_active FROM users WHERE id = $1',
-      [decoded.userId]
-    );
-
-    if (result.rows.length > 0 && result.rows[0].is_active) {
-      req.user = result.rows[0];
-    } else {
-      req.user = null;
+    // Verify the session token with Clerk
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY
+    });
+    
+    if (payload && payload.sub) {
+      req.userId = payload.sub;
+      req.auth = payload;
     }
+    
+    next();
+  } catch (error) {
+    // Continue without auth if token is invalid
+    next();
+  }
+};
+
+/**
+ * Middleware to get user info from Clerk
+ */
+const getUserInfo = async (req, res, next) => {
+  try {
+    if (!req.userId) {
+      return next();
+    }
+
+    const user = await clerkClient.users.getUser(req.userId);
+
+    req.user = {
+      id: user.id,
+      email: user.emailAddresses[0]?.emailAddress,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+      imageUrl: user.imageUrl,
+      username: user.username || user.emailAddresses[0]?.emailAddress?.split('@')[0],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
 
     next();
   } catch (error) {
-    req.user = null;
-    next();
+    console.error('Get user info error:', error);
+    next(); // Continue without user info
   }
 };
 
 module.exports = {
-  authenticateToken,
-  requireAdmin,
-  requireModerator,
-  optionalAuth
+  requireAuth,
+  optionalAuth,
+  getUserInfo
 };
