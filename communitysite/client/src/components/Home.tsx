@@ -6,8 +6,9 @@ import { CreatePost } from './ui/create-post';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Button } from './ui/button';
+import { Card, CardContent } from './ui/card';
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import { postsAPI } from '@/lib/api';
 import { toast } from 'sonner';
@@ -141,102 +142,106 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-    <div>
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Image
-          src="/logo.png"
-          alt="OPENGEEK"
-          width={48}
-          height={48}
-          className="rounded-full border-2 border-emerald-500/20"
-        />
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            OPENGEEK Community
-          </h1>
-          <p className="text-zinc-400 text-sm">Lets make magic together ✨</p>
-        </div>
-        
-        {/* Refresh Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="text-zinc-400 hover:text-white"
-        >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-        </Button>
-      </div>
-
-      {/* Welcome Section - Show only for signed-in users */}
-      {isSignedIn && (
-        <div className="bg-black/50 border border-zinc-800/50 rounded-xl p-8 text-white mb-8 backdrop-blur-sm">
-          <h2 className="text-2xl font-bold mb-3 text-white">Welcome back! 👋</h2>
-          <p className="text-zinc-400 mb-6">Share your thoughts, projects, and connect with fellow developers.</p>
-        </div>
-      )}
-
-      {/* Welcome Section - Show for non-signed-in users */}
-      {!isSignedIn && (
-        <div className="bg-black/50 border border-zinc-800/50 rounded-xl p-8 text-white mb-8 backdrop-blur-sm">
-          <h2 className="text-2xl font-bold mb-3 text-white">Welcome to OPENGEEK Community! 👋</h2>
-          <p className="text-zinc-400 mb-6">Join our community of developers, share your projects, and connect with others.</p>
+      <div className="space-y-6">
+        {/* Simple Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo.png"
+              alt="OPENGEEK"
+              width={40}
+              height={40}
+              className="rounded-full border border-emerald-500/30"
+            />
+            <div>
+              <h1 className="text-xl font-bold text-white">Community Feed</h1>
+              <p className="text-sm text-zinc-400">Share and discover amazing projects</p>
+            </div>
+          </div>
           <Button
-            variant="outline"
-            className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/50"
-            onClick={() => router.push('/sign-in')}
+            variant="ghost"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="text-zinc-400 hover:text-emerald-400"
           >
-            Get Started
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
-      )}
 
-      {/* Create Post Component */}
-      <CreatePost onPostCreated={handlePostCreated} />
+        {/* Welcome Message for Non-signed Users */}
+        {!isSignedIn && (
+          <Card className="bg-emerald-500/5 border-emerald-500/20">
+            <CardContent className="p-4 text-center">
+              <h2 className="text-lg font-semibold text-white mb-2">Welcome to OPENGEEK! 👋</h2>
+              <p className="text-zinc-400 text-sm mb-3">Join our community to share projects and connect with developers.</p>
+              <Button
+                size="sm"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                onClick={() => router.push('/sign-in')}
+              >
+                Get Started
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Feed Tabs */}
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="w-full justify-start border-b border-zinc-800 rounded-none h-auto p-0 bg-transparent mb-2">
-          <TabsTrigger
-            value="newest"
-            className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-6 py-3 text-sm font-medium"
-          >
-            Newest
-          </TabsTrigger>
-          <TabsTrigger
-            value="top"
-            className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-6 py-3 text-sm font-medium"
-          >
-            Top Posts
-          </TabsTrigger>
-          <TabsTrigger
-            value="following"
-            className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-6 py-3 text-sm font-medium"
-          >
-            Following
-          </TabsTrigger>
-        </TabsList>
+        {/* Create Post */}
+        <CreatePost onPostCreated={handlePostCreated} />
 
-        {/* Posts Content */}
-        <div className="mt-6">
+        {/* Feed Tabs */}
+        <div className="border-b border-zinc-800">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 bg-transparent border-0 h-auto p-0">
+              <TabsTrigger
+                value="newest"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-4 py-3 text-sm font-medium border-b-2 border-transparent"
+              >
+                Newest
+              </TabsTrigger>
+              <TabsTrigger
+                value="top"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-4 py-3 text-sm font-medium border-b-2 border-transparent"
+              >
+                Top Posts
+              </TabsTrigger>
+              <TabsTrigger
+                value="following"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-4 py-3 text-sm font-medium border-b-2 border-transparent"
+              >
+                Following
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {/* Posts Feed */}
+        <div className="space-y-4">
           {loading ? (
             <PostSkeletonList count={3} />
           ) : posts.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-zinc-500 mb-4">
-                <p className="text-lg">No posts yet</p>
-                <p className="text-sm">Be the first to share something with the community!</p>
-              </div>
-            </div>
+            <Card className="bg-black/30 border-zinc-800/50">
+              <CardContent className="p-12 text-center">
+                <MessageSquare className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-zinc-300 mb-2">No posts yet</h3>
+                <p className="text-zinc-500 mb-4">Be the first to share something with the community!</p>
+                {isSignedIn && (
+                  <Button
+                    variant="outline"
+                    className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+                    onClick={() => document.querySelector('textarea')?.focus()}
+                  >
+                    Create First Post
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           ) : (
-            <div className="space-y-4">
+            <>
               {posts.map((post) => (
                 <PostCard key={post.id} {...transformPostForCard(post)} />
               ))}
               
-              {/* Load More Button */}
               {hasMore && (
                 <div className="flex justify-center pt-6">
                   <Button
@@ -253,11 +258,10 @@ export default function Home() {
                   </Button>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
-      </Tabs>
-    </div>
+      </div>
     </ErrorBoundary>
   );
 } 
