@@ -53,13 +53,13 @@ export default function Home() {
 
       if (response.success) {
         const fetchedPosts = response.data.posts;
-        
+
         if (pageNum === 1) {
           setPosts(fetchedPosts);
         } else {
           setPosts(prev => [...prev, ...fetchedPosts]);
         }
-        
+
         setHasMore(response.data.pagination.hasNext);
       }
     } catch (error) {
@@ -107,13 +107,13 @@ export default function Home() {
     try {
       const response = await postsAPI.likePost(postId);
       if (response.success) {
-        setPosts(prev => prev.map(post => 
-          post.id === postId 
-            ? { 
-                ...post, 
-                is_liked_by_user: response.data.isLiked,
-                likes_count: response.data.likesCount 
-              }
+        setPosts(prev => prev.map(post =>
+          post.id === postId
+            ? {
+              ...post,
+              is_liked_by_user: response.data.isLiked,
+              likes_count: response.data.likesCount
+            }
             : post
         ));
       }
@@ -143,19 +143,22 @@ export default function Home() {
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        {/* Simple Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logo.png"
-              alt="OPENGEEK"
-              width={40}
-              height={40}
-              className="rounded-full border border-emerald-500/30"
-            />
+        {/* Professional Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Image
+                src="/logo.png"
+                alt="OPENGEEK"
+                width={48}
+                height={48}
+                className="rounded-full border border-zinc-700/50 shadow-lg"
+              />
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full border-2 border-black"></div>
+            </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Community Feed</h1>
-              <p className="text-sm text-zinc-400">Share and discover amazing projects</p>
+              <h1 className="text-2xl font-bold text-white tracking-tight">Community Feed</h1>
+              <p className="text-sm text-zinc-400 mt-1">Discover and share amazing projects with developers</p>
             </div>
           </div>
           <Button
@@ -163,7 +166,7 @@ export default function Home() {
             size="sm"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="text-zinc-400 hover:text-emerald-400"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-all duration-200"
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
@@ -171,13 +174,13 @@ export default function Home() {
 
         {/* Welcome Message for Non-signed Users */}
         {!isSignedIn && (
-          <Card className="bg-emerald-500/5 border-emerald-500/20">
-            <CardContent className="p-4 text-center">
-              <h2 className="text-lg font-semibold text-white mb-2">Welcome to OPENGEEK! 👋</h2>
-              <p className="text-zinc-400 text-sm mb-3">Join our community to share projects and connect with developers.</p>
+          <Card className="bg-zinc-900/50 border-zinc-700/50 backdrop-blur-sm">
+            <CardContent className="p-6 text-center">
+              <h2 className="text-xl font-semibold text-white mb-3">Welcome to OPENGEEK! 👋</h2>
+              <p className="text-zinc-400 mb-4">Join our community to share projects and connect with developers worldwide.</p>
               <Button
                 size="sm"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                className="bg-white hover:bg-zinc-100 text-black font-medium transition-all duration-200"
                 onClick={() => router.push('/sign-in')}
               >
                 Get Started
@@ -189,31 +192,33 @@ export default function Home() {
         {/* Create Post */}
         <CreatePost onPostCreated={handlePostCreated} />
 
-        {/* Feed Tabs */}
-        <div className="border-b border-zinc-800">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-transparent border-0 h-auto p-0">
-              <TabsTrigger
-                value="newest"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-4 py-3 text-sm font-medium border-b-2 border-transparent"
-              >
-                Newest
-              </TabsTrigger>
-              <TabsTrigger
-                value="top"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-4 py-3 text-sm font-medium border-b-2 border-transparent"
-              >
-                Top Posts
-              </TabsTrigger>
-              <TabsTrigger
-                value="following"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 rounded-none px-4 py-3 text-sm font-medium border-b-2 border-transparent"
-              >
-                Following
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        {/* Professional Feed Tabs */}
+        <Card className="bg-zinc-900/30 border-zinc-800/50 backdrop-blur-sm">
+          <CardContent className="p-0">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 bg-transparent border-0 h-auto p-1 gap-1">
+                <TabsTrigger
+                  value="newest"
+                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm rounded-md px-6 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-all duration-200"
+                >
+                  Newest
+                </TabsTrigger>
+                <TabsTrigger
+                  value="top"
+                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm rounded-md px-6 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-all duration-200"
+                >
+                  Top Posts
+                </TabsTrigger>
+                <TabsTrigger
+                  value="following"
+                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm rounded-md px-6 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-all duration-200"
+                >
+                  Following
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </CardContent>
+        </Card>
 
         {/* Posts Feed */}
         <div className="space-y-4">
@@ -228,7 +233,7 @@ export default function Home() {
                 {isSignedIn && (
                   <Button
                     variant="outline"
-                    className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+                    className="border-zinc-600 text-zinc-300 hover:bg-zinc-800/50 hover:text-white hover:border-zinc-500 transition-all duration-200"
                     onClick={() => document.querySelector('textarea')?.focus()}
                   >
                     Create First Post
@@ -241,7 +246,7 @@ export default function Home() {
               {posts.map((post) => (
                 <PostCard key={post.id} {...transformPostForCard(post)} />
               ))}
-              
+
               {hasMore && (
                 <div className="flex justify-center pt-6">
                   <Button
