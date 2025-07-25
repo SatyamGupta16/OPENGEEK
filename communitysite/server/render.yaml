@@ -3,15 +3,9 @@ services:
     name: opengeek-community-server
     env: node
     plan: free
-    buildCommand: npm install --production --no-optional && npm rebuild
+    buildCommand: npm install --production
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NPM_CONFIG_PRODUCTION
-        value: true
-      - key: NPM_CONFIG_OPTIONAL
-        value: false
-      - key: DEBUG
-        value: ""
     healthCheckPath: /api/health
