@@ -10,8 +10,23 @@ import { postsAPI } from '@/lib/api';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
+interface Post {
+  id: string;
+  content: string;
+  image_url?: string;
+  likes_count: number;
+  comments_count: number;
+  created_at: string;
+  updated_at: string;
+  is_liked_by_user: boolean;
+  username: string;
+  full_name: string;
+  user_image_url: string;
+  is_verified: boolean;
+}
+
 interface CreatePostProps {
-  onPostCreated?: (post: any) => void;
+  onPostCreated?: (post: Post) => void;
 }
 
 export function CreatePost({ onPostCreated }: CreatePostProps) {
@@ -95,9 +110,9 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
           onPostCreated(response.data.post);
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating post:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to create post';
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to create post';
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

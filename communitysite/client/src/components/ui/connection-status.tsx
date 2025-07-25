@@ -14,7 +14,7 @@ export function ConnectionStatus() {
     try {
       const response = await api.get('/health');
       setIsConnected(response.status === 200);
-    } catch (error) {
+    } catch {
       setIsConnected(false);
     } finally {
       setIsChecking(false);

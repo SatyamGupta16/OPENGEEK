@@ -163,10 +163,7 @@ export default function Aurora(props: AuroraProps) {
       delete (geometry.attributes).uv;
     }
 
-    const colorStopsArray = colorStops.map((hex) => {
-      const c = new Color(hex);
-      return [c.r, c.g, c.b];
-    });
+    // Color stops processing removed as it's not used in the current implementation
 
     const mesh = new Mesh(gl, { geometry, program });
     ctn.appendChild(gl.canvas);

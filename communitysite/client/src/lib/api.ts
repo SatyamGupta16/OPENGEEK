@@ -121,7 +121,14 @@ export const projectsAPI = {
   },
 
   // Create new project
-  createProject: async (data: any) => {
+  createProject: async (data: {
+    title: string;
+    description: string;
+    category?: string;
+    tags?: string[];
+    repository_url?: string;
+    demo_url?: string;
+  }) => {
     const response = await api.post('/projects', data);
     return response.data;
   },
@@ -135,7 +142,17 @@ export const usersAPI = {
   },
 
   // Update user profile
-  updateProfile: async (data: any) => {
+  updateProfile: async (data: {
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    bio?: string;
+    location?: string;
+    website?: string;
+    github?: string;
+    twitter?: string;
+    linkedin?: string;
+  }) => {
     const response = await api.put('/users/profile', data);
     return response.data;
   },
