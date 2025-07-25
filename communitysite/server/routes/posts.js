@@ -192,6 +192,26 @@ router.post('/',
         imagePublicId = req.file.public_id;
       }
       
+      // Check if user info is available
+      if (!req.user) {
+        console.error('User info missing:', {
+          userId: req.userId,
+          hasAuth: !!req.auth,
+          userKeys: req.user ? Object.keys(req.user) : 'undefined'
+        });
+        return res.status(400).json({
+          success: false,
+          message: 'User information not available. Please try logging in again.',
+          error: 'USER_INFO_MISSING'
+        });
+      }
+      
+      console.log('Creating post for user:', {
+        userId: req.userId,
+        username: req.user.username,
+        email: req.user.email
+      });
+      
       // Ensure user exists in our database
       const userUpsertQuery = `
         INSERT INTO users (id, email, username, first_name, last_name, full_name, image_url)
@@ -208,12 +228,12 @@ router.post('/',
       
       await client.query(userUpsertQuery, [
         req.userId,
-        req.user.email,
-        req.user.username,
-        req.user.firstName,
-        req.user.lastName,
-        req.user.fullName,
-        req.user.imageUrl
+        req.user.email || '',
+        req.user.username || req.userId,
+        req.user.firstName || '',
+        req.user.lastName || '',
+        req.user.fullName || req.user.username || req.userId,
+        req.user.imageUrl || ''
       ]);
       
       // Create post
