@@ -43,8 +43,5 @@
   },
   "engines": {
     "node": "18.x"
-  },
-  "overrides": {
-    "debug": "4.3.4"
   }
 }

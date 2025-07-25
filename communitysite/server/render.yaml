@@ -3,7 +3,7 @@ services:
     name: opengeek-community-server
     env: node
     plan: free
-    buildCommand: rm -rf node_modules package-lock.json && npm cache clean --force && npm install --production
+    buildCommand: npm install --production
     startCommand: npm start
     envVars:
       - key: NODE_ENV
