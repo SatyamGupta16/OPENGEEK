@@ -2,9 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
-const compression = require('compression');
-const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 
 // Handle uncaught exceptions
@@ -63,16 +60,13 @@ app.use(limiter);
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(cookieParser());
 
-// Compression middleware
-app.use(compression());
-
-// Logging middleware
+// Simple logging middleware (replacing morgan)
 if (process.env.NODE_ENV !== 'production') {
-  app.use(morgan('dev'));
-} else {
-  app.use(morgan('combined'));
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+    next();
+  });
 }
 
 // Health check endpoint
@@ -80,7 +74,7 @@ app.get('/api/health', async (req, res) => {
   try {
     // Test database connection
     await pool.query('SELECT 1');
-    
+
     res.json({
       success: true,
       message: 'Server is healthy',
@@ -150,8 +144,8 @@ app.use((error, req, res, next) => {
   // Default error response
   res.status(error.status || 500).json({
     success: false,
-    message: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
+    message: process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
       : error.message || 'Something went wrong',
     ...(process.env.NODE_ENV !== 'production' && { stack: error.stack })
   });
