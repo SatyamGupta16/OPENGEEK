@@ -22,16 +22,15 @@ interface PostCardProps {
   onLike?: () => void;
 }
 
-export function PostCard({ 
-  id, 
-  user, 
-  content, 
-  timestamp, 
-  likes, 
-  comments, 
-  image, 
+export function PostCard({
+  user,
+  content,
+  timestamp,
+  likes,
+  comments,
+  image,
   isLiked = false,
-  onLike 
+  onLike
 }: PostCardProps) {
   return (
     <Card className="bg-black/50 border-zinc-800/50 backdrop-blur-sm">
@@ -54,9 +53,9 @@ export function PostCard({
         {/* Image */}
         {image && (
           <div className="mb-4 rounded-lg overflow-hidden relative aspect-[16/9]">
-            <Image 
-              src={image} 
-              alt="Post content" 
+            <Image
+              src={image}
+              alt="Post content"
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -69,15 +68,14 @@ export function PostCard({
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onLike}
-            className={`${
-              isLiked 
-                ? 'text-red-500 hover:text-red-400 hover:bg-red-500/10' 
-                : 'text-zinc-400 hover:text-red-400 hover:bg-red-500/10'
-            } transition-colors`}
+            className={`${isLiked
+              ? 'text-red-500 hover:text-red-400 hover:bg-red-500/10'
+              : 'text-zinc-400 hover:text-red-400 hover:bg-red-500/10'
+              } transition-colors`}
           >
             <Heart className={`h-4 w-4 mr-1 ${isLiked ? 'fill-current' : ''}`} />
             {likes}

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Button } from './ui/button';
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
-import { Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import Image from 'next/image';
 import { postsAPI } from '@/lib/api';
 import { toast } from 'sonner';
