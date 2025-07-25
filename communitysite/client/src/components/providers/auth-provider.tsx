@@ -15,8 +15,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const updateToken = async () => {
       if (isSignedIn) {
         try {
-          const token = await getToken();
-          console.log('Token retrieved:', token ? 'Token exists' : 'Token is null');
+          // Always get a fresh token from Clerk
+          const token = await getToken({ skipCache: true });
+          console.log('Token retrieved:', token ? 'Fresh token obtained' : 'Token is null');
           if (token) {
             setAuthToken(token);
           } else {
@@ -34,6 +35,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     updateToken();
+
+    // Set up token refresh interval (refresh every 50 minutes)
+    const tokenRefreshInterval = setInterval(() => {
+      if (isSignedIn) {
+        console.log('Refreshing token automatically...');
+        updateToken();
+      }
+    }, 50 * 60 * 1000); // 50 minutes
+
+    // Listen for token refresh events from API interceptor
+    const handleTokenRefresh = () => {
+      console.log('Token refresh requested by API interceptor');
+      updateToken();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('token-refresh-needed', handleTokenRefresh);
+    }
+
+    return () => {
+      clearInterval(tokenRefreshInterval);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('token-refresh-needed', handleTokenRefresh);
+      }
+    };
   }, [isSignedIn, getToken]);
 
   return <>{children}</>;

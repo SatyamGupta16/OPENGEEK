@@ -26,17 +26,43 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Response interceptor for error handling
+// Response interceptor for error handling with token refresh
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      console.error('Unauthorized access - redirecting to login');
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      console.log('Token expired, attempting to refresh...');
+      
+      // Try to get a fresh token
+      try {
+        // Trigger a token refresh by dispatching a custom event
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('token-refresh-needed'));
+        }
+        
+        // Wait a bit for the token to be refreshed
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const newToken = getAuthToken();
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+      }
+      
+      // If refresh failed, redirect to login
+      console.error('Authentication failed - redirecting to login');
       if (typeof window !== 'undefined') {
         window.location.href = '/sign-in';
       }
     }
+    
     return Promise.reject(error);
   }
 );
