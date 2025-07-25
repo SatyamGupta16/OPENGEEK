@@ -1,0 +1,496 @@
+OPENGEEK COMMUNITY PLATFORM - SYSTEM ARCHITECTURE DOCUMENTATION
+================================================================
+
+This document provides a comprehensive overview of the OPENGEEK Community Platform's architecture, 
+explaining how authentication, posts, database, and all components communicate with each other.
+
+TABLE OF CONTENTS
+=================
+1. SYSTEM OVERVIEW
+2. AUTHENTICATION SYSTEM (CLERK)
+3. DATABASE ARCHITECTURE
+4. SERVER-SIDE ARCHITECTURE
+5. CLIENT-SIDE ARCHITECTURE
+6. API COMMUNICATION FLOW
+7. FILE UPLOAD SYSTEM
+8. SECURITY IMPLEMENTATION
+9. DEPLOYMENT ARCHITECTURE
+10. DATA FLOW DIAGRAMS
+
+1. SYSTEM OVERVIEW
+==================
+
+The OPENGEEK Community Platform is a full-stack web application built with:
+
+FRONTEND:
+- Next.js 14 (React framework with App Router)
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Clerk for authentication
+- Axios for API communication
+
+BACKEND:
+- Node.js with Express.js
+- PostgreSQL database
+- Clerk for authentication verification
+- Cloudinary for image uploads (optional)
+- Rate limiting and security middleware
+
+AUTHENTICATION:
+- Clerk handles user authentication, registration, and session management
+- JWT tokens for API authentication
+- Webhook integration for user data synchronization
+
+2. AUTHENTICATION SYSTEM (CLERK)
+=================================
+
+2.1 CLIENT-SIDE AUTHENTICATION
+-------------------------------
+
+Files involved:
+- client/src/app/layout.tsx - ClerkProvider wrapper
+- client/src/components/providers/auth-provider.tsx - Token management
+- client/src/lib/token-manager.ts - Token caching
+- client/src/middleware.ts - Route protection
+
+Flow:
+1. ClerkProvider wraps the entire application in layout.tsx
+2. AuthProvider component manages token lifecycle:
+   - Gets token from Clerk when user signs in
+   - Stores token in memory cache (token-manager.ts)
+   - Clears token when user signs out
+3. Middleware.ts protects routes (excludes sign-in/sign-up pages)
+4. Token is automatically attached to API requests via axios interceptor
+
+Key Functions:
+- setAuthToken(token) - Stores token in memory
+- getAuthToken() - Retrieves cached token
+- clearAuthToken() - Clears token on logout
+
+2.2 SERVER-SIDE AUTHENTICATION
+-------------------------------
+
+Files involved:
+- server/middleware/auth.js - Authentication middleware
+- server/routes/auth.js - Auth endpoints
+- server/config/database.js - Database connection
+
+Middleware Functions:
+- requireAuth: Validates JWT token, adds userId to request
+- optionalAuth: Same as requireAuth but doesn't fail if no token
+- getUserInfo: Fetches user details from Clerk API
+
+Authentication Flow:
+1. Client sends Bearer token in Authorization header
+2. requireAuth middleware verifies token with Clerk
+3. Extracts user ID from token payload
+4. Optionally fetches full user info from Clerk API
+5. Adds user data to request object for route handlers
+
+2.3 USER DATA SYNCHRONIZATION
+-----------------------------
+
+The system maintains user data in both Clerk and local PostgreSQL database:
+
+Webhook Handler (server/routes/auth.js):
+- Listens for Clerk webhook events
+- Handles user.created, user.updated, user.deleted events
+- Synchronizes user data between Clerk and local database
+- Ensures data consistency across systems
+
+Database User Management:
+- Users table stores additional profile information
+- Auto-creates users on first API interaction
+- Supports profile updates and soft deletion
+
+3. DATABASE ARCHITECTURE
+=========================
+
+3.1 DATABASE SCHEMA
+-------------------
+
+The PostgreSQL database consists of the following main tables:
+
+USERS TABLE:
+- id (VARCHAR) - Clerk user ID (primary key)
+- email, username, first_name, last_name, full_name
+- image_url, bio, location, website
+- github_username, twitter_username, linkedin_username
+- is_verified, is_active (boolean flags)
+- created_at, updated_at (timestamps)
+
+POSTS TABLE:
+- id (UUID) - Auto-generated primary key
+- user_id (VARCHAR) - Foreign key to users.id
+- content (TEXT) - Post content
+- image_url, image_public_id - Image storage references
+- likes_count, comments_count, shares_count - Interaction counters
+- is_pinned, is_archived - Status flags
+- created_at, updated_at - Timestamps
+
+POST_LIKES TABLE:
+- id (UUID) - Primary key
+- post_id (UUID) - Foreign key to posts.id
+- user_id (VARCHAR) - Foreign key to users.id
+- created_at - Timestamp
+- UNIQUE constraint on (post_id, user_id)
+
+POST_COMMENTS TABLE:
+- id (UUID) - Primary key
+- post_id (UUID) - Foreign key to posts.id
+- user_id (VARCHAR) - Foreign key to users.id
+- parent_id (UUID) - Self-referencing for nested comments
+- content (TEXT) - Comment content
+- likes_count - Like counter
+- is_edited - Edit flag
+- created_at, updated_at - Timestamps
+
+PROJECTS TABLE:
+- id (UUID) - Primary key
+- user_id (VARCHAR) - Foreign key to users.id
+- title, description - Project information
+- image_url, image_public_id - Image references
+- github_url, live_url - Project links
+- tags (TEXT[]) - Array of tags
+- language - Primary programming language
+- stars_count, forks_count - GitHub metrics
+- is_featured, is_approved - Status flags
+- created_at, updated_at - Timestamps
+
+3.2 DATABASE OPERATIONS
+-----------------------
+
+Migration System (server/scripts/migrate.js):
+- Creates all tables with proper relationships
+- Sets up indexes for performance optimization
+- Creates triggers for automatic timestamp updates
+- Handles foreign key constraints and cascading deletes
+
+Seeding System (server/scripts/seed.js):
+- Provides sample data for development
+- Creates test users, posts, and projects
+- Demonstrates proper data relationships
+
+Database Configuration (server/config/database.js):
+- Connection pooling for performance
+- Environment-specific configurations
+- Health check functionality
+- Graceful shutdown handling
+
+4. SERVER-SIDE ARCHITECTURE
+============================
+
+4.1 EXPRESS.JS APPLICATION STRUCTURE
+------------------------------------
+
+Main Server File (server/index.js):
+- Express app initialization
+- Security middleware (helmet, CORS, rate limiting)
+- Body parsing and request logging
+- Route mounting and error handling
+- Graceful shutdown procedures
+
+Security Features:
+- Helmet for security headers
+- CORS configuration for cross-origin requests
+- Rate limiting to prevent abuse
+- Request size limits
+- Environment-specific error handling
+
+4.2 ROUTE STRUCTURE
+-------------------
+
+Authentication Routes (server/routes/auth.js):
+- GET /api/auth/me - Get current user profile
+- PUT /api/auth/profile - Update user profile
+- POST /api/auth/webhook - Clerk webhook handler
+- GET /api/auth/status - Check authentication status
+
+Posts Routes (server/routes/posts.js):
+- GET /api/posts - Get all posts with pagination
+- GET /api/posts/:id - Get single post
+- POST /api/posts - Create new post (with image upload)
+- PUT /api/posts/:id - Update post
+- DELETE /api/posts/:id - Delete (archive) post
+- POST /api/posts/:id/like - Like/unlike post
+- GET /api/posts/:id/comments - Get post comments
+- POST /api/posts/:id/comments - Add comment to post
+
+Users Routes (server/routes/users.js):
+- GET /api/users/:username - Get user profile by username
+- GET /api/users/profile/me - Get current user profile
+- PUT /api/users/profile - Update user profile
+- GET /api/users/:username/posts - Get user's posts
+- GET /api/users/:username/projects - Get user's projects
+
+Projects Routes (server/routes/projects.js):
+- GET /api/projects - Get all projects
+- POST /api/projects - Create new project
+- Additional project management endpoints
+
+4.3 MIDDLEWARE SYSTEM
+---------------------
+
+Authentication Middleware (server/middleware/auth.js):
+- Token verification with Clerk
+- User information retrieval
+- Request context enhancement
+
+Upload Middleware (server/middleware/upload.js):
+- Currently simplified for basic deployment
+- Designed for Cloudinary integration
+- File validation and processing
+
+Validation Middleware:
+- Express-validator for input validation
+- Custom validation functions
+- Error handling and response formatting
+
+5. CLIENT-SIDE ARCHITECTURE
+============================
+
+5.1 NEXT.JS APPLICATION STRUCTURE
+---------------------------------
+
+App Router Structure:
+- app/layout.tsx - Root layout with providers
+- app/page.tsx - Home page
+- app/sign-in/[[...sign-in]]/page.tsx - Authentication pages
+- app/projects/page.tsx - Projects listing
+
+Component Organization:
+- components/ui/ - Reusable UI components
+- components/layout/ - Layout components
+- components/providers/ - Context providers
+- components/login/ - Authentication components
+
+5.2 STATE MANAGEMENT AND DATA FLOW
+----------------------------------
+
+Authentication State:
+- Clerk handles authentication state
+- AuthProvider manages token lifecycle
+- Token stored in memory for API requests
+
+API Communication (client/src/lib/api.ts):
+- Axios instance with base configuration
+- Automatic token attachment via interceptors
+- Response error handling
+- Typed API functions for different endpoints
+
+Key API Functions:
+- postsAPI: getPosts, createPost, likePost, addComment
+- projectsAPI: getProjects, createProject
+- usersAPI: getProfile, updateProfile
+
+5.3 UI COMPONENTS
+-----------------
+
+Core UI Components:
+- Button, Card, Avatar, Badge - Basic UI elements
+- Dialog, Dropdown, Tabs - Interactive components
+- Post-related: CreatePost, PostCard, PostSkeleton
+- Layout: Navbar, Sidebar, ClientLayout
+
+Specialized Components:
+- CreatePost: Post creation with image upload
+- PostCard: Post display with interactions
+- ConnectionStatus: Network status indicator
+- ErrorBoundary: Error handling wrapper
+
+6. API COMMUNICATION FLOW
+==========================
+
+6.1 REQUEST FLOW
+----------------
+
+1. User Action (e.g., creating a post):
+   - User fills out CreatePost form
+   - Form submission triggers API call
+
+2. Client-Side Processing:
+   - FormData creation for multipart requests
+   - Token attachment via axios interceptor
+   - Request sent to server endpoint
+
+3. Server-Side Processing:
+   - Authentication middleware verifies token
+   - Validation middleware checks input
+   - Business logic execution
+   - Database operations
+   - Response formatting
+
+4. Response Handling:
+   - Client receives response
+   - UI updates based on success/error
+   - Toast notifications for user feedback
+
+6.2 ERROR HANDLING
+------------------
+
+Client-Side:
+- Axios interceptors catch HTTP errors
+- 401 errors trigger redirect to login
+- User-friendly error messages
+- Toast notifications for feedback
+
+Server-Side:
+- Global error handler in index.js
+- Specific error types (validation, authentication)
+- Environment-specific error details
+- Proper HTTP status codes
+
+7. FILE UPLOAD SYSTEM
+======================
+
+Current Implementation:
+- Simplified for basic deployment
+- Image uploads disabled by default
+- Placeholder middleware for future Cloudinary integration
+
+Designed Architecture:
+- Cloudinary for image storage
+- Multer for file processing
+- Image validation and optimization
+- Public ID management for deletions
+
+Upload Flow (when enabled):
+1. Client selects image file
+2. File validation (type, size)
+3. FormData creation with image
+4. Server processes with multer
+5. Upload to Cloudinary
+6. Store URLs in database
+7. Return image URLs to client
+
+8. SECURITY IMPLEMENTATION
+===========================
+
+8.1 AUTHENTICATION SECURITY
+---------------------------
+
+- JWT token verification with Clerk
+- Token expiration handling
+- Secure token storage (memory only)
+- HTTPS enforcement in production
+
+8.2 API SECURITY
+----------------
+
+- Rate limiting per IP address
+- Request size limits
+- CORS configuration
+- Security headers via Helmet
+- Input validation and sanitization
+
+8.3 DATABASE SECURITY
+---------------------
+
+- Parameterized queries prevent SQL injection
+- Connection pooling with limits
+- Environment variable configuration
+- SSL connections in production
+
+9. DEPLOYMENT ARCHITECTURE
+===========================
+
+9.1 SERVER DEPLOYMENT
+---------------------
+
+Platform: Render.com
+- Node.js runtime environment
+- PostgreSQL database service
+- Environment variable management
+- Automatic deployments from Git
+
+Configuration Files:
+- render.yaml - Deployment configuration
+- Procfile - Process definition
+- package.json - Dependencies and scripts
+
+9.2 CLIENT DEPLOYMENT
+--------------------
+
+Platform: Vercel (typical for Next.js)
+- Static site generation
+- Edge functions for API routes
+- Environment variable management
+- Automatic deployments from Git
+
+9.3 DATABASE DEPLOYMENT
+-----------------------
+
+- PostgreSQL on Render
+- Connection pooling configuration
+- SSL connections required
+- Automated backups
+- Migration scripts for schema updates
+
+10. DATA FLOW DIAGRAMS
+=======================
+
+10.1 USER AUTHENTICATION FLOW
+-----------------------------
+
+1. User visits application
+2. Clerk checks authentication status
+3. If not authenticated, redirect to sign-in
+4. User signs in with Clerk
+5. Clerk returns JWT token
+6. AuthProvider stores token
+7. Token attached to API requests
+8. Server verifies token with Clerk
+9. User data synchronized to local database
+
+10.2 POST CREATION FLOW
+-----------------------
+
+1. User fills CreatePost form
+2. Form validation on client
+3. FormData creation (content + optional image)
+4. API request to POST /api/posts
+5. Server authentication middleware
+6. Input validation middleware
+7. User upsert in database
+8. Post creation in database
+9. Response with created post data
+10. Client updates UI with new post
+
+10.3 POST INTERACTION FLOW
+--------------------------
+
+1. User clicks like button
+2. API request to POST /api/posts/:id/like
+3. Server checks if already liked
+4. Database transaction:
+   - Insert/delete like record
+   - Update post like count
+5. Response with new like status
+6. Client updates UI immediately
+
+CONCLUSION
+==========
+
+The OPENGEEK Community Platform implements a modern, scalable architecture with:
+
+- Secure authentication via Clerk
+- RESTful API design with Express.js
+- PostgreSQL for reliable data storage
+- React/Next.js for responsive UI
+- Comprehensive error handling
+- Production-ready deployment configuration
+
+The system is designed for extensibility, allowing easy addition of new features
+while maintaining security and performance standards.
+
+For development setup, run:
+1. npm install (in both client and server directories)
+2. Configure environment variables
+3. Run database migrations
+4. Start development servers
+
+For production deployment:
+1. Configure Render/Vercel accounts
+2. Set up environment variables
+3. Deploy via Git integration
+4. Run database migrations in production

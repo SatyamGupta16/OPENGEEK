@@ -13,6 +13,7 @@ const requireAuth = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('No auth header or invalid format:', authHeader);
       return res.status(401).json({
         success: false,
         message: 'Authentication required',
@@ -22,18 +23,32 @@ const requireAuth = async (req, res, next) => {
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     
+    if (!token || token === 'null' || token === 'undefined') {
+      console.log('Token is empty or invalid:', token);
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication token is missing',
+        error: 'MISSING_TOKEN'
+      });
+    }
+
+    console.log('Attempting to verify token with Clerk...');
+    
     // Verify the session token with Clerk
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY
     });
     
     if (!payload || !payload.sub) {
+      console.log('Token verification failed - no payload or sub:', { payload });
       return res.status(401).json({
         success: false,
         message: 'Invalid authentication token',
         error: 'INVALID_TOKEN'
       });
     }
+
+    console.log('Token verified successfully for user:', payload.sub);
 
     // Add user info to request object
     req.userId = payload.sub;
@@ -42,6 +57,11 @@ const requireAuth = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      clerkSecretKey: process.env.CLERK_SECRET_KEY ? 'Present' : 'Missing'
+    });
     return res.status(401).json({
       success: false,
       message: 'Invalid authentication token',
