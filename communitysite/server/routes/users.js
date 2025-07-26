@@ -15,6 +15,9 @@ const validateUsername = [
 ];
 
 const validateUserUpdate = [
+  body('firstName').optional().isLength({ max: 50 }).withMessage('First name must be less than 50 characters'),
+  body('lastName').optional().isLength({ max: 50 }).withMessage('Last name must be less than 50 characters'),
+  body('fullName').optional().isLength({ max: 100 }).withMessage('Display name must be less than 100 characters'),
   body('bio').optional().isLength({ max: 500 }).withMessage('Bio must be less than 500 characters'),
   body('location').optional().isLength({ max: 100 }).withMessage('Location must be less than 100 characters'),
   body('website').optional().isURL().withMessage('Website must be a valid URL'),
@@ -170,6 +173,9 @@ router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
 router.put('/profile', requireAuth, getUserInfo, validateUserUpdate, handleValidationErrors, async (req, res) => {
   try {
     const {
+      firstName,
+      lastName,
+      fullName,
       bio,
       location,
       website,
@@ -180,19 +186,22 @@ router.put('/profile', requireAuth, getUserInfo, validateUserUpdate, handleValid
 
     const result = await pool.query(
       `UPDATE users SET
-        bio = COALESCE($1, bio),
-        location = COALESCE($2, location),
-        website = COALESCE($3, website),
-        github_username = COALESCE($4, github_username),
-        twitter_username = COALESCE($5, twitter_username),
-        linkedin_username = COALESCE($6, linkedin_username),
+        first_name = COALESCE($1, first_name),
+        last_name = COALESCE($2, last_name),
+        full_name = COALESCE($3, full_name),
+        bio = COALESCE($4, bio),
+        location = COALESCE($5, location),
+        website = COALESCE($6, website),
+        github_username = COALESCE($7, github_username),
+        twitter_username = COALESCE($8, twitter_username),
+        linkedin_username = COALESCE($9, linkedin_username),
         updated_at = CURRENT_TIMESTAMP
-       WHERE id = $7
+       WHERE id = $10
        RETURNING id, email, username, first_name, last_name, full_name, 
                  image_url, bio, location, website, github_username, 
                  twitter_username, linkedin_username, is_verified, is_active,
                  created_at, updated_at`,
-      [bio, location, website, githubUsername, twitterUsername, linkedinUsername, req.userId]
+      [firstName, lastName, fullName, bio, location, website, githubUsername, twitterUsername, linkedinUsername, req.userId]
     );
 
     if (result.rows.length === 0) {
@@ -369,5 +378,160 @@ router.get('/:username/projects', validateUsername, handleValidationErrors, vali
     });
   }
 });
+
+// POST /api/users/:username/follow - Follow/unfollow user
+router.post('/:username/follow',
+  validateUsername,
+  handleValidationErrors,
+  requireAuth,
+  getUserInfo,
+  async (req, res) => {
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const { username } = req.params;
+      
+      // Get target user
+      const targetUserResult = await client.query(
+        'SELECT id FROM users WHERE username = $1 AND is_active = true',
+        [username]
+      );
+      
+      if (targetUserResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      const targetUserId = targetUserResult.rows[0].id;
+      
+      // Check if user is trying to follow themselves
+      if (targetUserId === req.userId) {
+        return res.status(400).json({
+          success: false,
+          message: 'You cannot follow yourself'
+        });
+      }
+      
+      // Check if already following
+      const existingFollowResult = await client.query(
+        'SELECT id FROM user_follows WHERE follower_id = $1 AND following_id = $2',
+        [req.userId, targetUserId]
+      );
+      
+      let isFollowing;
+      
+      if (existingFollowResult.rows.length > 0) {
+        // Unfollow
+        await client.query(
+          'DELETE FROM user_follows WHERE follower_id = $1 AND following_id = $2',
+          [req.userId, targetUserId]
+        );
+        isFollowing = false;
+      } else {
+        // Follow
+        await client.query(
+          'INSERT INTO user_follows (follower_id, following_id) VALUES ($1, $2)',
+          [req.userId, targetUserId]
+        );
+        isFollowing = true;
+      }
+      
+      // Get updated follower counts
+      const followerCountResult = await client.query(
+        'SELECT COUNT(*) as count FROM user_follows WHERE following_id = $1',
+        [targetUserId]
+      );
+      
+      const followingCountResult = await client.query(
+        'SELECT COUNT(*) as count FROM user_follows WHERE follower_id = $1',
+        [targetUserId]
+      );
+      
+      await client.query('COMMIT');
+      
+      res.json({
+        success: true,
+        message: isFollowing ? 'User followed successfully' : 'User unfollowed successfully',
+        data: {
+          isFollowing,
+          followerCount: parseInt(followerCountResult.rows[0].count),
+          followingCount: parseInt(followingCountResult.rows[0].count)
+        }
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Follow/unfollow error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to follow/unfollow user'
+      });
+    } finally {
+      client.release();
+    }
+  }
+);
+
+// GET /api/users/:username/follow-status - Check if current user follows target user
+router.get('/:username/follow-status',
+  validateUsername,
+  handleValidationErrors,
+  requireAuth,
+  async (req, res) => {
+    try {
+      const { username } = req.params;
+      
+      // Get target user
+      const targetUserResult = await pool.query(
+        'SELECT id FROM users WHERE username = $1 AND is_active = true',
+        [username]
+      );
+      
+      if (targetUserResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      const targetUserId = targetUserResult.rows[0].id;
+      
+      // Check if following
+      const followResult = await pool.query(
+        'SELECT id FROM user_follows WHERE follower_id = $1 AND following_id = $2',
+        [req.userId, targetUserId]
+      );
+      
+      // Get follower/following counts
+      const followerCountResult = await pool.query(
+        'SELECT COUNT(*) as count FROM user_follows WHERE following_id = $1',
+        [targetUserId]
+      );
+      
+      const followingCountResult = await pool.query(
+        'SELECT COUNT(*) as count FROM user_follows WHERE follower_id = $1',
+        [targetUserId]
+      );
+      
+      res.json({
+        success: true,
+        data: {
+          isFollowing: followResult.rows.length > 0,
+          followerCount: parseInt(followerCountResult.rows[0].count),
+          followingCount: parseInt(followingCountResult.rows[0].count)
+        }
+      });
+    } catch (error) {
+      console.error('Follow status error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get follow status'
+      });
+    }
+  }
+);
 
 module.exports = router;

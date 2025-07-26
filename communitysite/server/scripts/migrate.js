@@ -113,6 +113,18 @@ const migrations = [
     );
   `,
   
+  // User follows table
+  `
+    CREATE TABLE IF NOT EXISTS user_follows (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      follower_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      following_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(follower_id, following_id),
+      CHECK(follower_id != following_id)
+    );
+  `,
+  
   // Create indexes for better performance
   `
     CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
@@ -127,6 +139,8 @@ const migrations = [
     CREATE INDEX IF NOT EXISTS idx_projects_featured ON projects(is_featured);
     CREATE INDEX IF NOT EXISTS idx_project_stars_project_id ON project_stars(project_id);
     CREATE INDEX IF NOT EXISTS idx_project_stars_user_id ON project_stars(user_id);
+    CREATE INDEX IF NOT EXISTS idx_user_follows_follower_id ON user_follows(follower_id);
+    CREATE INDEX IF NOT EXISTS idx_user_follows_following_id ON user_follows(following_id);
   `,
   
   // Create triggers for updated_at timestamps

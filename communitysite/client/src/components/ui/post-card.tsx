@@ -5,6 +5,7 @@ import { Button } from './button';
 import { Card } from './card';
 import { Heart, MessageCircle, Share2 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface PostCardProps {
   id: string;
@@ -37,13 +38,19 @@ export function PostCard({
       <div className="p-4">
         {/* User Info */}
         <div className="flex items-center gap-3 mb-4">
-          <Avatar>
-            <AvatarImage src={user.avatarUrl} alt={user.name} />
-            <AvatarFallback>{user.name[0]}</AvatarFallback>
-          </Avatar>
+          <Link href={`/user/${user.username}`}>
+            <Avatar className="cursor-pointer hover:ring-2 hover:ring-zinc-600 transition-all">
+              <AvatarImage src={user.avatarUrl} alt={user.name} />
+              <AvatarFallback>{user.name[0]}</AvatarFallback>
+            </Avatar>
+          </Link>
           <div>
-            <div className="font-medium text-white">{user.name}</div>
-            <div className="text-sm text-zinc-400">@{user.username}</div>
+            <Link href={`/user/${user.username}`} className="hover:underline">
+              <div className="font-medium text-white">{user.name}</div>
+            </Link>
+            <Link href={`/user/${user.username}`} className="hover:underline">
+              <div className="text-sm text-zinc-400">@{user.username}</div>
+            </Link>
           </div>
         </div>
 

@@ -172,7 +172,7 @@ export const projectsAPI = {
 export const usersAPI = {
   // Get current user profile
   getProfile: async () => {
-    const response = await api.get('/users/profile');
+    const response = await api.get('/users/profile/me');
     return response.data;
   },
 
@@ -180,15 +180,51 @@ export const usersAPI = {
   updateProfile: async (data: {
     firstName?: string;
     lastName?: string;
-    username?: string;
+    fullName?: string;
     bio?: string;
     location?: string;
     website?: string;
-    github?: string;
-    twitter?: string;
-    linkedin?: string;
+    githubUsername?: string;
+    twitterUsername?: string;
+    linkedinUsername?: string;
   }) => {
     const response = await api.put('/users/profile', data);
+    return response.data;
+  },
+
+  // Get user profile by username
+  getUserProfile: async (username: string) => {
+    const response = await api.get(`/users/${username}`);
+    return response.data;
+  },
+
+  // Get user posts
+  getUserPosts: async (username: string, params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`/users/${username}/posts`, { params });
+    return response.data;
+  },
+
+  // Follow/unfollow user
+  followUser: async (username: string) => {
+    const response = await api.post(`/users/${username}/follow`);
+    return response.data;
+  },
+
+  // Get follow status
+  getFollowStatus: async (username: string) => {
+    const response = await api.get(`/users/${username}/follow-status`);
+    return response.data;
+  },
+
+  // Get user's followers
+  getFollowers: async (username: string, params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`/users/${username}/followers`, { params });
+    return response.data;
+  },
+
+  // Get users that this user follows
+  getFollowing: async (username: string, params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`/users/${username}/following`, { params });
     return response.data;
   },
 };

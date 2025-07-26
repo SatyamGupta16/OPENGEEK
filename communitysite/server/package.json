@@ -11,6 +11,7 @@
     "migrate": "node scripts/migrate.js",
     "seed": "node scripts/seed.js",
     "test:cloudinary": "node test-cloudinary.js",
+    "test:follow": "node test-follow-system.js",
     "setup": "node scripts/setup.js"
   },
   "keywords": [
