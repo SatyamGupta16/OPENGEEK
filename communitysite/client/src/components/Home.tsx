@@ -2,13 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { PostCard } from './ui/post-card';
-import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
-import { RefreshCw, MessageSquare } from 'lucide-react';
-import Image from 'next/image';
+import { MessageSquare } from 'lucide-react';
 import { postsAPI } from '@/lib/api';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
@@ -32,12 +30,10 @@ interface Post {
 }
 
 export default function Home() {
-  const router = useRouter();
   const { isSignedIn } = useUser();
   const { setOnPostCreated } = usePostContext();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('newest');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -55,8 +51,13 @@ export default function Home() {
       if (response.success && response.data && response.data.posts) {
         // Double filter: server should already filter, but let's be extra safe
         const fetchedPosts = response.data.posts
-          .filter((post: any) => post && post.id && post.content !== undefined)
-          .filter((post: any) => typeof post === 'object' && post !== null) as Post[];
+          .filter((post: unknown): post is Post =>
+            post !== null &&
+            typeof post === 'object' &&
+            'id' in post &&
+            'content' in post &&
+            post.content !== undefined
+          );
 
         // Only log if there's a discrepancy
         if (response.data.posts.length !== fetchedPosts.length) {
@@ -110,14 +111,7 @@ export default function Home() {
     setPosts([]);
   };
 
-  // Handle refresh
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    setPage(1);
-    const sortBy = activeTab === 'top' ? 'likes_count' : 'created_at';
-    await fetchPosts(sortBy, 1);
-    setRefreshing(false);
-  };
+
 
   // Handle post like
   const handlePostLike = async (postId: string) => {
