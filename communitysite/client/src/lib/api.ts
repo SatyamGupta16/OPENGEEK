@@ -203,6 +203,30 @@ export const usersAPI = {
     const response = await api.get(`/users/${username}/posts`, { params });
     return response.data;
   },
+
+  // Follow/unfollow user
+  followUser: async (username: string) => {
+    const response = await api.post(`/users/${username}/follow`);
+    return response.data;
+  },
+
+  // Get follow status
+  getFollowStatus: async (username: string) => {
+    const response = await api.get(`/users/${username}/follow-status`);
+    return response.data;
+  },
+
+  // Get user's followers
+  getFollowers: async (username: string, params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`/users/${username}/followers`, { params });
+    return response.data;
+  },
+
+  // Get users that this user follows
+  getFollowing: async (username: string, params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`/users/${username}/following`, { params });
+    return response.data;
+  },
 };
 
 export default api;

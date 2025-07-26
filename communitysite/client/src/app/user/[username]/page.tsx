@@ -9,9 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PostCard } from '@/components/ui/post-card';
-import { 
-  MapPin, 
-  Link as LinkIcon, 
+import {
+  MapPin,
+  Link as LinkIcon,
   Calendar,
   MessageSquare,
   Heart,
@@ -65,11 +65,14 @@ export default function UserProfilePage() {
   const params = useParams();
   const username = params.username as string;
   const { user: currentUser, isSignedIn } = useUser();
-  
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
   // Check if viewing own profile
   const isOwnProfile = isSignedIn && currentUser?.username === username;
@@ -94,7 +97,7 @@ export default function UserProfilePage() {
         page: 1,
         limit: 10
       });
-      
+
       if (response.success) {
         setUserPosts(response.data.posts);
       }
@@ -103,13 +106,56 @@ export default function UserProfilePage() {
     }
   };
 
+  // Fetch follow status
+  const fetchFollowStatus = async () => {
+    if (!isSignedIn || isOwnProfile) return;
+
+    try {
+      const response = await usersAPI.getFollowStatus(username);
+      if (response.success) {
+        setIsFollowing(response.data.isFollowing);
+        setFollowerCount(response.data.followerCount);
+        setFollowingCount(response.data.followingCount);
+      }
+    } catch (error) {
+      console.error('Error fetching follow status:', error);
+    }
+  };
+
+  // Handle follow/unfollow
+  const handleFollowToggle = async () => {
+    if (!isSignedIn || isOwnProfile) return;
+
+    setIsFollowLoading(true);
+    try {
+      const response = await usersAPI.followUser(username);
+      if (response.success) {
+        setIsFollowing(response.data.isFollowing);
+        setFollowerCount(response.data.followerCount);
+        setFollowingCount(response.data.followingCount);
+
+        toast.success(
+          response.data.isFollowing
+            ? `You are now following @${username}`
+            : `You unfollowed @${username}`
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+      toast.error('Failed to update follow status');
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (username) {
       fetchProfile();
       fetchUserPosts();
+      fetchFollowStatus();
       setLoading(false);
     }
-  }, [username]);
+  }, [username, isSignedIn]);
 
   // Transform post for PostCard
   const transformPostForCard = (post: Post) => ({
@@ -125,7 +171,7 @@ export default function UserProfilePage() {
     comments: post.comments_count,
     image: post.image_url,
     isLiked: post.is_liked_by_user,
-    onLike: () => {} // TODO: Implement like functionality
+    onLike: () => { } // TODO: Implement like functionality
   });
 
   if (loading) {
@@ -159,9 +205,9 @@ export default function UserProfilePage() {
     <div className="min-h-screen bg-zinc-950 py-8">
       <div className="max-w-4xl mx-auto px-4 space-y-6">
         {/* Back Button */}
-        <Button 
-          asChild 
-          variant="ghost" 
+        <Button
+          asChild
+          variant="ghost"
           className="text-zinc-400 hover:text-white mb-4"
         >
           <Link href="/">
@@ -182,7 +228,7 @@ export default function UserProfilePage() {
                     {profile.firstName?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                
+
                 {profile.isVerified && (
                   <Badge className="mt-2 bg-emerald-500/10 text-emerald-400 border-emerald-500/50">
                     Verified
@@ -215,14 +261,20 @@ export default function UserProfilePage() {
                       </Button>
                     ) : isSignedIn ? (
                       <Button
-                        onClick={() => setIsFollowing(!isFollowing)}
+                        onClick={handleFollowToggle}
+                        disabled={isFollowLoading}
                         size="sm"
-                        className={isFollowing 
-                          ? "bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-600" 
+                        className={isFollowing
+                          ? "bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-600"
                           : "bg-white hover:bg-zinc-100 text-black"
                         }
                       >
-                        {isFollowing ? (
+                        {isFollowLoading ? (
+                          <>
+                            <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            {isFollowing ? 'Unfollowing...' : 'Following...'}
+                          </>
+                        ) : isFollowing ? (
                           <>
                             <UserCheck className="h-4 w-4 mr-2" />
                             Following
@@ -256,9 +308,9 @@ export default function UserProfilePage() {
                   {profile.website && (
                     <div className="flex items-center gap-2">
                       <LinkIcon className="h-4 w-4" />
-                      <a 
-                        href={profile.website} 
-                        target="_blank" 
+                      <a
+                        href={profile.website}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-emerald-400 hover:underline"
                       >
@@ -283,11 +335,11 @@ export default function UserProfilePage() {
                     <div className="text-sm text-zinc-400">Projects</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">0</div>
+                    <div className="text-2xl font-bold text-white">{followerCount}</div>
                     <div className="text-sm text-zinc-400">Followers</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">0</div>
+                    <div className="text-2xl font-bold text-white">{followingCount}</div>
                     <div className="text-sm text-zinc-400">Following</div>
                   </div>
                 </div>
@@ -299,22 +351,22 @@ export default function UserProfilePage() {
         {/* Profile Tabs */}
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-zinc-900 border border-zinc-800">
-            <TabsTrigger 
-              value="posts" 
+            <TabsTrigger
+              value="posts"
               className="data-[state=active]:bg-white data-[state=active]:text-black"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               Posts
             </TabsTrigger>
-            <TabsTrigger 
-              value="projects" 
+            <TabsTrigger
+              value="projects"
               className="data-[state=active]:bg-white data-[state=active]:text-black"
             >
               <Settings className="h-4 w-4 mr-2" />
               Projects
             </TabsTrigger>
-            <TabsTrigger 
-              value="liked" 
+            <TabsTrigger
+              value="liked"
               className="data-[state=active]:bg-white data-[state=active]:text-black"
               disabled={!isOwnProfile}
             >
@@ -334,8 +386,8 @@ export default function UserProfilePage() {
                   <MessageSquare className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-zinc-300 mb-2">No posts yet</h3>
                   <p className="text-zinc-500">
-                    {isOwnProfile 
-                      ? "Start sharing your thoughts with the community!" 
+                    {isOwnProfile
+                      ? "Start sharing your thoughts with the community!"
                       : `@${profile.username} hasn't posted anything yet.`
                     }
                   </p>
@@ -350,8 +402,8 @@ export default function UserProfilePage() {
                 <Settings className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-zinc-300 mb-2">No projects yet</h3>
                 <p className="text-zinc-500">
-                  {isOwnProfile 
-                    ? "Showcase your amazing projects here!" 
+                  {isOwnProfile
+                    ? "Showcase your amazing projects here!"
                     : `@${profile.username} hasn't shared any projects yet.`
                   }
                 </p>

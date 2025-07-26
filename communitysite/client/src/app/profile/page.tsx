@@ -69,6 +69,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   
   // Editable fields
   const [editedProfile, setEditedProfile] = useState({
@@ -131,6 +133,22 @@ export default function ProfilePage() {
     }
   };
 
+  // Fetch follower counts for current user
+  const fetchFollowerCounts = async () => {
+    try {
+      if (profile?.username) {
+        const response = await usersAPI.getFollowStatus(profile.username);
+        if (response.success) {
+          setFollowerCount(response.data.followerCount);
+          setFollowingCount(response.data.followingCount);
+        }
+      }
+    } catch (error) {
+      // If follow status fails (user not found or not signed in), just use 0 counts
+      console.log('Could not fetch follow counts:', error);
+    }
+  };
+
   useEffect(() => {
     if (isSignedIn) {
       fetchProfile();
@@ -140,6 +158,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       fetchUserPosts();
+      fetchFollowerCounts();
       setLoading(false);
     }
   }, [profile]);
@@ -435,11 +454,11 @@ export default function ProfilePage() {
                     <div className="text-sm text-zinc-400">Projects</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">0</div>
+                    <div className="text-2xl font-bold text-white">{followerCount}</div>
                     <div className="text-sm text-zinc-400">Followers</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">0</div>
+                    <div className="text-2xl font-bold text-white">{followingCount}</div>
                     <div className="text-sm text-zinc-400">Following</div>
                   </div>
                 </div>

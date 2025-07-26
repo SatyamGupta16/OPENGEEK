@@ -379,4 +379,159 @@ router.get('/:username/projects', validateUsername, handleValidationErrors, vali
   }
 });
 
+// POST /api/users/:username/follow - Follow/unfollow user
+router.post('/:username/follow',
+  validateUsername,
+  handleValidationErrors,
+  requireAuth,
+  getUserInfo,
+  async (req, res) => {
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const { username } = req.params;
+      
+      // Get target user
+      const targetUserResult = await client.query(
+        'SELECT id FROM users WHERE username = $1 AND is_active = true',
+        [username]
+      );
+      
+      if (targetUserResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      const targetUserId = targetUserResult.rows[0].id;
+      
+      // Check if user is trying to follow themselves
+      if (targetUserId === req.userId) {
+        return res.status(400).json({
+          success: false,
+          message: 'You cannot follow yourself'
+        });
+      }
+      
+      // Check if already following
+      const existingFollowResult = await client.query(
+        'SELECT id FROM user_follows WHERE follower_id = $1 AND following_id = $2',
+        [req.userId, targetUserId]
+      );
+      
+      let isFollowing;
+      
+      if (existingFollowResult.rows.length > 0) {
+        // Unfollow
+        await client.query(
+          'DELETE FROM user_follows WHERE follower_id = $1 AND following_id = $2',
+          [req.userId, targetUserId]
+        );
+        isFollowing = false;
+      } else {
+        // Follow
+        await client.query(
+          'INSERT INTO user_follows (follower_id, following_id) VALUES ($1, $2)',
+          [req.userId, targetUserId]
+        );
+        isFollowing = true;
+      }
+      
+      // Get updated follower counts
+      const followerCountResult = await client.query(
+        'SELECT COUNT(*) as count FROM user_follows WHERE following_id = $1',
+        [targetUserId]
+      );
+      
+      const followingCountResult = await client.query(
+        'SELECT COUNT(*) as count FROM user_follows WHERE follower_id = $1',
+        [targetUserId]
+      );
+      
+      await client.query('COMMIT');
+      
+      res.json({
+        success: true,
+        message: isFollowing ? 'User followed successfully' : 'User unfollowed successfully',
+        data: {
+          isFollowing,
+          followerCount: parseInt(followerCountResult.rows[0].count),
+          followingCount: parseInt(followingCountResult.rows[0].count)
+        }
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Follow/unfollow error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to follow/unfollow user'
+      });
+    } finally {
+      client.release();
+    }
+  }
+);
+
+// GET /api/users/:username/follow-status - Check if current user follows target user
+router.get('/:username/follow-status',
+  validateUsername,
+  handleValidationErrors,
+  requireAuth,
+  async (req, res) => {
+    try {
+      const { username } = req.params;
+      
+      // Get target user
+      const targetUserResult = await pool.query(
+        'SELECT id FROM users WHERE username = $1 AND is_active = true',
+        [username]
+      );
+      
+      if (targetUserResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      const targetUserId = targetUserResult.rows[0].id;
+      
+      // Check if following
+      const followResult = await pool.query(
+        'SELECT id FROM user_follows WHERE follower_id = $1 AND following_id = $2',
+        [req.userId, targetUserId]
+      );
+      
+      // Get follower/following counts
+      const followerCountResult = await pool.query(
+        'SELECT COUNT(*) as count FROM user_follows WHERE following_id = $1',
+        [targetUserId]
+      );
+      
+      const followingCountResult = await pool.query(
+        'SELECT COUNT(*) as count FROM user_follows WHERE follower_id = $1',
+        [targetUserId]
+      );
+      
+      res.json({
+        success: true,
+        data: {
+          isFollowing: followResult.rows.length > 0,
+          followerCount: parseInt(followerCountResult.rows[0].count),
+          followingCount: parseInt(followingCountResult.rows[0].count)
+        }
+      });
+    } catch (error) {
+      console.error('Follow status error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get follow status'
+      });
+    }
+  }
+);
+
 module.exports = router;
