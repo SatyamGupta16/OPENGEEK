@@ -37,6 +37,7 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [visibility, setVisibility] = useState<'public' | 'followers' | 'private'>('public');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,8 +45,9 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select a valid image file');
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        toast.error('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
         return;
       }
 
@@ -63,6 +65,12 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+      
+      console.log('Image selected:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
     }
   };
 
@@ -95,10 +103,17 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
         ...(selectedImage && { image: selectedImage })
       };
 
+      // Show different loading message based on whether image is being uploaded
+      if (selectedImage) {
+        toast.loading('Uploading image and creating post...', { id: 'create-post' });
+      } else {
+        toast.loading('Creating post...', { id: 'create-post' });
+      }
+
       const response = await postsAPI.createPost(postData);
       
       if (response.success) {
-        toast.success('Post created successfully!');
+        toast.success('Post created successfully!', { id: 'create-post' });
         
         // Reset form
         setContent('');
@@ -120,11 +135,30 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
       console.error('Error creating post:', error);
       
       // Type-safe error handling
-      const errorResponse = error as { response?: { data?: { message?: string } } };
+      const errorResponse = error as { 
+        response?: { 
+          data?: { 
+            message?: string;
+            error?: string;
+          } 
+        } 
+      };
       console.error('Full error response:', errorResponse?.response?.data);
       
-      const errorMessage = errorResponse?.response?.data?.message || 'Failed to create post';
-      toast.error(errorMessage);
+      let errorMessage = 'Failed to create post';
+      
+      // Handle specific error types
+      if (errorResponse?.response?.data?.error === 'FILE_TOO_LARGE') {
+        errorMessage = 'Image file is too large. Please select an image under 5MB.';
+      } else if (errorResponse?.response?.data?.error === 'INVALID_FILE_TYPE') {
+        errorMessage = 'Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.';
+      } else if (errorResponse?.response?.data?.error === 'CLOUDINARY_ERROR') {
+        errorMessage = 'Failed to upload image. Please try again.';
+      } else if (errorResponse?.response?.data?.message) {
+        errorMessage = errorResponse.response.data.message;
+      }
+      
+      toast.error(errorMessage, { id: 'create-post' });
     } finally {
       setIsSubmitting(false);
     }

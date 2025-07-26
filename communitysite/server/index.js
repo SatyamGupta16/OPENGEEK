@@ -97,11 +97,14 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Import upload error handler
+const { handleUploadError } = require('./middleware/upload');
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
-app.use('/api/posts', postRoutes);
+app.use('/api/posts', handleUploadError, postRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
