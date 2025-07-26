@@ -28,7 +28,7 @@ interface NavItemProps {
 
 const NavItem = ({ icon: Icon, label, href = "#", isActive, badge }: NavItemProps) => {
   const Component = href === "#" ? "a" : Link;
-  
+
   return (
     <Component
       href={href}
@@ -64,16 +64,7 @@ export default function Sidebar() {
     { icon: Bookmark, label: 'Saved Posts', badge: 3 },
   ];
 
-  const channelItems = [
-    { icon: Hash, label: 'general', badge: 12 },
-    { icon: Hash, label: 'help', badge: 5 },
-    { icon: Hash, label: 'showcase' },
-    { icon: Hash, label: 'resources' },
-    { icon: Hash, label: 'announcements' },
-    { icon: Hash, label: 'feedback' },
-    { icon: Hash, label: 'introductions' },
-    { icon: Hash, label: 'off-topic' },
-  ];
+
 
   return (
     <div className="h-full bg-black">
@@ -100,22 +91,7 @@ export default function Sidebar() {
               </nav>
             </div>
 
-            {/* Channels section */}
-            <div>
-              <h3 className="px-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                Channels
-              </h3>
-              <nav className="space-y-1">
-                {channelItems.map((item, index) => (
-                  <NavItem
-                    key={index}
-                    icon={item.icon}
-                    label={item.label}
-                    badge={item.badge}
-                  />
-                ))}
-              </nav>
-            </div>
+
           </div>
         </div>
 
