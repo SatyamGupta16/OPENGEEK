@@ -24,6 +24,9 @@ const validateComment = [
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.error('Validation errors:', errors.array());
+    console.error('Request body:', req.body);
+    console.error('Request file:', req.file);
     return res.status(400).json({
       success: false,
       message: 'Validation failed',
@@ -99,9 +102,11 @@ router.get('/', optionalAuth, getUserInfo, async (req, res) => {
       pool.query(countQuery)
     ]);
 
-    const posts = postsResult.rows;
+    const posts = postsResult.rows.filter(post => post && post.id); // Filter out any null/undefined posts
     const total = parseInt(countResult.rows[0].total);
     const totalPages = Math.ceil(total / limit);
+
+    console.log(`Returning ${posts.length} valid posts out of ${postsResult.rows.length} total rows`);
 
     res.json({
       success: true,
@@ -159,14 +164,26 @@ router.get('/:id',
 
 // Middleware to handle optional image upload
 const handleImageUpload = (req, res, next) => {
-  // Check if Cloudinary is configured
-  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-    console.warn('Cloudinary not configured - image uploads disabled');
-    return next();
-  }
-
-  // Use upload middleware if Cloudinary is configured
-  return upload.single('image')(req, res, next);
+  // Always process multipart form data, even if Cloudinary isn't configured
+  // This ensures the 'content' field is properly parsed
+  return upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('Upload middleware error:', err);
+      return res.status(400).json({
+        success: false,
+        message: 'Form processing error',
+        error: 'FORM_PARSE_ERROR'
+      });
+    }
+    
+    // If Cloudinary isn't configured, just clear the file reference
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.warn('Cloudinary not configured - image uploads disabled');
+      req.file = undefined;
+    }
+    
+    next();
+  });
 };
 
 // POST /api/posts - Create new post
@@ -177,6 +194,12 @@ router.post('/',
   validatePost,
   handleValidationErrors,
   async (req, res) => {
+    console.log('POST /api/posts - Starting post creation');
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file);
+    console.log('User ID:', req.userId);
+    console.log('User info:', req.user);
+
     const client = await pool.connect();
 
     try {

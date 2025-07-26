@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Menu, X, Search, LogOut, Settings, User,
   Plus, Bell, ChevronDown, Book, GitPullRequest,
-  MessageSquare, Star
+  MessageSquare, Star, FileText
 } from 'lucide-react';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
@@ -20,6 +20,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from './ui/dropdown-menu';
+import { CreatePostModal } from './ui/create-post-modal';
+import { usePostContext } from '@/contexts/PostContext';
 
 interface NavbarProps {
   onSidebarToggle: () => void;
@@ -28,16 +30,26 @@ interface NavbarProps {
 
 export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
+  const { onPostCreated } = usePostContext();
 
   // Prevent layout shifts by ensuring consistent scrollbar space
   useEffect(() => {
     // Add consistent scrollbar gutter to prevent layout shifts
     document.documentElement.style.scrollbarGutter = 'stable';
-    
+
+    // Listen for custom event to open create post modal
+    const handleOpenCreatePost = () => {
+      setIsCreatePostOpen(true);
+    };
+
+    window.addEventListener('open-create-post-modal', handleOpenCreatePost);
+
     return () => {
       document.documentElement.style.scrollbarGutter = '';
+      window.removeEventListener('open-create-post-modal', handleOpenCreatePost);
     };
   }, []);
 
@@ -117,13 +129,20 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                       <ChevronDown className="h-3 w-3" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
+                  <DropdownMenuContent
+                    align="end"
                     sideOffset={8}
                     className="w-48 sm:w-52 bg-zinc-900 border border-zinc-700 text-zinc-100 shadow-xl z-[60]"
                     avoidCollisions={true}
                   >
                     <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer"
+                        onClick={() => setIsCreatePostOpen(true)}
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        <span>New Post</span>
+                      </DropdownMenuItem>
                       <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
                         <Book className="mr-2 h-4 w-4" />
                         <span>New Project</span>
@@ -154,8 +173,8 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
+                  <DropdownMenuContent
+                    align="end"
                     sideOffset={8}
                     className="w-72 sm:w-80 bg-zinc-900 border border-zinc-700 text-zinc-100 shadow-xl z-[60]"
                     avoidCollisions={true}
@@ -204,8 +223,8 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    className="w-52 sm:w-56 bg-zinc-900 border border-zinc-700 text-zinc-100 shadow-xl z-[60]" 
+                  <DropdownMenuContent
+                    className="w-52 sm:w-56 bg-zinc-900 border border-zinc-700 text-zinc-100 shadow-xl z-[60]"
                     align="end"
                     sideOffset={8}
                     avoidCollisions={true}
@@ -258,6 +277,13 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
           </div>
         </div>
       </div>
+
+      {/* Create Post Modal */}
+      <CreatePostModal
+        isOpen={isCreatePostOpen}
+        onClose={() => setIsCreatePostOpen(false)}
+        onPostCreated={onPostCreated}
+      />
     </nav>
   );
 }
