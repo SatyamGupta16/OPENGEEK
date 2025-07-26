@@ -9,7 +9,9 @@
     "build": "echo 'Build complete'",
     "test": "jest",
     "migrate": "node scripts/migrate.js",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "test:cloudinary": "node test-cloudinary.js",
+    "setup": "node scripts/setup.js"
   },
   "keywords": [
     "opengeek",
@@ -22,6 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "@clerk/backend": "^1.15.6",
+    "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
     "debug": "^4.3.4",
     "dotenv": "^16.4.5",

@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult, param, query } = require('express-validator');
 const { pool } = require('../config/database');
 const { requireAuth, optionalAuth, getUserInfo } = require('../middleware/auth');
-const { upload } = require('../middleware/upload');
+const { upload, handleUploadError, deleteImage, validateImageUpload } = require('../middleware/upload');
 const router = express.Router();
 
 // Validation middleware
@@ -191,6 +191,7 @@ router.post('/',
   requireAuth,
   getUserInfo,
   handleImageUpload,
+  validateImageUpload,
   validatePost,
   handleValidationErrors,
   async (req, res) => {
@@ -390,10 +391,16 @@ router.delete('/:id',
 
       await pool.query(deleteQuery, [req.params.id]);
 
-      // TODO: Delete image from Cloudinary if exists
-      // if (checkResult.rows[0].image_public_id) {
-      //   await cloudinary.uploader.destroy(checkResult.rows[0].image_public_id);
-      // }
+      // Delete image from Cloudinary if exists
+      if (checkResult.rows[0].image_public_id) {
+        try {
+          await deleteImage(checkResult.rows[0].image_public_id);
+          console.log('Image deleted from Cloudinary:', checkResult.rows[0].image_public_id);
+        } catch (error) {
+          console.error('Failed to delete image from Cloudinary:', error);
+          // Continue with post deletion even if image deletion fails
+        }
+      }
 
       res.json({
         success: true,

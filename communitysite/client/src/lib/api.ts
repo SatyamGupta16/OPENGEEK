@@ -93,12 +93,21 @@ export const postsAPI = {
     
     if (data.image) {
       formData.append('image', data.image);
+      console.log('Uploading post with image:', {
+        contentLength: data.content.length,
+        imageName: data.image.name,
+        imageSize: data.image.size,
+        imageType: data.image.type
+      });
+    } else {
+      console.log('Uploading post without image');
     }
 
     const response = await api.post('/posts', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 30000, // 30 second timeout for image uploads
     });
     return response.data;
   },
