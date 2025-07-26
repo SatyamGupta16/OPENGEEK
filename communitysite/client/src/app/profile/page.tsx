@@ -74,6 +74,7 @@ export default function ProfilePage() {
   const [editedProfile, setEditedProfile] = useState({
     firstName: '',
     lastName: '',
+    fullName: '',
     bio: '',
     location: '',
     website: '',
@@ -91,6 +92,7 @@ export default function ProfilePage() {
         setEditedProfile({
           firstName: response.data.user.firstName || '',
           lastName: response.data.user.lastName || '',
+          fullName: response.data.user.fullName || '',
           bio: response.data.user.bio || '',
           location: response.data.user.location || '',
           website: response.data.user.website || '',
@@ -166,6 +168,7 @@ export default function ProfilePage() {
       setEditedProfile({
         firstName: profile.firstName || '',
         lastName: profile.lastName || '',
+        fullName: profile.fullName || '',
         bio: profile.bio || '',
         location: profile.location || '',
         website: profile.website || '',
@@ -268,20 +271,35 @@ export default function ProfilePage() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     {isEditing ? (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm text-zinc-400 mb-1 block">Display Name</label>
+                          <Input
+                            value={editedProfile.fullName}
+                            onChange={(e) => setEditedProfile(prev => ({ ...prev, fullName: e.target.value }))}
+                            placeholder="Your display name (e.g., John Doe)"
+                            className="bg-zinc-900 border-zinc-700 text-white"
+                          />
+                        </div>
                         <div className="flex gap-2">
-                          <Input
-                            value={editedProfile.firstName}
-                            onChange={(e) => setEditedProfile(prev => ({ ...prev, firstName: e.target.value }))}
-                            placeholder="First Name"
-                            className="bg-zinc-900 border-zinc-700 text-white"
-                          />
-                          <Input
-                            value={editedProfile.lastName}
-                            onChange={(e) => setEditedProfile(prev => ({ ...prev, lastName: e.target.value }))}
-                            placeholder="Last Name"
-                            className="bg-zinc-900 border-zinc-700 text-white"
-                          />
+                          <div className="flex-1">
+                            <label className="text-sm text-zinc-400 mb-1 block">First Name</label>
+                            <Input
+                              value={editedProfile.firstName}
+                              onChange={(e) => setEditedProfile(prev => ({ ...prev, firstName: e.target.value }))}
+                              placeholder="First Name"
+                              className="bg-zinc-900 border-zinc-700 text-white"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="text-sm text-zinc-400 mb-1 block">Last Name</label>
+                            <Input
+                              value={editedProfile.lastName}
+                              onChange={(e) => setEditedProfile(prev => ({ ...prev, lastName: e.target.value }))}
+                              placeholder="Last Name"
+                              className="bg-zinc-900 border-zinc-700 text-white"
+                            />
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -419,6 +437,10 @@ export default function ProfilePage() {
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white">0</div>
                     <div className="text-sm text-zinc-400">Followers</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-white">0</div>
+                    <div className="text-sm text-zinc-400">Following</div>
                   </div>
                 </div>
               </div>

@@ -15,6 +15,9 @@ const validateUsername = [
 ];
 
 const validateUserUpdate = [
+  body('firstName').optional().isLength({ max: 50 }).withMessage('First name must be less than 50 characters'),
+  body('lastName').optional().isLength({ max: 50 }).withMessage('Last name must be less than 50 characters'),
+  body('fullName').optional().isLength({ max: 100 }).withMessage('Display name must be less than 100 characters'),
   body('bio').optional().isLength({ max: 500 }).withMessage('Bio must be less than 500 characters'),
   body('location').optional().isLength({ max: 100 }).withMessage('Location must be less than 100 characters'),
   body('website').optional().isURL().withMessage('Website must be a valid URL'),
@@ -170,6 +173,9 @@ router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
 router.put('/profile', requireAuth, getUserInfo, validateUserUpdate, handleValidationErrors, async (req, res) => {
   try {
     const {
+      firstName,
+      lastName,
+      fullName,
       bio,
       location,
       website,
@@ -180,19 +186,22 @@ router.put('/profile', requireAuth, getUserInfo, validateUserUpdate, handleValid
 
     const result = await pool.query(
       `UPDATE users SET
-        bio = COALESCE($1, bio),
-        location = COALESCE($2, location),
-        website = COALESCE($3, website),
-        github_username = COALESCE($4, github_username),
-        twitter_username = COALESCE($5, twitter_username),
-        linkedin_username = COALESCE($6, linkedin_username),
+        first_name = COALESCE($1, first_name),
+        last_name = COALESCE($2, last_name),
+        full_name = COALESCE($3, full_name),
+        bio = COALESCE($4, bio),
+        location = COALESCE($5, location),
+        website = COALESCE($6, website),
+        github_username = COALESCE($7, github_username),
+        twitter_username = COALESCE($8, twitter_username),
+        linkedin_username = COALESCE($9, linkedin_username),
         updated_at = CURRENT_TIMESTAMP
-       WHERE id = $7
+       WHERE id = $10
        RETURNING id, email, username, first_name, last_name, full_name, 
                  image_url, bio, location, website, github_username, 
                  twitter_username, linkedin_username, is_verified, is_active,
                  created_at, updated_at`,
-      [bio, location, website, githubUsername, twitterUsername, linkedinUsername, req.userId]
+      [firstName, lastName, fullName, bio, location, website, githubUsername, twitterUsername, linkedinUsername, req.userId]
     );
 
     if (result.rows.length === 0) {

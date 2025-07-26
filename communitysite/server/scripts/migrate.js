@@ -113,6 +113,18 @@ const migrations = [
     );
   `,
   
+  // User follows table
+  `
+    CREATE TABLE IF NOT EXISTS user_follows (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      follower_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      following_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(follower_id, following_id),
+      CHECK (follower_id != following_id)
+    );
+  `,
+  
   // Create indexes for better performance
   `
     CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);

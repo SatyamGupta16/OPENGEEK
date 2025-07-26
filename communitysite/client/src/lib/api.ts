@@ -180,6 +180,7 @@ export const usersAPI = {
   updateProfile: async (data: {
     firstName?: string;
     lastName?: string;
+    fullName?: string;
     bio?: string;
     location?: string;
     website?: string;
