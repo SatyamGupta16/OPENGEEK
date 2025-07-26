@@ -236,9 +236,11 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-zinc-700" />
-                    <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
+                    <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer" asChild>
+                      <Link href="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
