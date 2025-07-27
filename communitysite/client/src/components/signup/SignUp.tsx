@@ -3,47 +3,47 @@
 import { useState } from 'react';
 import { SparklesCore } from "@/components/ui/sparkles";
 import Aurora from "@/components/ui/aurora";
-import { useSignIn } from '@clerk/nextjs';
+import { useSignUp } from '@clerk/nextjs';
 
-export function Login() {
+export function SignUp() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useSignIn();
+  const { signUp } = useSignUp();
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
+  const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
     setIsLoading(true);
     try {
-      // Start the sign-in process using the email method
-      const result = await signIn?.create({
-        identifier: email,
+      // Start the sign-up process using the email method
+      const result = await signUp?.create({
+        emailAddress: email,
       });
 
-      if (result?.status === 'needs_first_factor') {
+      if (result?.status === 'missing_requirements') {
         // Redirect to verification page or handle next step
         console.log('Verification needed');
       }
     } catch (error) {
-      console.error('Sign-in error:', error);
+      console.error('Sign-up error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialSignIn = async (strategy: 'oauth_google' | 'oauth_apple' | 'oauth_github') => {
-    if (!signIn) return;
+  const handleSocialSignUp = async (strategy: 'oauth_google' | 'oauth_apple' | 'oauth_github') => {
+    if (!signUp) return;
 
     setIsLoading(true);
     try {
-      await signIn.authenticateWithRedirect({
+      await signUp.authenticateWithRedirect({
         strategy,
         redirectUrl: '/sso-callback',
         redirectUrlComplete: '/',
       });
     } catch (error) {
-      console.error('Social sign-in error:', error);
+      console.error('Social sign-up error:', error);
       setIsLoading(false);
     }
   };
@@ -88,37 +88,36 @@ export function Login() {
               Where passionate developers unite to create, learn, and grow together.
             </p>
             <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10 animate-fade-in-up">
-              <h3 className="text-white font-semibold mb-2">✨ New Platform Experience</h3>
+              <h3 className="text-white font-semibold mb-2">✨ Join Our Community</h3>
               <p className="text-zinc-400 text-sm">
-                We have redesigned our platform UI with a fresh new look and enhanced features.
-                Join our community to explore interactive learning paths, real-world projects,
-                and connect with fellow developers.
+                Create your account to access exclusive content, connect with fellow developers,
+                and start your journey in our thriving tech community.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Login Form - Responsive Layout */}
+      {/* Sign Up Form - Responsive Layout */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-20 py-8 lg:py-0">
         <div className="w-full max-w-md lg:max-w-lg">
           
 
-          {/* Custom Sign-In Form - Black Theme */}
+          {/* Custom Sign-Up Form - Black Theme */}
           <div className="bg-zinc-900/80 rounded-3xl p-6 sm:p-8 shadow-2xl border border-zinc-800/50">
             <div className="text-center mb-6 sm:mb-8">
               <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">
-                OPENGEEK
+                Join OPENGEEK
               </h1>
               <p className="text-zinc-400 text-sm sm:text-base">
-                Welcome back! Please sign in to continue
+                Create your account to get started
               </p>
             </div>
 
-            {/* Social Sign-In Buttons */}
+            {/* Social Sign-Up Buttons */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
               <button
-                onClick={() => handleSocialSignIn('oauth_apple')}
+                onClick={() => handleSocialSignUp('oauth_apple')}
                 disabled={isLoading}
                 className="flex items-center justify-center h-11 sm:h-12 bg-zinc-700/50 hover:bg-zinc-800/70 border border-zinc-700/50 hover:border-zinc-600/50 rounded-xl transition-all duration-200 disabled:opacity-50 backdrop-blur-sm"
               >
@@ -128,7 +127,7 @@ export function Login() {
               </button>
 
               <button
-                onClick={() => handleSocialSignIn('oauth_github')}
+                onClick={() => handleSocialSignUp('oauth_github')}
                 disabled={isLoading}
                 className="flex items-center justify-center h-11 sm:h-12 bg-zinc-700/50 hover:bg-zinc-800/70 border border-zinc-700/50 hover:border-zinc-600/50 rounded-xl transition-all duration-200 disabled:opacity-50 backdrop-blur-sm"
               >
@@ -138,7 +137,7 @@ export function Login() {
               </button>
 
               <button
-                onClick={() => handleSocialSignIn('oauth_google')}
+                onClick={() => handleSocialSignUp('oauth_google')}
                 disabled={isLoading}
                 className="flex items-center justify-center h-11 sm:h-12 bg-zinc-700/50 hover:bg-zinc-800/70 border border-zinc-700/50 hover:border-zinc-600/50 rounded-xl transition-all duration-200 disabled:opacity-50 backdrop-blur-sm"
               >
@@ -157,12 +156,12 @@ export function Login() {
                 <div className="w-full border-t border-zinc-800/50"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4  text-zinc-400 font-medium">OR</span>
+                <span className="px-4 text-zinc-400 font-medium">OR</span>
               </div>
             </div>
 
             {/* Email Form */}
-            <form onSubmit={handleEmailSignIn} className="space-y-4 sm:space-y-6">
+            <form onSubmit={handleEmailSignUp} className="space-y-4 sm:space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-2">
                   Email address
@@ -181,7 +180,7 @@ export function Login() {
               <button
                 type="submit"
                 disabled={isLoading || !email}
-                className="w-full h-11 sm:h-12 bg-white hover:bg-zinc-100 text-black font-semibold rounded-xl transition-all duration-200  disabled:cursor-not-allowed flex items-center justify-center transform hover:scale-[1.02]"
+                className="w-full h-11 sm:h-12 bg-white hover:bg-zinc-100 text-black font-semibold rounded-xl transition-all duration-200 disabled:cursor-not-allowed flex items-center justify-center transform hover:scale-[1.02]"
               >
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
@@ -196,20 +195,16 @@ export function Login() {
               </button>
             </form>
 
-            {/* Sign Up Link */}
+            {/* Sign In Link */}
             <div className="mt-6 sm:mt-8 text-center">
               <p className="text-zinc-400 text-sm">
-                Don't have an account?{' '}
-                <a href="/sign-up" className="text-white font-semibold hover:text-zinc-300 transition-colors duration-200">
-                  Sign up
+                Already have an account?{' '}
+                <a href="/sign-in" className="text-white font-semibold hover:text-zinc-300 transition-colors duration-200">
+                  Sign in
                 </a>
               </p>
             </div>
-
-            
           </div>
-
-
         </div>
       </div>
 
@@ -248,4 +243,3 @@ export function Login() {
     </div>
   );
 }
-
