@@ -16,6 +16,13 @@ api.interceptors.request.use(async (config) => {
   try {
     const token = getAuthToken();
     
+    console.log('API Request:', {
+      url: config.url,
+      method: config.method,
+      hasToken: !!token,
+      tokenPreview: token ? `${token.substring(0, 20)}...` : 'No token'
+    });
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

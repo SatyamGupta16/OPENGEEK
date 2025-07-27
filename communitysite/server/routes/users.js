@@ -44,81 +44,12 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-// Get user profile by username
-router.get('/:username', validateUsername, handleValidationErrors, optionalAuth, async (req, res) => {
-  try {
-    const { username } = req.params;
-
-    const result = await pool.query(
-      `SELECT id, username, first_name, last_name, full_name, email, image_url,
-              bio, location, website, github_username, twitter_username, 
-              linkedin_username, is_verified, created_at, updated_at
-       FROM users 
-       WHERE username = $1 AND is_active = true`,
-      [username]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    const user = result.rows[0];
-
-    // Get user's post count
-    const postsResult = await pool.query(
-      'SELECT COUNT(*) as count FROM posts WHERE user_id = $1 AND is_archived = false',
-      [user.id]
-    );
-
-    // Get user's project count
-    const projectsResult = await pool.query(
-      'SELECT COUNT(*) as count FROM projects WHERE user_id = $1 AND is_approved = true',
-      [user.id]
-    );
-
-    res.json({
-      success: true,
-      data: {
-        user: {
-          id: user.id,
-          username: user.username,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          fullName: user.full_name,
-          email: user.email,
-          imageUrl: user.image_url,
-          bio: user.bio,
-          location: user.location,
-          website: user.website,
-          githubUsername: user.github_username,
-          twitterUsername: user.twitter_username,
-          linkedinUsername: user.linkedin_username,
-          isVerified: user.is_verified,
-          createdAt: user.created_at,
-          updatedAt: user.updated_at,
-          stats: {
-            postsCount: parseInt(postsResult.rows[0].count),
-            projectsCount: parseInt(projectsResult.rows[0].count)
-          }
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Get user profile error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get user profile'
-    });
-  }
-});
-
 // Get current user profile
 router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
   try {
-    const result = await pool.query(
+    console.log('Profile endpoint reached - User ID:', req.userId);
+    
+    let result = await pool.query(
       `SELECT id, email, username, first_name, last_name, full_name, 
               image_url, bio, location, website, github_username, 
               twitter_username, linkedin_username, is_verified, is_active,
@@ -126,6 +57,36 @@ router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
        FROM users WHERE id = $1`,
       [req.userId]
     );
+    
+    console.log('Database query result:', {
+      rowCount: result.rows.length,
+      userId: req.userId
+    });
+
+    // If user doesn't exist in database, create them from Clerk data
+    if (result.rows.length === 0 && req.user) {
+      console.log('User not found in database, creating from Clerk data:', req.user);
+      
+      const insertResult = await pool.query(`
+        INSERT INTO users (id, email, username, first_name, last_name, full_name, image_url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id, email, username, first_name, last_name, full_name, 
+                  image_url, bio, location, website, github_username, 
+                  twitter_username, linkedin_username, is_verified, is_active,
+                  created_at, updated_at
+      `, [
+        req.user.id,
+        req.user.email,
+        req.user.username,
+        req.user.firstName,
+        req.user.lastName,
+        req.user.fullName,
+        req.user.imageUrl
+      ]);
+      
+      result = insertResult;
+      console.log('User created successfully');
+    }
 
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -243,6 +204,77 @@ router.put('/profile', requireAuth, getUserInfo, validateUserUpdate, handleValid
     res.status(500).json({
       success: false,
       message: 'Failed to update profile'
+    });
+  }
+});
+
+// Get user profile by username
+router.get('/:username', validateUsername, handleValidationErrors, optionalAuth, async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const result = await pool.query(
+      `SELECT id, username, first_name, last_name, full_name, email, image_url,
+              bio, location, website, github_username, twitter_username, 
+              linkedin_username, is_verified, created_at, updated_at
+       FROM users 
+       WHERE username = $1 AND is_active = true`,
+      [username]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const user = result.rows[0];
+
+    // Get user's post count
+    const postsResult = await pool.query(
+      'SELECT COUNT(*) as count FROM posts WHERE user_id = $1 AND is_archived = false',
+      [user.id]
+    );
+
+    // Get user's project count
+    const projectsResult = await pool.query(
+      'SELECT COUNT(*) as count FROM projects WHERE user_id = $1 AND is_approved = true',
+      [user.id]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          username: user.username,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          fullName: user.full_name,
+          email: user.email,
+          imageUrl: user.image_url,
+          bio: user.bio,
+          location: user.location,
+          website: user.website,
+          githubUsername: user.github_username,
+          twitterUsername: user.twitter_username,
+          linkedinUsername: user.linkedin_username,
+          isVerified: user.is_verified,
+          createdAt: user.created_at,
+          updatedAt: user.updated_at,
+          stats: {
+            postsCount: parseInt(postsResult.rows[0].count),
+            projectsCount: parseInt(projectsResult.rows[0].count)
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get user profile'
     });
   }
 });
@@ -387,27 +419,27 @@ router.post('/:username/follow',
   getUserInfo,
   async (req, res) => {
     const client = await pool.connect();
-    
+
     try {
       await client.query('BEGIN');
-      
+
       const { username } = req.params;
-      
+
       // Get target user
       const targetUserResult = await client.query(
         'SELECT id FROM users WHERE username = $1 AND is_active = true',
         [username]
       );
-      
+
       if (targetUserResult.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message: 'User not found'
         });
       }
-      
+
       const targetUserId = targetUserResult.rows[0].id;
-      
+
       // Check if user is trying to follow themselves
       if (targetUserId === req.userId) {
         return res.status(400).json({
@@ -415,15 +447,15 @@ router.post('/:username/follow',
           message: 'You cannot follow yourself'
         });
       }
-      
+
       // Check if already following
       const existingFollowResult = await client.query(
         'SELECT id FROM user_follows WHERE follower_id = $1 AND following_id = $2',
         [req.userId, targetUserId]
       );
-      
+
       let isFollowing;
-      
+
       if (existingFollowResult.rows.length > 0) {
         // Unfollow
         await client.query(
@@ -439,20 +471,20 @@ router.post('/:username/follow',
         );
         isFollowing = true;
       }
-      
+
       // Get updated follower counts
       const followerCountResult = await client.query(
         'SELECT COUNT(*) as count FROM user_follows WHERE following_id = $1',
         [targetUserId]
       );
-      
+
       const followingCountResult = await client.query(
         'SELECT COUNT(*) as count FROM user_follows WHERE follower_id = $1',
         [targetUserId]
       );
-      
+
       await client.query('COMMIT');
-      
+
       res.json({
         success: true,
         message: isFollowing ? 'User followed successfully' : 'User unfollowed successfully',
@@ -483,39 +515,39 @@ router.get('/:username/follow-status',
   async (req, res) => {
     try {
       const { username } = req.params;
-      
+
       // Get target user
       const targetUserResult = await pool.query(
         'SELECT id FROM users WHERE username = $1 AND is_active = true',
         [username]
       );
-      
+
       if (targetUserResult.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message: 'User not found'
         });
       }
-      
+
       const targetUserId = targetUserResult.rows[0].id;
-      
+
       // Check if following
       const followResult = await pool.query(
         'SELECT id FROM user_follows WHERE follower_id = $1 AND following_id = $2',
         [req.userId, targetUserId]
       );
-      
+
       // Get follower/following counts
       const followerCountResult = await pool.query(
         'SELECT COUNT(*) as count FROM user_follows WHERE following_id = $1',
         [targetUserId]
       );
-      
+
       const followingCountResult = await pool.query(
         'SELECT COUNT(*) as count FROM user_follows WHERE follower_id = $1',
         [targetUserId]
       );
-      
+
       res.json({
         success: true,
         data: {
