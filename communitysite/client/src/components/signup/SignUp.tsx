@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { SparklesCore } from "@/components/ui/sparkles";
 import Aurora from "@/components/ui/aurora";
 import { useSignUp } from '@clerk/nextjs';
@@ -199,9 +200,9 @@ export function SignUp() {
             <div className="mt-6 sm:mt-8 text-center">
               <p className="text-zinc-400 text-sm">
                 Already have an account?{' '}
-                <a href="/sign-in" className="text-white font-semibold hover:text-zinc-300 transition-colors duration-200">
+                <Link href="/sign-in" className="text-white font-semibold hover:text-zinc-300 transition-colors duration-200">
                   Sign in
-                </a>
+                </Link>
               </p>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { SparklesCore } from "@/components/ui/sparkles";
 import Aurora from "@/components/ui/aurora";
 import { useSignIn } from '@clerk/nextjs';
@@ -102,7 +103,7 @@ export function Login() {
       {/* Login Form - Responsive Layout */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-20 py-8 lg:py-0">
         <div className="w-full max-w-md lg:max-w-lg">
-          
+
 
           {/* Custom Sign-In Form - Black Theme */}
           <div className="bg-zinc-900/80 rounded-3xl p-6 sm:p-8 shadow-2xl border border-zinc-800/50">
@@ -199,14 +200,14 @@ export function Login() {
             {/* Sign Up Link */}
             <div className="mt-6 sm:mt-8 text-center">
               <p className="text-zinc-400 text-sm">
-                Don't have an account?{' '}
-                <a href="/sign-up" className="text-white font-semibold hover:text-zinc-300 transition-colors duration-200">
+                Don&apos;t have an account?{' '}
+                <Link href="/sign-up" className="text-white font-semibold hover:text-zinc-300 transition-colors duration-200">
                   Sign up
-                </a>
+                </Link>
               </p>
             </div>
 
-            
+
           </div>
 
 
