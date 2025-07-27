@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,9 +16,10 @@ import {
   MessageSquare,
   Heart,
   Settings,
-  ArrowLeft,
   UserPlus,
-  UserCheck
+  UserCheck,
+  Github,
+  Twitter
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usersAPI } from '@/lib/api';
@@ -63,6 +64,7 @@ interface Post {
 
 export default function UserProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const username = params.username as string;
   const { user: currentUser, isSignedIn } = useUser();
 
@@ -74,8 +76,13 @@ export default function UserProfilePage() {
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
-  // Check if viewing own profile
-  const isOwnProfile = isSignedIn && currentUser?.username === username;
+  // Check if viewing own profile - use multiple methods for comparison
+  const isOwnProfile = isSignedIn && (
+    currentUser?.username === username ||
+    currentUser?.emailAddresses?.[0]?.emailAddress?.split('@')[0] === username ||
+    (currentUser?.firstName && currentUser?.lastName &&
+      `${currentUser.firstName}${currentUser.lastName}`.toLowerCase() === username.toLowerCase())
+  );
 
   // Fetch user profile
   const fetchProfile = async () => {
@@ -174,63 +181,75 @@ export default function UserProfilePage() {
     onLike: () => { } // TODO: Implement like functionality
   });
 
+  // Redirect to own profile if viewing own username
+  useEffect(() => {
+    if (isOwnProfile) {
+      router.push('/profile');
+      return;
+    }
+  }, [isOwnProfile, router]);
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-white">Loading profile...</div>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-white text-lg">Loading profile...</div>
+        </div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="bg-black border-zinc-800/50 p-8 text-center">
-          <CardContent>
-            <h2 className="text-xl font-semibold text-white mb-4">User Not Found</h2>
-            <p className="text-zinc-400 mb-4">The user @{username} could not be found.</p>
-            <Button asChild variant="outline" className="border-zinc-600 text-zinc-300">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center py-20">
+          <Card className="bg-zinc-950 border-zinc-800">
+            <CardContent className="p-8 text-center">
+              <h2 className="text-xl font-semibold text-white mb-4">User Not Found</h2>
+              <p className="text-zinc-400 mb-6">The user @{username} could not be found.</p>
+              <Button asChild variant="outline" className="border-zinc-600 text-zinc-300 hover:bg-zinc-800">
+                <Link href="/">
+                  Back to Home
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if redirecting to own profile
+  if (isOwnProfile) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-white text-lg">Redirecting to your profile...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-8">
-      <div className="max-w-4xl mx-auto px-4 space-y-6">
-        {/* Back Button */}
-        <Button
-          asChild
-          variant="ghost"
-          className="text-zinc-400 hover:text-white mb-4"
-        >
-          <Link href="/">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Link>
-        </Button>
+    <div className="max-w-4xl mx-auto">
+      <div className="space-y-6">
+
 
         {/* Profile Header */}
-        <Card className="bg-black border-zinc-800/50">
+        <Card className="bg-zinc-950 border-zinc-800">
           <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col sm:flex-row gap-6">
               {/* Avatar Section */}
-              <div className="flex flex-col items-center md:items-start">
-                <Avatar className="h-32 w-32 border-4 border-zinc-700">
-                  <AvatarImage src={profile.imageUrl} alt={profile.fullName} />
-                  <AvatarFallback className="bg-zinc-800 text-zinc-300 text-2xl">
+              <div className="flex flex-col items-center sm:items-start">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-2 border-zinc-700">
+                  <AvatarImage src={profile.imageUrl} alt={profile.fullName} className="object-cover" />
+                  <AvatarFallback className="bg-zinc-800 text-white text-2xl font-medium">
                     {profile.firstName?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
 
                 {profile.isVerified && (
-                  <Badge className="mt-2 bg-emerald-500/10 text-emerald-400 border-emerald-500/50">
+                  <Badge variant="secondary" className="mt-3 bg-zinc-800 text-zinc-300 border-zinc-700">
                     Verified
                   </Badge>
                 )}
@@ -238,28 +257,20 @@ export default function UserProfilePage() {
 
               {/* Profile Info */}
               <div className="flex-1">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h1 className="text-3xl font-bold text-white mb-1">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                  <div className="flex-1">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
                       {profile.fullName || `${profile.firstName} ${profile.lastName}`}
                     </h1>
-                    <p className="text-zinc-400">@{profile.username}</p>
+                    <p className="text-zinc-400 text-lg mb-2">@{profile.username}</p>
+                    <p className="text-zinc-500 text-sm">
+                      Member since {formatDistanceToNow(new Date(profile.createdAt), { addSuffix: true })}
+                    </p>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    {isOwnProfile ? (
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="border-zinc-600 text-zinc-300 hover:bg-zinc-800"
-                      >
-                        <Link href="/profile">
-                          Edit Profile
-                        </Link>
-                      </Button>
-                    ) : isSignedIn ? (
+                  <div className="flex gap-2 flex-shrink-0">
+                    {isSignedIn && (
                       <Button
                         onClick={handleFollowToggle}
                         disabled={isFollowLoading}
@@ -286,46 +297,74 @@ export default function UserProfilePage() {
                           </>
                         )}
                       </Button>
-                    ) : null}
+                    )}
                   </div>
                 </div>
 
                 {/* Bio Section */}
-                <div className="mb-4">
+                <div className="mb-6">
                   <p className="text-zinc-300 leading-relaxed">
-                    {profile.bio || 'No bio added yet.'}
+                    {profile.bio || (
+                      <span className="text-zinc-500 italic">
+                        No bio added yet.
+                      </span>
+                    )}
                   </p>
                 </div>
 
                 {/* Additional Info */}
-                <div className="space-y-2 text-sm text-zinc-400">
-                  {profile.location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      <span>{profile.location}</span>
-                    </div>
-                  )}
-                  {profile.website && (
-                    <div className="flex items-center gap-2">
-                      <LinkIcon className="h-4 w-4" />
-                      <a
-                        href={profile.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-emerald-400 hover:underline"
-                      >
-                        {profile.website}
-                      </a>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>Joined {formatDistanceToNow(new Date(profile.createdAt), { addSuffix: true })}</span>
+                <div className="mb-6">
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    {profile.location && (
+                      <div className="flex items-center gap-2 text-zinc-400">
+                        <MapPin className="h-4 w-4" />
+                        <span>{profile.location}</span>
+                      </div>
+                    )}
+                    {profile.website && (
+                      <div className="flex items-center gap-2 text-zinc-400">
+                        <LinkIcon className="h-4 w-4" />
+                        <a
+                          href={profile.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white hover:text-zinc-300 transition-colors"
+                        >
+                          {profile.website.replace(/^https?:\/\//, '')}
+                        </a>
+                      </div>
+                    )}
+                    {profile.githubUsername && (
+                      <div className="flex items-center gap-2 text-zinc-400">
+                        <Github className="h-4 w-4" />
+                        <a
+                          href={`https://github.com/${profile.githubUsername}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white hover:text-zinc-300 transition-colors"
+                        >
+                          github.com/{profile.githubUsername}
+                        </a>
+                      </div>
+                    )}
+                    {profile.twitterUsername && (
+                      <div className="flex items-center gap-2 text-zinc-400">
+                        <Twitter className="h-4 w-4" />
+                        <a
+                          href={`https://twitter.com/${profile.twitterUsername}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white hover:text-zinc-300 transition-colors"
+                        >
+                          @{profile.twitterUsername}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Stats */}
-                <div className="flex gap-6 mt-6">
+                <div className="grid grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white">{userPosts.length}</div>
                     <div className="text-sm text-zinc-400">Posts</div>
@@ -350,7 +389,7 @@ export default function UserProfilePage() {
 
         {/* Profile Tabs */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-zinc-900 border border-zinc-800">
+          <TabsList className="grid w-full grid-cols-2 bg-zinc-950 border border-zinc-800">
             <TabsTrigger
               value="posts"
               className="data-[state=active]:bg-white data-[state=active]:text-black"
@@ -365,14 +404,6 @@ export default function UserProfilePage() {
               <Settings className="h-4 w-4 mr-2" />
               Projects
             </TabsTrigger>
-            <TabsTrigger
-              value="liked"
-              className="data-[state=active]:bg-white data-[state=active]:text-black"
-              disabled={!isOwnProfile}
-            >
-              <Heart className="h-4 w-4 mr-2" />
-              Liked
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="posts" className="space-y-4 mt-6">
@@ -381,15 +412,12 @@ export default function UserProfilePage() {
                 <PostCard key={post.id} {...transformPostForCard(post)} />
               ))
             ) : (
-              <Card className="bg-black border-zinc-800/50">
+              <Card className="bg-zinc-950 border-zinc-800">
                 <CardContent className="p-12 text-center">
                   <MessageSquare className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-zinc-300 mb-2">No posts yet</h3>
                   <p className="text-zinc-500">
-                    {isOwnProfile
-                      ? "Start sharing your thoughts with the community!"
-                      : `@${profile.username} hasn't posted anything yet.`
-                    }
+                    @{profile.username} hasn&apos;t posted anything yet.
                   </p>
                 </CardContent>
               </Card>
@@ -397,26 +425,13 @@ export default function UserProfilePage() {
           </TabsContent>
 
           <TabsContent value="projects" className="space-y-4 mt-6">
-            <Card className="bg-black border-zinc-800/50">
+            <Card className="bg-zinc-950 border-zinc-800">
               <CardContent className="p-12 text-center">
                 <Settings className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-zinc-300 mb-2">No projects yet</h3>
                 <p className="text-zinc-500">
-                  {isOwnProfile
-                    ? "Showcase your amazing projects here!"
-                    : `@${profile.username} hasn't shared any projects yet.`
-                  }
+                  @{profile.username} hasn&apos;t shared any projects yet.
                 </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="liked" className="space-y-4 mt-6">
-            <Card className="bg-black border-zinc-800/50">
-              <CardContent className="p-12 text-center">
-                <Heart className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-zinc-300 mb-2">No liked posts yet</h3>
-                <p className="text-zinc-500">Posts you like will appear here!</p>
               </CardContent>
             </Card>
           </TabsContent>

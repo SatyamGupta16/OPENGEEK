@@ -3,24 +3,26 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PostCard } from '@/components/ui/post-card';
-import { 
-  Edit3, 
-  Save, 
-  X, 
-  MapPin, 
-  Link as LinkIcon, 
+import {
+  Edit3,
+  Save,
+  X,
+  MapPin,
+  Link as LinkIcon,
   Calendar,
   MessageSquare,
   Heart,
-  Users,
   Settings,
-  Camera
+  Camera,
+  Github,
+  Twitter,
+  Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usersAPI, postsAPI } from '@/lib/api';
@@ -71,7 +73,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  
+
   // Editable fields
   const [editedProfile, setEditedProfile] = useState({
     firstName: '',
@@ -119,7 +121,7 @@ export default function ProfilePage() {
           sort: 'created_at',
           order: 'desc'
         });
-        
+
         if (response.success) {
           // Filter posts by current user
           const currentUserPosts = response.data.posts.filter(
@@ -213,73 +215,82 @@ export default function ProfilePage() {
     comments: post.comments_count,
     image: post.image_url,
     isLiked: post.is_liked_by_user,
-    onLike: () => {} // TODO: Implement like functionality
+    onLike: () => { } // TODO: Implement like functionality
   });
 
   if (!isSignedIn) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="bg-black border-zinc-800/50 p-8 text-center">
-          <CardContent>
-            <h2 className="text-xl font-semibold text-white mb-4">Sign In Required</h2>
-            <p className="text-zinc-400 mb-4">Please sign in to view your profile</p>
-            <Button onClick={() => window.location.href = '/sign-in'}>
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center py-20">
+          <Card className="bg-zinc-950 border-zinc-800">
+            <CardContent className="p-8 text-center">
+              <h2 className="text-xl font-semibold text-white mb-4">Sign In Required</h2>
+              <p className="text-zinc-400 mb-6">Please sign in to view your profile</p>
+              <Button
+                onClick={() => window.location.href = '/sign-in'}
+                className="bg-white text-black hover:bg-zinc-100"
+              >
+                Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-white">Loading profile...</div>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-white text-lg">Loading profile...</div>
+        </div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="bg-black border-zinc-800/50 p-8 text-center">
-          <CardContent>
-            <h2 className="text-xl font-semibold text-white mb-4">Profile Not Found</h2>
-            <p className="text-zinc-400">Unable to load your profile information</p>
-          </CardContent>
-        </Card>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center py-20">
+          <Card className="bg-zinc-950 border-zinc-800">
+            <CardContent className="p-8 text-center">
+              <h2 className="text-xl font-semibold text-white mb-4">Profile Not Found</h2>
+              <p className="text-zinc-400">Unable to load your profile information</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-8">
-      <div className="max-w-4xl mx-auto px-4 space-y-6">
+    <div className="max-w-4xl mx-auto">
+      <div>
         {/* Profile Header */}
-        <Card className="bg-black border-zinc-800/50">
+        <Card className="bg-zinc-950 border-zinc-800 mb-8">
           <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col sm:flex-row gap-6">
               {/* Avatar Section */}
-              <div className="flex flex-col items-center md:items-start">
+              <div className="flex flex-col items-center sm:items-start">
                 <div className="relative">
-                  <Avatar className="h-32 w-32 border-4 border-zinc-700">
-                    <AvatarImage src={profile.imageUrl} alt={profile.fullName} />
-                    <AvatarFallback className="bg-zinc-800 text-zinc-300 text-2xl">
+                  <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-2 border-zinc-700">
+                    <AvatarImage src={profile.imageUrl} alt={profile.fullName} className="object-cover" />
+                    <AvatarFallback className="bg-zinc-800 text-white text-2xl font-medium">
                       {profile.firstName?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="absolute bottom-0 right-0 h-8 w-8 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600"
+                    className="absolute -bottom-1 -right-1 h-8 w-8 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 rounded-full"
                   >
-                    <Camera className="h-4 w-4" />
+                    <Camera className="h-3 w-3 text-zinc-300" />
                   </Button>
                 </div>
-                
+
                 {profile.isVerified && (
-                  <Badge className="mt-2 bg-emerald-500/10 text-emerald-400 border-emerald-500/50">
+                  <Badge variant="secondary" className="mt-3 bg-zinc-800 text-zinc-300 border-zinc-700">
                     Verified
                   </Badge>
                 )}
@@ -287,22 +298,22 @@ export default function ProfilePage() {
 
               {/* Profile Info */}
               <div className="flex-1">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                  <div className="flex-1">
                     {isEditing ? (
                       <div className="space-y-3">
                         <div>
-                          <label className="text-sm text-zinc-400 mb-1 block">Display Name</label>
+                          <label className="text-sm font-medium text-zinc-300 mb-2 block">Display Name</label>
                           <Input
                             value={editedProfile.fullName}
                             onChange={(e) => setEditedProfile(prev => ({ ...prev, fullName: e.target.value }))}
-                            placeholder="Your display name (e.g., John Doe)"
+                            placeholder="Your display name"
                             className="bg-zinc-900 border-zinc-700 text-white"
                           />
                         </div>
-                        <div className="flex gap-2">
-                          <div className="flex-1">
-                            <label className="text-sm text-zinc-400 mb-1 block">First Name</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-sm font-medium text-zinc-300 mb-2 block">First Name</label>
                             <Input
                               value={editedProfile.firstName}
                               onChange={(e) => setEditedProfile(prev => ({ ...prev, firstName: e.target.value }))}
@@ -310,8 +321,8 @@ export default function ProfilePage() {
                               className="bg-zinc-900 border-zinc-700 text-white"
                             />
                           </div>
-                          <div className="flex-1">
-                            <label className="text-sm text-zinc-400 mb-1 block">Last Name</label>
+                          <div>
+                            <label className="text-sm font-medium text-zinc-300 mb-2 block">Last Name</label>
                             <Input
                               value={editedProfile.lastName}
                               onChange={(e) => setEditedProfile(prev => ({ ...prev, lastName: e.target.value }))}
@@ -323,10 +334,13 @@ export default function ProfilePage() {
                       </div>
                     ) : (
                       <>
-                        <h1 className="text-3xl font-bold text-white mb-1">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
                           {profile.fullName || `${profile.firstName} ${profile.lastName}`}
                         </h1>
-                        <p className="text-zinc-400">@{profile.username}</p>
+                        <p className="text-zinc-400 text-lg mb-2">@{profile.username}</p>
+                        <p className="text-zinc-500 text-sm">
+                          Member since {formatDistanceToNow(new Date(profile.createdAt), { addSuffix: true })}
+                        </p>
                       </>
                     )}
                   </div>
@@ -338,7 +352,7 @@ export default function ProfilePage() {
                           onClick={handleSaveProfile}
                           disabled={isSaving}
                           size="sm"
-                          className="bg-emerald-500 hover:bg-emerald-600"
+                          className="bg-white text-black hover:bg-zinc-100"
                         >
                           <Save className="h-4 w-4 mr-2" />
                           {isSaving ? 'Saving...' : 'Save'}
@@ -347,7 +361,7 @@ export default function ProfilePage() {
                           onClick={handleCancelEdit}
                           variant="outline"
                           size="sm"
-                          className="border-zinc-600 text-zinc-300"
+                          className="border-zinc-600 text-zinc-300 hover:bg-zinc-800"
                         >
                           <X className="h-4 w-4 mr-2" />
                           Cancel
@@ -368,83 +382,116 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Bio Section */}
-                <div className="mb-4">
+                <div className="mb-6">
                   {isEditing ? (
-                    <textarea
-                      value={editedProfile.bio}
-                      onChange={(e) => setEditedProfile(prev => ({ ...prev, bio: e.target.value }))}
-                      placeholder="Tell us about yourself..."
-                      className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-white placeholder:text-zinc-500 resize-none"
-                      rows={3}
-                      maxLength={500}
-                    />
+                    <div>
+                      <label className="text-sm font-medium text-zinc-300 mb-2 block">Bio</label>
+                      <textarea
+                        value={editedProfile.bio}
+                        onChange={(e) => setEditedProfile(prev => ({ ...prev, bio: e.target.value }))}
+                        placeholder="Tell us about yourself..."
+                        className="w-full bg-zinc-900 border border-zinc-700 rounded-md p-3 text-white placeholder:text-zinc-500 resize-none"
+                        rows={3}
+                        maxLength={500}
+                      />
+                      <p className="text-xs text-zinc-500 mt-1">{editedProfile.bio.length}/500</p>
+                    </div>
                   ) : (
                     <p className="text-zinc-300 leading-relaxed">
-                      {profile.bio || 'No bio added yet.'}
+                      {profile.bio || (
+                        <span className="text-zinc-500 italic">
+                          No bio added yet.
+                        </span>
+                      )}
                     </p>
                   )}
                 </div>
 
                 {/* Additional Info */}
-                <div className="space-y-2 text-sm text-zinc-400">
+                <div className="mb-6">
                   {isEditing ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <Input
-                        value={editedProfile.location}
-                        onChange={(e) => setEditedProfile(prev => ({ ...prev, location: e.target.value }))}
-                        placeholder="Location"
-                        className="bg-zinc-900 border-zinc-700 text-white"
-                      />
-                      <Input
-                        value={editedProfile.website}
-                        onChange={(e) => setEditedProfile(prev => ({ ...prev, website: e.target.value }))}
-                        placeholder="Website"
-                        className="bg-zinc-900 border-zinc-700 text-white"
-                      />
-                      <Input
-                        value={editedProfile.githubUsername}
-                        onChange={(e) => setEditedProfile(prev => ({ ...prev, githubUsername: e.target.value }))}
-                        placeholder="GitHub Username"
-                        className="bg-zinc-900 border-zinc-700 text-white"
-                      />
-                      <Input
-                        value={editedProfile.twitterUsername}
-                        onChange={(e) => setEditedProfile(prev => ({ ...prev, twitterUsername: e.target.value }))}
-                        placeholder="Twitter Username"
-                        className="bg-zinc-900 border-zinc-700 text-white"
-                      />
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium text-zinc-300 block">Links</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <Input
+                          value={editedProfile.location}
+                          onChange={(e) => setEditedProfile(prev => ({ ...prev, location: e.target.value }))}
+                          placeholder="Location"
+                          className="bg-zinc-900 border-zinc-700 text-white"
+                        />
+                        <Input
+                          value={editedProfile.website}
+                          onChange={(e) => setEditedProfile(prev => ({ ...prev, website: e.target.value }))}
+                          placeholder="Website"
+                          className="bg-zinc-900 border-zinc-700 text-white"
+                        />
+                        <Input
+                          value={editedProfile.githubUsername}
+                          onChange={(e) => setEditedProfile(prev => ({ ...prev, githubUsername: e.target.value }))}
+                          placeholder="GitHub Username"
+                          className="bg-zinc-900 border-zinc-700 text-white"
+                        />
+                        <Input
+                          value={editedProfile.twitterUsername}
+                          onChange={(e) => setEditedProfile(prev => ({ ...prev, twitterUsername: e.target.value }))}
+                          placeholder="Twitter Username"
+                          className="bg-zinc-900 border-zinc-700 text-white"
+                        />
+                      </div>
                     </div>
                   ) : (
-                    <>
+                    <div className="flex flex-wrap gap-4 text-sm">
                       {profile.location && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 text-zinc-400">
                           <MapPin className="h-4 w-4" />
                           <span>{profile.location}</span>
                         </div>
                       )}
                       {profile.website && (
-                        <div className="flex items-center gap-2">
-                          <LinkIcon className="h-4 w-4" />
-                          <a 
-                            href={profile.website} 
-                            target="_blank" 
+                        <div className="flex items-center gap-2 text-zinc-400">
+                          <Globe className="h-4 w-4" />
+                          <a
+                            href={profile.website}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            className="text-emerald-400 hover:underline"
+                            className="text-white hover:text-zinc-300 transition-colors"
                           >
-                            {profile.website}
+                            {profile.website.replace(/^https?:\/\//, '')}
                           </a>
                         </div>
                       )}
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>Joined {formatDistanceToNow(new Date(profile.createdAt), { addSuffix: true })}</span>
-                      </div>
-                    </>
+                      {profile.githubUsername && (
+                        <div className="flex items-center gap-2 text-zinc-400">
+                          <Github className="h-4 w-4" />
+                          <a
+                            href={`https://github.com/${profile.githubUsername}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-white hover:text-zinc-300 transition-colors"
+                          >
+                            github.com/{profile.githubUsername}
+                          </a>
+                        </div>
+                      )}
+                      {profile.twitterUsername && (
+                        <div className="flex items-center gap-2 text-zinc-400">
+                          <Twitter className="h-4 w-4" />
+                          <a
+                            href={`https://twitter.com/${profile.twitterUsername}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-white hover:text-zinc-300 transition-colors"
+                          >
+                            @{profile.twitterUsername}
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
                 {/* Stats */}
-                <div className="flex gap-6 mt-6">
+                <div className="grid grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white">{userPosts.length}</div>
                     <div className="text-sm text-zinc-400">Posts</div>
@@ -469,23 +516,23 @@ export default function ProfilePage() {
 
         {/* Profile Tabs */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-zinc-900 border border-zinc-800">
-            <TabsTrigger 
-              value="posts" 
+          <TabsList className="grid w-full grid-cols-3 bg-zinc-950 border border-zinc-800">
+            <TabsTrigger
+              value="posts"
               className="data-[state=active]:bg-white data-[state=active]:text-black"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               Posts
             </TabsTrigger>
-            <TabsTrigger 
-              value="projects" 
+            <TabsTrigger
+              value="projects"
               className="data-[state=active]:bg-white data-[state=active]:text-black"
             >
               <Settings className="h-4 w-4 mr-2" />
               Projects
             </TabsTrigger>
-            <TabsTrigger 
-              value="liked" 
+            <TabsTrigger
+              value="liked"
               className="data-[state=active]:bg-white data-[state=active]:text-black"
             >
               <Heart className="h-4 w-4 mr-2" />
@@ -499,7 +546,7 @@ export default function ProfilePage() {
                 <PostCard key={post.id} {...transformPostForCard(post)} />
               ))
             ) : (
-              <Card className="bg-black border-zinc-800/50">
+              <Card className="bg-zinc-950 border-zinc-800">
                 <CardContent className="p-12 text-center">
                   <MessageSquare className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-zinc-300 mb-2">No posts yet</h3>
@@ -510,7 +557,7 @@ export default function ProfilePage() {
           </TabsContent>
 
           <TabsContent value="projects" className="space-y-4 mt-6">
-            <Card className="bg-black border-zinc-800/50">
+            <Card className="bg-zinc-950 border-zinc-800">
               <CardContent className="p-12 text-center">
                 <Settings className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-zinc-300 mb-2">No projects yet</h3>
@@ -520,7 +567,7 @@ export default function ProfilePage() {
           </TabsContent>
 
           <TabsContent value="liked" className="space-y-4 mt-6">
-            <Card className="bg-black border-zinc-800/50">
+            <Card className="bg-zinc-950 border-zinc-800">
               <CardContent className="p-12 text-center">
                 <Heart className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-zinc-300 mb-2">No liked posts yet</h3>
