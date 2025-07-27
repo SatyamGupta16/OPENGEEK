@@ -12,6 +12,13 @@ const requireAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     
+    console.log('Auth middleware - Request details:', {
+      url: req.url,
+      method: req.method,
+      hasAuthHeader: !!authHeader,
+      authHeaderFormat: authHeader ? authHeader.substring(0, 20) + '...' : 'None'
+    });
+    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       console.log('No auth header or invalid format:', authHeader);
       return res.status(401).json({

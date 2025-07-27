@@ -27,6 +27,7 @@ import {
 import { toast } from 'sonner';
 import { usersAPI, postsAPI } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
+import { getAuthToken } from '@/lib/token-manager';
 
 interface UserProfile {
   id: string;
@@ -153,7 +154,32 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (isSignedIn) {
-      fetchProfile();
+      // Wait for token to be available before making API call
+      const checkTokenAndFetch = async () => {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max wait
+        
+        const waitForToken = () => {
+          const token = getAuthToken();
+          if (token) {
+            console.log('Token found, fetching profile...');
+            fetchProfile();
+            return;
+          }
+          
+          attempts++;
+          if (attempts < maxAttempts) {
+            setTimeout(waitForToken, 100);
+          } else {
+            console.error('Token not available after 5 seconds, trying to fetch anyway...');
+            fetchProfile();
+          }
+        };
+        
+        waitForToken();
+      };
+      
+      checkTokenAndFetch();
     }
   }, [isSignedIn]);
 
