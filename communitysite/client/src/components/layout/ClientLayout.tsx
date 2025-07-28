@@ -40,13 +40,12 @@ export function ClientLayout({ children }: ClientLayoutProps) {
 
         {/* Main Content Area */}
         <main className={cn(
-          "flex-1 min-h-[calc(100vh-64px)] transition-all duration-300 pt-[64px]",
-          "lg:ml-64", // Left margin for sidebar
-          isHomePage ? "lg:mr-80" : "lg:mr-0" // Right margin only on home page
+          "w-full min-h-[calc(100vh-64px)] transition-all duration-300 pt-[64px]",
+          isHomePage ? "lg:pl-64 lg:pr-80" : "lg:pl-64" // Padding instead of margin for better control
         )}>
           <div className={cn(
-            "h-full",
-            isHomePage ? "max-w-2xl mx-auto px-4 py-6" : "px-6 py-6" // Full width for non-home pages
+            "h-full w-full",
+            isHomePage ? "px-4 pt-6" : "px-6 pt-6"
           )}>
             {children}
           </div>
