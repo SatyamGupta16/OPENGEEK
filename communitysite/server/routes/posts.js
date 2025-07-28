@@ -3,6 +3,7 @@ const { body, validationResult, param, query } = require('express-validator');
 const { pool } = require('../config/database');
 const { requireAuth, optionalAuth, getUserInfo } = require('../middleware/auth');
 const { upload, handleUploadError, deleteImage, validateImageUpload } = require('../middleware/upload');
+const { ensureUserExists } = require('../utils/userHelpers');
 const router = express.Router();
 
 // Validation middleware
@@ -236,27 +237,56 @@ router.post('/',
         email: req.user.email
       });
 
-      // Ensure user exists in our database
+      // Ensure user exists in our database with unique username
+      let finalUsername = req.user.username;
+      let usernameAttempt = 1;
+      
+      // Check if username already exists and generate a unique one if needed
+      while (true) {
+        const existingUserCheck = await client.query(
+          'SELECT id FROM users WHERE username = $1 AND id != $2',
+          [finalUsername, req.userId]
+        );
+        
+        if (existingUserCheck.rows.length === 0) {
+          break; // Username is available
+        }
+        
+        // Generate a new username with a number suffix
+        finalUsername = req.user.username + usernameAttempt;
+        usernameAttempt++;
+        
+        // Prevent infinite loop
+        if (usernameAttempt > 100) {
+          finalUsername = req.user.username + Math.random().toString(36).substr(2, 4);
+          break;
+        }
+      }
+
       const userUpsertQuery = `
         INSERT INTO users (id, email, username, first_name, last_name, full_name, image_url)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (id) DO UPDATE SET
           email = EXCLUDED.email,
-          username = EXCLUDED.username,
-          first_name = EXCLUDED.first_name,
-          last_name = EXCLUDED.last_name,
-          full_name = EXCLUDED.full_name,
-          image_url = EXCLUDED.image_url,
+          username = CASE 
+            WHEN users.username IS NULL OR users.username = '' 
+            THEN EXCLUDED.username 
+            ELSE users.username 
+          END,
+          first_name = COALESCE(EXCLUDED.first_name, users.first_name),
+          last_name = COALESCE(EXCLUDED.last_name, users.last_name),
+          full_name = COALESCE(EXCLUDED.full_name, users.full_name),
+          image_url = COALESCE(EXCLUDED.image_url, users.image_url),
           updated_at = CURRENT_TIMESTAMP
       `;
 
       await client.query(userUpsertQuery, [
         req.userId,
         req.user.email || '',
-        req.user.username || req.userId,
+        finalUsername,
         req.user.firstName || '',
         req.user.lastName || '',
-        req.user.fullName || req.user.username || req.userId,
+        req.user.fullName || finalUsername || 'User',
         req.user.imageUrl || ''
       ]);
 
@@ -420,6 +450,7 @@ router.delete('/:id',
 router.post('/:id/like',
   param('id').isUUID().withMessage('Invalid post ID'),
   requireAuth,
+  getUserInfo,
   handleValidationErrors,
   async (req, res) => {
     const client = await pool.connect();
@@ -438,6 +469,11 @@ router.post('/:id/like',
           success: false,
           message: 'Post not found'
         });
+      }
+
+      // Ensure user exists in our database before they can like posts
+      if (req.user) {
+        await ensureUserExists(client, req.userId, req.user);
       }
 
       // Check if already liked
@@ -579,28 +615,7 @@ router.post('/:id/comments',
       }
 
       // Ensure user exists in our database
-      const userUpsertQuery = `
-        INSERT INTO users (id, email, username, first_name, last_name, full_name, image_url)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        ON CONFLICT (id) DO UPDATE SET
-          email = EXCLUDED.email,
-          username = EXCLUDED.username,
-          first_name = EXCLUDED.first_name,
-          last_name = EXCLUDED.last_name,
-          full_name = EXCLUDED.full_name,
-          image_url = EXCLUDED.image_url,
-          updated_at = CURRENT_TIMESTAMP
-      `;
-
-      await client.query(userUpsertQuery, [
-        req.userId,
-        req.user.email,
-        req.user.username,
-        req.user.firstName,
-        req.user.lastName,
-        req.user.fullName,
-        req.user.imageUrl
-      ]);
+      await ensureUserExists(client, req.userId, req.user);
 
       // Create comment
       const commentQuery = `
