@@ -167,19 +167,19 @@ export default function Home() {
         {/* Share your thoughts card for signed-in users */}
         {isSignedIn && (
           <Card className="bg-black border-zinc-800/50 mb-6">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <MessageSquare className="h-6 w-6 text-zinc-400" />
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-zinc-400" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-1">Share your thoughts</h3>
-                    <p className="text-zinc-400 text-sm">Create a new post to engage with the community</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base sm:text-lg font-semibold text-white mb-1">Share your thoughts</h3>
+                    <p className="text-zinc-400 text-xs sm:text-sm">Create a new post to engage with the community</p>
                   </div>
                 </div>
                 <Button
-                  className="bg-white hover:bg-zinc-100 text-black font-medium px-6"
+                  className="bg-white hover:bg-zinc-100 text-black font-medium px-4 sm:px-6 py-2 text-sm sm:text-base w-full sm:w-auto flex-shrink-0"
                   onClick={() => {
                     window.dispatchEvent(new CustomEvent('open-create-post-modal'));
                   }}

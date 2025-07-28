@@ -15,18 +15,18 @@ interface ClientLayoutProps {
 export function ClientLayout({ children }: ClientLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
-  
+
   // Check if we're on the home page
   const isHomePage = pathname === '/';
-  
+
   // Prevent scroll lock from dropdown menus
   usePreventScrollLock();
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-zinc-900">
       {/* Fixed Navbar */}
       <Navbar onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)} isSidebarOpen={isSidebarOpen} />
-      
+
       <div className="flex">
         {/* Left Sidebar */}
         <aside className={cn(

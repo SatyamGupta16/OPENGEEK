@@ -104,11 +104,11 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
 
           {/* Right section - improved mobile responsiveness */}
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 lg:space-x-4">
-            {/* Mobile search button */}
+            {/* Mobile search button - hidden on mobile */}
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg border border-transparent hover:border-zinc-700/50 transition-all duration-200 shrink-0"
+              className="hidden text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg border border-transparent hover:border-zinc-700/50 transition-all duration-200 shrink-0"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
               <Search className="h-4 w-4 sm:h-5 sm:w-5" />

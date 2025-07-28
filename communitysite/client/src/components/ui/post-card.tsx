@@ -34,7 +34,7 @@ export function PostCard({
   onLike
 }: PostCardProps) {
   return (
-    <Card className="bg-black/50 border-zinc-800/50 backdrop-blur-sm">
+    <Card className="bg-black border-zinc-800/50">
       <div className="p-4">
         {/* User Info */}
         <div className="flex items-center gap-3 mb-4">
