@@ -84,7 +84,7 @@ export default function Home() {
   // Handle new post created - memoized to prevent infinite re-renders
   const handlePostCreated = useCallback((newPost: Post) => {
     setPosts(prev => [newPost, ...prev]);
-    toast.success('Post shared successfully!');
+    toast.success('Post loaded successfully!');
   }, []);
 
   // Register post creation callback with context
@@ -163,7 +163,7 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      <div className="space-y-6">
+      <div className="space-y-6 lg:mx-15">
         {/* Share your thoughts card for signed-in users */}
         {isSignedIn && (
           <Card className="bg-black border-zinc-800/50 mb-6">
@@ -220,7 +220,7 @@ export default function Home() {
         </Card>
 
         {/* Posts Feed */}
-        <div className="space-y-4">
+        <div className="space-y-4 mb-10">
           {loading ? (
             <PostSkeletonList count={3} />
           ) : posts.length === 0 ? (

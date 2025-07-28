@@ -318,12 +318,12 @@ export default function TermsOfServicePage() {
                   If you have any questions about these Terms of Service, please contact us:
                 </p>
                 <div className="bg-zinc-900 p-4 rounded-lg">
-                  <p><strong>Email:</strong> legal@opengeek.community</p>
+                  <p><strong>Email:</strong> opengeekcommunity@gmail.com</p>
                   <p><strong>Website:</strong> https://community.opengeek.in</p>
-                  <p><strong>Address:</strong> [Your Business Address]</p>
+                  <p><strong>Address:</strong> Bareilly, Uttar Pradesh, India.</p>
                 </div>
                 <p className="text-sm text-zinc-400 mt-4">
-                  For DMCA takedown requests: dmca@opengeek.community
+                  For DMCA takedown requests: opengeekcommunity@gmail.com
                 </p>
               </div>
             </section>
