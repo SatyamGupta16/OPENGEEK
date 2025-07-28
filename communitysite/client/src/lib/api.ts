@@ -177,6 +177,12 @@ export const projectsAPI = {
 };
 
 export const usersAPI = {
+  // Debug token verification
+  debugToken: async () => {
+    const response = await api.get('/users/debug/token');
+    return response.data;
+  },
+
   // Get current user profile
   getProfile: async () => {
     const response = await api.get('/users/profile/me');

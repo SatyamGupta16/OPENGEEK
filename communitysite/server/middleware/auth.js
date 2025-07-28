@@ -16,7 +16,8 @@ const requireAuth = async (req, res, next) => {
       url: req.url,
       method: req.method,
       hasAuthHeader: !!authHeader,
-      authHeaderFormat: authHeader ? authHeader.substring(0, 20) + '...' : 'None'
+      authHeaderFormat: authHeader ? authHeader.substring(0, 20) + '...' : 'None',
+      clerkSecretKey: process.env.CLERK_SECRET_KEY ? `Present (${process.env.CLERK_SECRET_KEY.substring(0, 10)}...)` : 'Missing'
     });
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -39,11 +40,22 @@ const requireAuth = async (req, res, next) => {
       });
     }
 
-    console.log('Attempting to verify token with Clerk...');
+    console.log('Attempting to verify token with Clerk...', {
+      tokenLength: token.length,
+      tokenStart: token.substring(0, 20) + '...',
+      secretKeyPresent: !!process.env.CLERK_SECRET_KEY
+    });
     
     // Verify the session token with Clerk
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY
+    });
+    
+    console.log('Token verification result:', {
+      hasPayload: !!payload,
+      hasSub: payload?.sub ? true : false,
+      sub: payload?.sub,
+      payloadKeys: payload ? Object.keys(payload) : 'No payload'
     });
     
     if (!payload || !payload.sub) {
@@ -66,13 +78,18 @@ const requireAuth = async (req, res, next) => {
     console.error('Auth middleware error:', error);
     console.error('Error details:', {
       message: error.message,
-      stack: error.stack,
-      clerkSecretKey: process.env.CLERK_SECRET_KEY ? 'Present' : 'Missing'
+      name: error.name,
+      stack: error.stack?.split('\n').slice(0, 3).join('\n'),
+      clerkSecretKey: process.env.CLERK_SECRET_KEY ? `Present (${process.env.CLERK_SECRET_KEY.substring(0, 10)}...)` : 'Missing'
     });
     return res.status(401).json({
       success: false,
       message: 'Invalid authentication token',
-      error: 'INVALID_TOKEN'
+      error: 'INVALID_TOKEN',
+      debug: process.env.NODE_ENV === 'development' ? {
+        errorName: error.name,
+        errorMessage: error.message
+      } : undefined
     });
   }
 };
