@@ -15,9 +15,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const updateToken = async () => {
       if (isSignedIn) {
         try {
+          console.log('Getting fresh token from Clerk...');
           // Always get a fresh token from Clerk
           const token = await getToken({ skipCache: true });
-          console.log('Token retrieved:', token ? 'Fresh token obtained' : 'Token is null');
+          console.log('Token retrieved:', {
+            hasToken: !!token,
+            tokenLength: token?.length || 0,
+            tokenStart: token ? token.substring(0, 20) + '...' : 'No token',
+            isSignedIn
+          });
           if (token) {
             setAuthToken(token);
           } else {

@@ -20,7 +20,23 @@ const validateUserUpdate = [
   body('fullName').optional().isLength({ max: 100 }).withMessage('Display name must be less than 100 characters'),
   body('bio').optional().isLength({ max: 500 }).withMessage('Bio must be less than 500 characters'),
   body('location').optional().isLength({ max: 100 }).withMessage('Location must be less than 100 characters'),
-  body('website').optional().isURL().withMessage('Website must be a valid URL'),
+  body('website').optional().custom((value) => {
+    if (!value || value.trim() === '') {
+      return true; // Allow empty strings
+    }
+    // Check if it's a valid URL
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      // If not a valid URL, check if it's a domain without protocol
+      const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
+      if (domainRegex.test(value)) {
+        return true;
+      }
+      throw new Error('Website must be a valid URL or domain');
+    }
+  }),
   body('githubUsername').optional().isLength({ max: 50 }).withMessage('GitHub username must be less than 50 characters'),
   body('twitterUsername').optional().isLength({ max: 50 }).withMessage('Twitter username must be less than 50 characters'),
   body('linkedinUsername').optional().isLength({ max: 50 }).withMessage('LinkedIn username must be less than 50 characters')
@@ -44,11 +60,61 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
+// Debug endpoint to test token verification
+router.get('/debug/token', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    console.log('Debug endpoint - Auth header:', authHeader ? authHeader.substring(0, 30) + '...' : 'None');
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.json({
+        success: false,
+        message: 'No auth header or invalid format',
+        debug: { authHeader: authHeader || 'None' }
+      });
+    }
+
+    const token = authHeader.substring(7);
+    console.log('Debug endpoint - Token:', {
+      length: token.length,
+      start: token.substring(0, 20) + '...',
+      clerkSecretPresent: !!process.env.CLERK_SECRET_KEY
+    });
+
+    // Try to verify with Clerk
+    const { verifyToken } = require('@clerk/backend');
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY
+    });
+
+    res.json({
+      success: true,
+      message: 'Token verified successfully',
+      debug: {
+        hasPayload: !!payload,
+        userId: payload?.sub,
+        payloadKeys: payload ? Object.keys(payload) : 'No payload'
+      }
+    });
+  } catch (error) {
+    console.error('Debug token verification error:', error);
+    res.json({
+      success: false,
+      message: 'Token verification failed',
+      debug: {
+        errorName: error.name,
+        errorMessage: error.message,
+        clerkSecretPresent: !!process.env.CLERK_SECRET_KEY
+      }
+    });
+  }
+});
+
 // Get current user profile
 router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
   try {
     console.log('Profile endpoint reached - User ID:', req.userId);
-    
+
     let result = await pool.query(
       `SELECT id, email, username, first_name, last_name, full_name, 
               image_url, bio, location, website, github_username, 
@@ -57,7 +123,7 @@ router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
        FROM users WHERE id = $1`,
       [req.userId]
     );
-    
+
     console.log('Database query result:', {
       rowCount: result.rows.length,
       userId: req.userId
@@ -66,7 +132,7 @@ router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
     // If user doesn't exist in database, create them from Clerk data
     if (result.rows.length === 0 && req.user) {
       console.log('User not found in database, creating from Clerk data:', req.user);
-      
+
       const insertResult = await pool.query(`
         INSERT INTO users (id, email, username, first_name, last_name, full_name, image_url)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -83,7 +149,7 @@ router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
         req.user.fullName,
         req.user.imageUrl
       ]);
-      
+
       result = insertResult;
       console.log('User created successfully');
     }
@@ -133,6 +199,9 @@ router.get('/profile/me', requireAuth, getUserInfo, async (req, res) => {
 // Update user profile
 router.put('/profile', requireAuth, getUserInfo, validateUserUpdate, handleValidationErrors, async (req, res) => {
   try {
+    console.log('Update profile endpoint reached - User ID:', req.userId);
+    console.log('Request body:', req.body);
+
     const {
       firstName,
       lastName,
@@ -144,6 +213,28 @@ router.put('/profile', requireAuth, getUserInfo, validateUserUpdate, handleValid
       twitterUsername,
       linkedinUsername
     } = req.body;
+
+    // First check if user exists, if not create them
+    let userExists = await pool.query('SELECT id FROM users WHERE id = $1', [req.userId]);
+
+    if (userExists.rows.length === 0 && req.user) {
+      console.log('User not found in database during update, creating from Clerk data:', req.user);
+
+      await pool.query(`
+        INSERT INTO users (id, email, username, first_name, last_name, full_name, image_url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `, [
+        req.user.id,
+        req.user.email,
+        req.user.username,
+        req.user.firstName,
+        req.user.lastName,
+        req.user.fullName,
+        req.user.imageUrl
+      ]);
+
+      console.log('User created successfully during update');
+    }
 
     const result = await pool.query(
       `UPDATE users SET
@@ -164,6 +255,11 @@ router.put('/profile', requireAuth, getUserInfo, validateUserUpdate, handleValid
                  created_at, updated_at`,
       [firstName, lastName, fullName, bio, location, website, githubUsername, twitterUsername, linkedinUsername, req.userId]
     );
+
+    console.log('Update query result:', {
+      rowCount: result.rows.length,
+      userId: req.userId
+    });
 
     if (result.rows.length === 0) {
       return res.status(404).json({
