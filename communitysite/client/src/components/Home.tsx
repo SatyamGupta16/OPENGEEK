@@ -84,7 +84,7 @@ export default function Home() {
   // Handle new post created - memoized to prevent infinite re-renders
   const handlePostCreated = useCallback((newPost: Post) => {
     setPosts(prev => [newPost, ...prev]);
-    toast.success('Post shared successfully!');
+    toast.success('Post loaded successfully!');
   }, []);
 
   // Register post creation callback with context
