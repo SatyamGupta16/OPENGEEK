@@ -125,6 +125,40 @@ const optionalAuth = async (req, res, next) => {
 };
 
 /**
+ * Generate a unique username from email or name
+ */
+const generateUsername = (email, firstName, lastName) => {
+  // Try email prefix first
+  if (email) {
+    const emailPrefix = email.split('@')[0];
+    // Clean up the email prefix (remove dots, numbers at the end, etc.)
+    const cleanPrefix = emailPrefix.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    if (cleanPrefix.length >= 3) {
+      return cleanPrefix;
+    }
+  }
+  
+  // Try first + last name
+  if (firstName && lastName) {
+    const nameUsername = (firstName + lastName).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    if (nameUsername.length >= 3) {
+      return nameUsername;
+    }
+  }
+  
+  // Try first name only
+  if (firstName) {
+    const firstNameUsername = firstName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    if (firstNameUsername.length >= 3) {
+      return firstNameUsername;
+    }
+  }
+  
+  // Fallback to random username
+  return 'user' + Math.random().toString(36).substr(2, 6);
+};
+
+/**
  * Middleware to get user info from Clerk
  */
 const getUserInfo = async (req, res, next) => {
@@ -134,15 +168,28 @@ const getUserInfo = async (req, res, next) => {
     }
 
     const user = await clerkClient.users.getUser(req.userId);
+    const email = user.emailAddresses[0]?.emailAddress;
+    
+    // Generate a proper username if not provided by Clerk
+    let username = user.username;
+    if (!username) {
+      username = generateUsername(email, user.firstName, user.lastName);
+    }
+
+    // Ensure fullName is properly set
+    let fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    if (!fullName && username) {
+      fullName = username; // Use username as display name if no real name
+    }
 
     req.user = {
       id: user.id,
-      email: user.emailAddresses[0]?.emailAddress,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-      imageUrl: user.imageUrl,
-      username: user.username || user.emailAddresses[0]?.emailAddress?.split('@')[0],
+      email: email || '',
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      fullName: fullName || username || 'User',
+      imageUrl: user.imageUrl || '',
+      username: username,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     };
