@@ -176,13 +176,13 @@ const handleImageUpload = (req, res, next) => {
         error: 'FORM_PARSE_ERROR'
       });
     }
-    
+
     // If Cloudinary isn't configured, just clear the file reference
     if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
       console.warn('Cloudinary not configured - image uploads disabled');
       req.file = undefined;
     }
-    
+
     next();
   });
 };
@@ -240,22 +240,22 @@ router.post('/',
       // Ensure user exists in our database with unique username
       let finalUsername = req.user.username;
       let usernameAttempt = 1;
-      
+
       // Check if username already exists and generate a unique one if needed
       while (true) {
         const existingUserCheck = await client.query(
           'SELECT id FROM users WHERE username = $1 AND id != $2',
           [finalUsername, req.userId]
         );
-        
+
         if (existingUserCheck.rows.length === 0) {
           break; // Username is available
         }
-        
+
         // Generate a new username with a number suffix
         finalUsername = req.user.username + usernameAttempt;
         usernameAttempt++;
-        
+
         // Prevent infinite loop
         if (usernameAttempt > 100) {
           finalUsername = req.user.username + Math.random().toString(36).substr(2, 4);
