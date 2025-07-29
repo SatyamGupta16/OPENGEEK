@@ -151,14 +151,22 @@ export const postsAPI = {
 };
 
 export const projectsAPI = {
-  // Get all projects
+  // Get all projects with filtering and pagination
   getProjects: async (params?: {
     page?: number;
     limit?: number;
-    category?: string;
     search?: string;
+    language?: string;
+    featured?: string;
+    sortBy?: string;
   }) => {
     const response = await api.get('/projects', { params });
+    return response.data;
+  },
+
+  // Get single project by ID
+  getProject: async (id: string) => {
+    const response = await api.get(`/projects/${id}`);
     return response.data;
   },
 
@@ -166,12 +174,38 @@ export const projectsAPI = {
   createProject: async (data: {
     title: string;
     description: string;
-    category?: string;
-    tags?: string[];
-    repository_url?: string;
-    demo_url?: string;
+    githubUrl: string;
+    liveUrl?: string;
+    imageUrl?: string;
+    tags: string[];
+    language: string;
   }) => {
     const response = await api.post('/projects', data);
+    return response.data;
+  },
+
+  // Update project
+  updateProject: async (id: string, data: {
+    title?: string;
+    description?: string;
+    githubUrl?: string;
+    liveUrl?: string;
+    tags?: string[];
+    language?: string;
+  }) => {
+    const response = await api.put(`/projects/${id}`, data);
+    return response.data;
+  },
+
+  // Delete project
+  deleteProject: async (id: string) => {
+    const response = await api.delete(`/projects/${id}`);
+    return response.data;
+  },
+
+  // Star/unstar project
+  starProject: async (id: string) => {
+    const response = await api.post(`/projects/${id}/star`);
     return response.data;
   },
 };

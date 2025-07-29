@@ -11,11 +11,7 @@ const validateProject = [
   body('title').isLength({ min: 5, max: 200 }).withMessage('Title must be between 5 and 200 characters'),
   body('description').isLength({ min: 20, max: 1000 }).withMessage('Description must be between 20 and 1000 characters'),
   body('githubUrl').isURL().withMessage('Please provide a valid GitHub URL'),
-  body('liveUrl').optional({ nullable: true, checkFalsy: true }).custom((value) => {
-    if (!value || value === '') return true;
-    return /^https?:\/\/.+/.test(value);
-  }).withMessage('Please provide a valid live demo URL'),
-  body('imageUrl').optional({ nullable: true, checkFalsy: true }).isURL().withMessage('Please provide a valid image URL'),
+  body('liveUrl').optional({ nullable: true, checkFalsy: true }).isURL().withMessage('Please provide a valid live demo URL'),
   body('tags').isArray({ min: 1, max: 10 }).withMessage('Please provide 1-10 tags'),
   body('language').isLength({ min: 2, max: 50 }).withMessage('Language must be between 2 and 50 characters')
 ];
@@ -34,7 +30,6 @@ const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log('Validation errors:', errors.array());
-    console.log('Request body:', req.body);
     return res.status(400).json({
       success: false,
       message: 'Validation failed',
@@ -50,7 +45,7 @@ router.get('/', optionalAuth, getUserInfo, validatePagination, handleValidationE
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 12, 50);
     const offset = (page - 1) * limit;
-
+    
     const { search, language, featured, sortBy = 'created_at' } = req.query;
 
     // Simple query without complex filtering for now
@@ -114,7 +109,7 @@ router.get('/', optionalAuth, getUserInfo, validatePagination, handleValidationE
     paramIndex++;
     baseQuery += ` LIMIT $${paramIndex}`;
     queryParams.push(limit);
-
+    
     paramIndex++;
     baseQuery += ` OFFSET $${paramIndex}`;
     queryParams.push(offset);
@@ -240,16 +235,15 @@ router.get('/:id', validateUUID, handleValidationErrors, optionalAuth, getUserIn
 // Create new project
 router.post('/', requireAuth, getUserInfo, validateProject, handleValidationErrors, async (req, res) => {
   const client = await pool.connect();
-
+  
   try {
     await client.query('BEGIN');
-
+    
     const {
       title,
       description,
       githubUrl,
       liveUrl,
-      imageUrl,
       tags,
       language
     } = req.body;
@@ -259,7 +253,6 @@ router.post('/', requireAuth, getUserInfo, validateProject, handleValidationErro
       description: description?.substring(0, 50) + '...',
       githubUrl,
       liveUrl,
-      imageUrl,
       tags,
       language,
       userId: req.userId
@@ -270,11 +263,11 @@ router.post('/', requireAuth, getUserInfo, validateProject, handleValidationErro
 
     // Create project
     const projectResult = await client.query(
-      `INSERT INTO projects (user_id, title, description, github_url, live_url, image_url, tags, language, is_approved)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING id, title, description, github_url, live_url, image_url, tags, language, 
+      `INSERT INTO projects (user_id, title, description, github_url, live_url, tags, language, is_approved)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, title, description, github_url, live_url, tags, language, 
                  stars_count, forks_count, is_featured, is_approved, created_at, updated_at`,
-      [req.userId, title, description, githubUrl, liveUrl || null, imageUrl || null, tags, language, true] // Auto-approve for now
+      [req.userId, title, description, githubUrl, liveUrl || null, tags, language, true] // Auto-approve for now
     );
 
     await client.query('COMMIT');
@@ -289,7 +282,6 @@ router.post('/', requireAuth, getUserInfo, validateProject, handleValidationErro
           id: project.id,
           title: project.title,
           description: project.description,
-          imageUrl: project.image_url,
           githubUrl: project.github_url,
           liveUrl: project.live_url,
           tags: project.tags || [],
