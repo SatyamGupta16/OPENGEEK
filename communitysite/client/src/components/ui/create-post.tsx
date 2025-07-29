@@ -23,6 +23,7 @@ interface Post {
   full_name: string;
   user_image_url: string;
   is_verified: boolean;
+  user_id: string; // Add user_id for consistency
 }
 
 interface CreatePostProps {
@@ -106,8 +107,14 @@ export function CreatePost({ onPostCreated }: CreatePostProps) {
         }
 
         // Notify parent component
-        if (onPostCreated) {
-          onPostCreated(response.data.post);
+        if (onPostCreated && response.data?.post) {
+          // Ensure the post has all required properties
+          const post = response.data.post;
+          if (post.id && post.content !== undefined) {
+            onPostCreated(post);
+          } else {
+            console.error('Post missing essential data:', post);
+          }
         }
       }
     } catch (error: unknown) {

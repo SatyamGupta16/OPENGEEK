@@ -15,6 +15,7 @@ interface Post {
   full_name: string;
   user_image_url: string;
   is_verified: boolean;
+  user_id: string; // Add user_id for consistency with Home.tsx
 }
 
 interface PostContextType {

@@ -27,6 +27,7 @@ interface Post {
   full_name: string;
   user_image_url: string;
   is_verified: boolean;
+  user_id: string; // Add user_id for delete functionality
 }
 
 export default function Home() {
@@ -38,8 +39,8 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // Fetch posts from backend
-  const fetchPosts = async (sortBy: 'created_at' | 'likes_count' = 'created_at', pageNum = 1) => {
+  // Fetch posts from backend - memoized to prevent infinite re-renders
+  const fetchPosts = useCallback(async (sortBy: 'created_at' | 'likes_count' = 'created_at', pageNum = 1) => {
     try {
       const response = await postsAPI.getPosts({
         page: pageNum,
@@ -79,12 +80,45 @@ export default function Home() {
       console.error('Error fetching posts:', error);
       toast.error('Failed to load posts');
     }
-  };
+  }, []);
 
   // Handle new post created - memoized to prevent infinite re-renders
-  const handlePostCreated = useCallback((newPost: Post) => {
-    setPosts(prev => [newPost, ...prev]);
-    toast.success('Post loaded successfully!');
+  const handlePostCreated = useCallback((newPost: Omit<Post, 'user_id'> & { user_id?: string }) => {
+    // Check if newPost is valid - silently return if undefined (initial context call)
+    if (!newPost || typeof newPost !== 'object') {
+      // Only log error if it's not just undefined (which happens on initial load)
+      if (newPost !== undefined) {
+        console.error('Invalid post data received:', newPost);
+        toast.error('Failed to add new post - invalid data');
+      }
+      return;
+    }
+
+    // Ensure the newPost has all required properties
+    const completePost: Post = {
+      id: newPost.id || '',
+      content: newPost.content || '',
+      image_url: newPost.image_url,
+      likes_count: newPost.likes_count || 0,
+      comments_count: newPost.comments_count || 0,
+      created_at: newPost.created_at || new Date().toISOString(),
+      updated_at: newPost.updated_at || new Date().toISOString(),
+      is_liked_by_user: newPost.is_liked_by_user || false,
+      username: newPost.username || '',
+      full_name: newPost.full_name || '',
+      user_image_url: newPost.user_image_url || '',
+      is_verified: newPost.is_verified || false,
+      user_id: newPost.user_id || '', // Provide default if missing
+    };
+
+    // Only add if we have essential data
+    if (completePost.id && completePost.content) {
+      setPosts(prev => [completePost, ...prev]);
+      toast.success('Post added successfully!');
+    } else {
+      console.error('Post missing essential data:', completePost);
+      toast.error('Failed to add post - missing essential data');
+    }
   }, []);
 
   // Register post creation callback with context
@@ -102,7 +136,7 @@ export default function Home() {
     };
 
     loadPosts();
-  }, [activeTab]);
+  }, [activeTab, fetchPosts]);
 
   // Handle tab change
   const handleTabChange = (value: string) => {
@@ -110,8 +144,6 @@ export default function Home() {
     setPage(1);
     setPosts([]);
   };
-
-
 
   // Handle post like
   const handlePostLike = async (postId: string) => {
@@ -134,6 +166,11 @@ export default function Home() {
     }
   };
 
+  // Handle post deletion
+  const handlePostDelete = (postId: string) => {
+    setPosts(prev => prev.filter(post => post.id !== postId));
+  };
+
   // Transform post data for PostCard component
   const transformPostForCard = (post: Post) => {
     if (!post || !post.id) {
@@ -149,7 +186,8 @@ export default function Home() {
       user: {
         name: post.full_name || post.username || 'Unknown User',
         username: post.username || 'unknown',
-        avatarUrl: post.user_image_url || ''
+        avatarUrl: post.user_image_url || '',
+        userId: post.user_id // Add userId for delete functionality
       },
       content: post.content || '',
       timestamp: post.created_at ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true }) : 'Unknown time',
@@ -157,7 +195,8 @@ export default function Home() {
       comments: post.comments_count || 0,
       image: post.image_url,
       isLiked: post.is_liked_by_user || false,
-      onLike: () => handlePostLike(post.id)
+      onLike: () => handlePostLike(post.id),
+      onDelete: handlePostDelete
     };
   };
 
