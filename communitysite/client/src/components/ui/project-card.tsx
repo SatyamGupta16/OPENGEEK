@@ -15,11 +15,13 @@ import {
   Calendar,
   Heart,
   Bookmark,
-  Share2
+  Share2,
+  Code
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ProjectCardProps {
+  id: string;
   title: string;
   description: string;
   author: {
@@ -36,9 +38,12 @@ interface ProjectCardProps {
   githubUrl: string;
   liveUrl?: string;
   featured?: boolean;
+  isStarred?: boolean;
+  onStar?: (projectId: string) => void;
 }
 
 export function ProjectCard({
+  id,
   title,
   description,
   author,
@@ -50,15 +55,16 @@ export function ProjectCard({
   lastUpdated,
   githubUrl,
   liveUrl,
-  featured = false
+  featured = false,
+  isStarred = false,
+  onStar
 }: ProjectCardProps) {
-  const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleStar = (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsLiked(!isLiked);
+    onStar?.(id);
   };
 
   const handleBookmark = (e: React.MouseEvent) => {
@@ -80,10 +86,10 @@ export function ProjectCard({
   };
 
   return (
-    <Card className="group bg-black border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/5 overflow-hidden">
-      {/* Project Image */}
+    <Card className="group bg-black border-zinc-800 hover:border-zinc-700 transition-all duration-300 hover:shadow-lg hover:shadow-zinc-900/20 overflow-hidden h-fit">
+      {/* Compact Project Image */}
       {image && !imageError && (
-        <div className="relative h-48 overflow-hidden">
+        <div className="relative h-32 overflow-hidden bg-zinc-800">
           <Image
             src={image}
             alt={title}
@@ -92,141 +98,149 @@ export function ProjectCard({
             onError={() => setImageError(true)}
           />
           {featured && (
-            <div className="absolute top-3 left-3">
-              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                <Star className="h-3 w-3 mr-1" />
+            <div className="absolute top-2 left-2">
+              <Badge className="bg-white text-black shadow-sm text-xs px-2 py-0.5">
+                <Star className="h-2.5 w-2.5 mr-1 fill-current" />
                 Featured
               </Badge>
             </div>
           )}
-          <div className="absolute top-3 right-3 flex gap-2">
+          <div className="absolute top-2 right-2">
             <Button
               size="sm"
               variant="ghost"
-              className="h-8 w-8 p-0 bg-black/50 hover:bg-black/70 text-white"
-              onClick={handleLike}
+              className="h-6 w-6 p-0 bg-black/60 hover:bg-black/80 text-white shadow-sm"
+              onClick={handleStar}
             >
-              <Heart className={cn("h-4 w-4", isLiked && "fill-red-500 text-red-500")} />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 w-8 p-0 bg-black/50 hover:bg-black/70 text-white"
-              onClick={handleBookmark}
-            >
-              <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-yellow-500 text-yellow-500")} />
+              <Star className={cn("h-3 w-3", isStarred && "fill-yellow-400 text-yellow-400")} />
             </Button>
           </div>
         </div>
       )}
 
-      <CardHeader className="pb-3">
-        {/* Author Info */}
-        <div className="flex items-center gap-3 mb-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={author.avatarUrl} alt={author.name} />
-            <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{author.name}</p>
-            <p className="text-xs text-zinc-500">@{author.username}</p>
+      {/* Compact Fallback for no image */}
+      {(!image || imageError) && (
+        <div className="relative h-32 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
+          <Code className="h-8 w-8 text-zinc-500" />
+          {featured && (
+            <div className="absolute top-2 left-2">
+              <Badge className="bg-white text-black shadow-sm text-xs px-2 py-0.5">
+                <Star className="h-2.5 w-2.5 mr-1 fill-current" />
+                Featured
+              </Badge>
+            </div>
+          )}
+          <div className="absolute top-2 right-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 bg-black/60 hover:bg-black/80 text-white shadow-sm"
+              onClick={handleStar}
+            >
+              <Star className={cn("h-3 w-3", isStarred && "fill-yellow-400 text-yellow-400")} />
+            </Button>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
-            onClick={handleShare}
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
         </div>
+      )}
 
+      {/* Compact Content */}
+      <div className="p-4">
         {/* Project Title */}
-        <h3 className="text-lg font-semibold text-white group-hover:text-emerald-400 transition-colors line-clamp-1">
+        <h3 className="text-base font-semibold text-white group-hover:text-zinc-300 transition-colors line-clamp-1 mb-2">
           {title}
         </h3>
-      </CardHeader>
 
-      <CardContent className="pb-4">
         {/* Description */}
-        <p className="text-sm text-zinc-400 mb-4 line-clamp-2">
+        <p className="text-xs text-zinc-400 mb-3 line-clamp-2 leading-relaxed">
           {description}
         </p>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1 mb-4">
-          {tags.slice(0, 3).map((tag, index) => (
+        {/* Compact Tags */}
+        <div className="flex flex-wrap gap-1 mb-3">
+          {tags.slice(0, 2).map((tag, index) => (
             <Badge 
               key={index} 
               variant="secondary" 
-              className="text-xs bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50"
+              className="text-xs bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border-0 px-2 py-0.5"
             >
               {tag}
             </Badge>
           ))}
-          {tags.length > 3 && (
-            <Badge variant="secondary" className="text-xs bg-zinc-800/50 text-zinc-300">
-              +{tags.length - 3}
+          {tags.length > 2 && (
+            <Badge variant="secondary" className="text-xs bg-zinc-800 text-zinc-300 border-0 px-2 py-0.5">
+              +{tags.length - 2}
             </Badge>
           )}
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-4 text-sm text-zinc-500">
-          <div className="flex items-center gap-1">
-            <Star className="h-4 w-4" />
-            <span>{stars.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <GitFork className="h-4 w-4" />
-            <span>{forks}</span>
+        {/* Compact Stats */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3 text-xs text-zinc-500">
+            <div className="flex items-center gap-1">
+              <Star className="h-3 w-3" />
+              <span>{stars}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <GitFork className="h-3 w-3" />
+              <span>{forks}</span>
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <div className={cn(
-              "h-3 w-3 rounded-full",
+              "h-2 w-2 rounded-full",
               language === 'TypeScript' && "bg-blue-500",
               language === 'JavaScript' && "bg-yellow-500",
               language === 'Python' && "bg-green-500",
               language === 'Go' && "bg-cyan-500",
               language === 'Vue' && "bg-emerald-500",
-              !['TypeScript', 'JavaScript', 'Python', 'Go', 'Vue'].includes(language) && "bg-zinc-500"
+              language === 'React' && "bg-blue-400",
+              language === 'Node.js' && "bg-green-600",
+              !['TypeScript', 'JavaScript', 'Python', 'Go', 'Vue', 'React', 'Node.js'].includes(language) && "bg-zinc-500"
             )} />
-            <span>{language}</span>
+            <span className="text-xs text-zinc-500">{language}</span>
           </div>
         </div>
 
-        {/* Last Updated */}
-        <div className="flex items-center gap-1 text-xs text-zinc-600 mt-2">
-          <Calendar className="h-3 w-3" />
-          <span>Updated {lastUpdated}</span>
+        {/* Author Info - Compact */}
+        <div className="flex items-center gap-2 mb-3">
+          <Avatar className="h-5 w-5">
+            <AvatarImage src={author.avatarUrl} alt={author.name} />
+            <AvatarFallback className="bg-zinc-800 text-zinc-300 text-xs">
+              {author.name.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-xs text-zinc-500 truncate">{author.name}</span>
+          <span className="text-xs text-zinc-600">•</span>
+          <span className="text-xs text-zinc-600">{lastUpdated}</span>
         </div>
-      </CardContent>
 
-      <CardFooter className="pt-0 flex gap-2">
-        <Button
-          asChild
-          variant="outline"
-          size="sm"
-          className="flex-1 border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-600"
-        >
-          <Link href={githubUrl} target="_blank" rel="noopener noreferrer">
-            <Github className="h-4 w-4 mr-2" />
-            Code
-          </Link>
-        </Button>
-        {liveUrl && (
+        {/* Compact Action Buttons */}
+        <div className="flex gap-2">
           <Button
             asChild
+            variant="outline"
             size="sm"
-            className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
+            className="flex-1 h-8 border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-600 hover:bg-zinc-800 text-xs"
           >
-            <Link href={liveUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Live Demo
+            <Link href={githubUrl} target="_blank" rel="noopener noreferrer">
+              <Github className="h-3 w-3 mr-1" />
+              Code
             </Link>
           </Button>
-        )}
-      </CardFooter>
+          {liveUrl && (
+            <Button
+              asChild
+              size="sm"
+              className="flex-1 h-8 bg-white hover:bg-zinc-100 text-black shadow-sm text-xs"
+            >
+              <Link href={liveUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Demo
+              </Link>
+            </Button>
+          )}
+        </div>
+      </div>
     </Card>
   );
 }
