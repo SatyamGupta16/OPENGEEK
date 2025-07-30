@@ -123,7 +123,7 @@ Stay connected:
 - 🌐 Website: [www.opengeek.in](https://www.opengeek.in)
 - 📸 Instagram: [@opengeek.in](https://instagram.com/opengeek.in)
 - 💬 Discord: [OPENGEEK](https://discord.gg/WsmZ6eupnk)
-- ✨ GitHub Org: [[OPENGEEK COMMUNITY]([https://github.com/OpenGeek-In](https://github.com/OPENGEEK-COMMUNITY))](https://github.com/OPENGEEK-COMMUNITY)
+- ✨ GitHub Org: [OPENGEEK COMMUNITY](https://github.com/OPENGEEK-COMMUNITY)
 
 ---
 
