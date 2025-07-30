@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Gift, ExternalLink, Clock, CheckCircle, Shield, Globe, Rocket, Zap, Star } from 'lucide-react';
+import { Gift, Clock, CheckCircle, Shield, Globe, Rocket, Star } from 'lucide-react';
 import { ClaimModal } from '@/components/ui/claim-modal';
 
 interface Perk {
@@ -146,7 +146,7 @@ export default function ClaimPage() {
                                 {/* Tagline */}
                                 <div className="bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-3 mb-3">
                                     <p className="text-sm text-zinc-300 italic font-medium leading-relaxed">
-                                        "{perk.tagline}"
+                                        &ldquo;{perk.tagline}&rdquo;
                                     </p>
                                 </div>
                             </CardHeader>
