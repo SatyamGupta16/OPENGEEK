@@ -27,6 +27,7 @@ const userRoutes = require('./routes/users');
 const projectRoutes = require('./routes/projects');
 const postRoutes = require('./routes/posts');
 const uploadRoutes = require('./routes/upload');
+const claimsRoutes = require('./routes/claims');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -107,6 +108,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/posts', handleUploadError, postRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/claims', claimsRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

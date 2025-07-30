@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Menu, X, Search, LogOut, Settings, User,
   Plus, Bell, ChevronDown, Book, GitPullRequest,
-  MessageSquare, Star, FileText
+  MessageSquare, Star, FileText, Gift
 } from 'lucide-react';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
@@ -84,6 +84,9 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
               </Button>
               <Button variant="ghost" className="text-zinc-400 hover:text-white">Discussions</Button>
               <Button variant="ghost" className="text-zinc-400 hover:text-white">Blog</Button>
+              <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
+                <Link href="/claim">Claim Perks</Link>
+              </Button>
             </div>
           </div>
 
@@ -240,6 +243,12 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                       <Link href="/profile">
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer" asChild>
+                      <Link href="/claim/my-claims">
+                        <Gift className="mr-2 h-4 w-4" />
+                        <span>My Claims</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
