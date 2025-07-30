@@ -12,7 +12,14 @@
     "seed": "node scripts/seed.js",
     "test:cloudinary": "node test-cloudinary.js",
     "test:follow": "node test-follow-system.js",
-    "setup": "node scripts/setup.js"
+    "setup": "node scripts/setup.js",
+    "cleanup": "node scripts/cleanup-database.js",
+    "cleanup:posts": "node scripts/quick-cleanup.js clear-posts",
+    "cleanup:projects": "node scripts/quick-cleanup.js clear-projects", 
+    "cleanup:follows": "node scripts/quick-cleanup.js clear-follows",
+    "cleanup:all": "node scripts/quick-cleanup.js clear-all",
+    "cleanup:reset": "node scripts/quick-cleanup.js reset-sequences",
+    "db:stats": "node scripts/quick-cleanup.js stats"
   },
   "keywords": [
     "opengeek",
