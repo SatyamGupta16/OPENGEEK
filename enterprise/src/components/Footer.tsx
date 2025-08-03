@@ -9,10 +9,10 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Company Info */}
                     <div className="lg:col-span-2">
-                        <h3 className="text-2xl font-bold text-blue-400 mb-4">TechSolutions</h3>
+                        <h3 className="text-2xl font-bold text-blue-400 mb-4">OpenGeek Enterprise</h3>
                         <p className="text-gray-300 mb-6 max-w-md">
-                            We transform businesses through innovative web development, mobile applications, 
-                            and comprehensive IT solutions. Your success is our mission.
+                            Providing the IT services you need for your business. We transform companies through 
+                            innovative web development, mobile applications, and comprehensive digital solutions.
                         </p>
                         <div className="flex space-x-4">
                             <a href="#" className="bg-blue-600 p-2 rounded-lg hover:bg-blue-700 transition-colors">
@@ -68,7 +68,7 @@ export default function Footer() {
                 <div className="border-t border-gray-800 mt-12 pt-8">
                     <div className="flex flex-col md:flex-row justify-between items-center">
                         <div className="text-gray-300 mb-4 md:mb-0">
-                            © {currentYear} TechSolutions. All rights reserved.
+                            © {currentYear} OpenGeek Enterprise. All rights reserved.
                         </div>
                         <div className="flex space-x-6">
                             <a href="#" className="text-gray-300 hover:text-white transition-colors text-sm">Privacy Policy</a>
