@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TechSolutions - Professional Web Development & IT Services",
-  description: "Transform your business with our expert web development, mobile apps, IT consulting, and digital marketing services. Professional solutions for clients and business owners.",
+  title: "OpenGeek Enterprise - The IT Services You Need For Your Business",
+  description: "Transform your business with OpenGeek Enterprise. We provide expert web development, mobile apps, IT consulting, and digital marketing services - the IT services you need for your business.",
 };
 
 export default function RootLayout({
