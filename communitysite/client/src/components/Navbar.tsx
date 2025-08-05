@@ -78,16 +78,7 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
               </span>
             </Link>
 
-            <div className="hidden md:flex items-center space-x-1">
-              <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
-                <Link href="/projects">Projects</Link>
-              </Button>
-              <Button variant="ghost" className="text-zinc-400 hover:text-white">Discussions</Button>
-              <Button variant="ghost" className="text-zinc-400 hover:text-white">Blog</Button>
-              <Button variant="ghost" className="text-zinc-400 hover:text-white" asChild>
-                <Link href="/claim">Claim Perks</Link>
-              </Button>
-            </div>
+            
           </div>
 
           {/* Center search - shorter and more compact */}
@@ -125,7 +116,7 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="gap-1 sm:gap-2 text-zinc-400 hover:text-white hover:bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600/50 rounded-lg px-2 sm:px-3 py-2 transition-all duration-200 shrink-0"
+                      className="gap-1 sm:gap-2 text-white hover:text-white hover:bg-zinc-800/50 border border-white/25 hover:border-zinc-600/50 rounded-lg px-2 sm:px-3 py-2 transition-all duration-200 shrink-0"
                     >
                       <Plus className="h-4 w-4" />
                       <span className="hidden sm:inline text-xs sm:text-sm">Create</span>
@@ -168,7 +159,7 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="relative text-zinc-400 hover:text-white hover:bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600/50 rounded-lg w-8 h-8 sm:w-10 sm:h-10 transition-all duration-200 shrink-0"
+                      className="relative text-white hover:text-white hover:bg-zinc-800/50 border border-white/25 hover:border-zinc-600/50 rounded-lg w-8 h-8 sm:w-10 sm:h-10 transition-all duration-200 shrink-0"
                     >
                       <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
                       <span className="absolute -right-0.5 -top-0.5 sm:-right-1 sm:-top-1 flex h-3 w-3 sm:h-4 sm:w-4 items-center justify-center rounded-full bg-emerald-500 text-[8px] sm:text-[10px] font-medium text-white">
@@ -218,9 +209,9 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-lg border border-zinc-700/50 hover:border-zinc-600/50 hover:bg-zinc-800/50 transition-all duration-200 p-0 shrink-0"
+                      className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full border border-white  transition-all duration-200 "
                     >
-                      <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
+                      <Avatar className="h-8 w-8 sm:h-8 sm:w-8">
                         <AvatarImage src={user?.imageUrl} alt={user?.fullName || 'User'} />
                         <AvatarFallback className="bg-zinc-800 text-zinc-300 text-xs sm:text-sm">{user?.firstName?.charAt(0) || 'U'}</AvatarFallback>
                       </Avatar>
