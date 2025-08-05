@@ -7,12 +7,12 @@ import {
   Calendar,
   Code,
   MessageSquare,
-  Hash,
   Settings,
   Users,
   Bookmark,
   HelpCircle,
   Gift,
+  UserPlus,
   type LucideIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -60,15 +60,12 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const mainNavItems = [
-    { icon: Home, label: 'Home', href: '/', isActive: pathname === '/' },
-    { icon: Trophy, label: 'Leaderboards', badge: 'New' },
-    { icon: Monitor, label: 'Project Showcase', href: '/projects', isActive: pathname === '/projects' },
+    { icon: Home, label: 'Home', href: '/', isActive: pathname === '/' , badge:'New'},
+    { icon: Trophy, label: 'Leaderboards', badge: 'Upcoming' },
+    { icon: Monitor, label: 'Project Showcase', href: '/projects', isActive: pathname === '/projects', badge:'New' },
     { icon: Gift, label: 'Perks & Rewards', href: '/claim', isActive: pathname === '/claim', badge: 'Claim' },
-    { icon: Calendar, label: 'Monthly Challenge' },
-    { icon: Code, label: '#30NitesOfCode' },
-    { icon: MessageSquare, label: 'General' },
-    { icon: Users, label: 'Members' },
-    { icon: Bookmark, label: 'Saved Posts', badge: 3 },
+    { icon: UserPlus, label: 'Find Your Team', href: '/find-team', isActive: pathname === '/find-team', badge:'Upcoming' },
+    { icon: Calendar, label: 'Monthly Challenge', badge: 'Upcoming'},
   ];
 
 
