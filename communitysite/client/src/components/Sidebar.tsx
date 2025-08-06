@@ -81,7 +81,7 @@ export default function Sidebar() {
               <h3 className="px-3 text-xs font-semibold text-white uppercase tracking-wider mb-2">
                 Main
               </h3>
-              <nav className="space-y-1">
+              <nav className="space-y-2">
                 {mainNavItems.map((item, index) => (
                   <NavItem
                     key={index}
