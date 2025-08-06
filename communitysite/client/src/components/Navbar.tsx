@@ -88,7 +88,7 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
               <input
                 type="text"
                 placeholder="Search..."
-                className="w-full h-9 px-4 pl-10 text-sm bg-zinc-900/50 border border-zinc-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 text-zinc-100 placeholder:text-zinc-500 transition-all duration-200"
+                className="w-full h-9 px-4 pl-10 text-sm bg-zinc-900/50 border border-white/25 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 text-zinc-100 placeholder:text-zinc-500 transition-all duration-200"
               />
               <kbd className="absolute right-3 top-2 px-1.5 text-[10px] font-medium text-zinc-500 bg-zinc-800 border border-zinc-700 rounded">
                 ⌘K
@@ -97,7 +97,7 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
           </div>
 
           {/* Right section - improved mobile responsiveness */}
-          <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 lg:space-x-4">
+          <div className="flex items-center space-x-4 sm:space-x-2 md:space-x-3 lg:space-x-4">
             {/* Mobile search button - hidden on mobile */}
             <Button
               variant="ghost"
@@ -209,9 +209,9 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full border border-white  transition-all duration-200 "
+                      className="relative h-8 w-8 sm:h-10 sm:w-10  rounded-full border-2 border-white/25 transition-all duration-200 "
                     >
-                      <Avatar className="h-8 w-8 sm:h-8 sm:w-8">
+                      <Avatar className="h-9 w-9 sm:h-9 sm:w-9">
                         <AvatarImage src={user?.imageUrl} alt={user?.fullName || 'User'} />
                         <AvatarFallback className="bg-zinc-800 text-zinc-300 text-xs sm:text-sm">{user?.firstName?.charAt(0) || 'U'}</AvatarFallback>
                       </Avatar>
