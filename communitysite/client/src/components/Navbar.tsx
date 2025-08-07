@@ -78,7 +78,7 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
               </span>
             </Link>
 
-            
+
           </div>
 
           {/* Center search - shorter and more compact */}
@@ -137,18 +137,13 @@ export default function Navbar({ onSidebarToggle, isSidebarOpen }: NavbarProps) 
                         <FileText className="mr-2 h-4 w-4" />
                         <span>New Post</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
-                        <Book className="mr-2 h-4 w-4" />
-                        <span>New Project</span>
+                      <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer" asChild>
+                        <Link href="/projects">
+                          <Book className="mr-2 h-4 w-4" />
+                          <span>New Project</span>
+                        </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
-                        <MessageSquare className="mr-2 h-4 w-4" />
-                        <span>New Discussion</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="hover:bg-zinc-800 focus:bg-zinc-800 cursor-pointer">
-                        <GitPullRequest className="mr-2 h-4 w-4" />
-                        <span>New Pull Request</span>
-                      </DropdownMenuItem>
+
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>

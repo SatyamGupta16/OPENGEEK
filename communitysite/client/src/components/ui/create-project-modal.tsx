@@ -74,6 +74,19 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
     tags: [] as string[]
   });
 
+  // Field validation requirements
+  const fieldRequirements = {
+    title: { min: 3, max: 100, required: true },
+    description: { min: 20, max: 1000, required: true },
+    githubUrl: { min: 10, max: 200, required: true },
+    liveUrl: { min: 0, max: 200, required: false },
+    language: { min: 0, max: 50, required: false },
+    tags: { min: 1, max: 10, required: true }
+  };
+
+  // Validation errors state
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   // Popular programming languages
   const popularLanguages = [
     'TypeScript', 'JavaScript', 'Python', 'Go', 'Rust', 'Java',
@@ -94,8 +107,77 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
       setCurrentTag('');
       setImagePreview(null);
       setSelectedImageFile(null);
+      setValidationErrors({});
     }
   }, [isOpen]);
+
+  // Validate individual field
+  const validateField = (field: string, value: string | string[]): string => {
+    const req = fieldRequirements[field as keyof typeof fieldRequirements];
+    
+    if (field === 'tags') {
+      const tags = value as string[];
+      if (req.required && tags.length < req.min) {
+        return `At least ${req.min} tag is required`;
+      }
+      if (tags.length > req.max) {
+        return `Maximum ${req.max} tags allowed`;
+      }
+      return '';
+    }
+
+    const stringValue = value as string;
+    const length = stringValue.trim().length;
+
+    if (req.required && length === 0) {
+      return `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+    }
+
+    if (length > 0 && length < req.min) {
+      return `${field.charAt(0).toUpperCase() + field.slice(1)} must be at least ${req.min} characters`;
+    }
+
+    if (length > req.max) {
+      return `${field.charAt(0).toUpperCase() + field.slice(1)} must not exceed ${req.max} characters`;
+    }
+
+    // URL validation for GitHub and Live URLs
+    if (field === 'githubUrl' && stringValue.trim()) {
+      const githubPattern = /^https:\/\/github\.com\/[\w\-\.]+\/[\w\-\.]+\/?$/;
+      if (!githubPattern.test(stringValue.trim())) {
+        return 'Please enter a valid GitHub repository URL (e.g., https://github.com/username/repo)';
+      }
+    }
+
+    if (field === 'liveUrl' && stringValue.trim()) {
+      try {
+        new URL(stringValue.trim());
+      } catch {
+        return 'Please enter a valid URL (e.g., https://example.com)';
+      }
+    }
+
+    return '';
+  };
+
+  // Validate all fields
+  const validateAllFields = (): boolean => {
+    const errors: Record<string, string> = {};
+    
+    errors.title = validateField('title', formData.title);
+    errors.description = validateField('description', formData.description);
+    errors.githubUrl = validateField('githubUrl', formData.githubUrl);
+    errors.liveUrl = validateField('liveUrl', formData.liveUrl);
+    errors.tags = validateField('tags', formData.tags);
+
+    // Remove empty error messages
+    Object.keys(errors).forEach(key => {
+      if (!errors[key]) delete errors[key];
+    });
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   // Upload image to backend (which will handle Cloudinary upload)
   const uploadImageToCloudinary = async (file: File): Promise<string> => {
@@ -173,6 +255,15 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Clear validation error for this field when user starts typing
+    if (validationErrors[field]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const handleAddTag = () => {
@@ -204,16 +295,14 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
 
     if (!isSignedIn) {
       toast.error('Please sign in to submit a project');
+      console.error('Project submission failed: User not signed in');
       return;
     }
 
-    if (!formData.title.trim() || !formData.description.trim() || !formData.githubUrl.trim()) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    if (formData.tags.length === 0) {
-      toast.error('Please add at least one tag');
+    // Validate all fields before submission
+    if (!validateAllFields()) {
+      toast.error('Please fix the validation errors before submitting');
+      console.error('Project submission failed: Validation errors', validationErrors);
       return;
     }
 
@@ -226,14 +315,37 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
       if (selectedImageFile) {
         toast.info('Uploading image...');
         try {
+          console.log('Starting image upload for file:', selectedImageFile.name, 'Size:', selectedImageFile.size);
           imageUrl = await uploadImageToCloudinary(selectedImageFile);
           toast.success('Image uploaded successfully!');
+          console.log('Image uploaded successfully:', imageUrl);
         } catch (error) {
           toast.error('Failed to upload image. Submitting project without image.');
-          console.error('Image upload error:', error);
+          console.error('Image upload error:', {
+            error: error instanceof Error ? error.message : error,
+            fileName: selectedImageFile.name,
+            fileSize: selectedImageFile.size,
+            fileType: selectedImageFile.type
+          });
           // Continue without image
         }
       }
+
+      // Log project submission details
+      console.log('Submitting project with data:', {
+        title: formData.title.trim(),
+        titleLength: formData.title.trim().length,
+        description: formData.description.trim().substring(0, 100) + '...',
+        descriptionLength: formData.description.trim().length,
+        githubUrl: formData.githubUrl.trim(),
+        githubUrlLength: formData.githubUrl.trim().length,
+        liveUrl: formData.liveUrl.trim() || 'Not provided',
+        liveUrlLength: formData.liveUrl.trim().length,
+        language: formData.language || 'Other',
+        tags: formData.tags,
+        tagsCount: formData.tags.length,
+        hasImage: !!imageUrl
+      });
 
       // Create project with or without image
       const response = await projectsAPI.createProject({
@@ -248,14 +360,33 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
 
       if (response.success) {
         toast.success('Project submitted successfully! It will be reviewed before being published.');
+        console.log('Project submitted successfully:', response.data.project.id);
         onProjectCreated?.(response.data.project);
         onClose();
       } else {
-        toast.error('Failed to submit project');
+        const errorMessage = response.error || 'Failed to submit project';
+        toast.error(errorMessage);
+        console.error('Project submission failed:', {
+          success: response.success,
+          error: response.error,
+          data: response.data
+        });
       }
     } catch (error) {
-      console.error('Error creating project:', error);
-      toast.error('Failed to submit project');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Error creating project:', {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+        formData: {
+          titleLength: formData.title.length,
+          descriptionLength: formData.description.length,
+          githubUrlLength: formData.githubUrl.length,
+          liveUrlLength: formData.liveUrl.length,
+          tagsCount: formData.tags.length,
+          language: formData.language
+        }
+      });
+      toast.error(`Failed to submit project: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -311,36 +442,57 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
                 {/* Title - Full Width */}
                 <div>
                   <Label htmlFor="title" className="text-white font-medium text-xs sm:text-sm">
-                    Project Title *
+                    Project Title * (3-100 characters)
                   </Label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
                     placeholder="My Awesome Project"
-                    className="mt-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 focus:border-zinc-600 focus:ring-zinc-600 h-8 sm:h-9 text-sm"
-                    maxLength={200}
+                    className={`mt-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 focus:border-zinc-600 focus:ring-zinc-600 h-8 sm:h-9 text-sm ${
+                      validationErrors.title ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                    }`}
+                    maxLength={100}
                     required
                   />
+                  <div className="flex justify-between items-center mt-1">
+                    <div className="text-xs text-zinc-500">
+                      {formData.title.length}/100 characters
+                    </div>
+                    {validationErrors.title && (
+                      <div className="text-xs text-red-400">
+                        {validationErrors.title}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Description - Full Width */}
                 <div>
                   <Label htmlFor="description" className="text-white font-medium text-xs sm:text-sm">
-                    Description *
+                    Description * (20-1000 characters)
                   </Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     placeholder="Describe what your project does, what technologies you used, and what makes it special..."
-                    className="mt-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 resize-none focus:border-zinc-600 focus:ring-zinc-600 text-sm"
+                    className={`mt-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 resize-none focus:border-zinc-600 focus:ring-zinc-600 text-sm ${
+                      validationErrors.description ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                    }`}
                     rows={3}
                     maxLength={1000}
                     required
                   />
-                  <div className="text-xs text-zinc-500 mt-1">
-                    {formData.description.length}/1000 characters
+                  <div className="flex justify-between items-center mt-1">
+                    <div className="text-xs text-zinc-500">
+                      {formData.description.length}/1000 characters
+                    </div>
+                    {validationErrors.description && (
+                      <div className="text-xs text-red-400">
+                        {validationErrors.description}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -433,31 +585,57 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
                   <div>
                     <Label htmlFor="githubUrl" className="text-white font-medium flex items-center gap-1 text-xs sm:text-sm">
                       <GithubIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-                      GitHub Repository *
+                      GitHub Repository * (10-200 characters)
                     </Label>
                     <Input
                       id="githubUrl"
                       value={formData.githubUrl}
                       onChange={(e) => handleInputChange('githubUrl', e.target.value)}
                       placeholder="https://github.com/username/project"
-                      className="mt-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 focus:border-zinc-600 focus:ring-zinc-600 h-8 sm:h-9 text-sm"
+                      className={`mt-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 focus:border-zinc-600 focus:ring-zinc-600 h-8 sm:h-9 text-sm ${
+                        validationErrors.githubUrl ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
+                      maxLength={200}
                       required
                     />
+                    <div className="flex justify-between items-center mt-1">
+                      <div className="text-xs text-zinc-500">
+                        {formData.githubUrl.length}/200 characters
+                      </div>
+                      {validationErrors.githubUrl && (
+                        <div className="text-xs text-red-400">
+                          {validationErrors.githubUrl}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Live URL */}
                   <div>
                     <Label htmlFor="liveUrl" className="text-white font-medium flex items-center gap-1 text-xs sm:text-sm">
                       <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
-                      Live Demo URL (Optional)
+                      Live Demo URL (Optional, max 200 characters)
                     </Label>
                     <Input
                       id="liveUrl"
                       value={formData.liveUrl}
                       onChange={(e) => handleInputChange('liveUrl', e.target.value)}
                       placeholder="https://myproject.com"
-                      className="mt-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 focus:border-zinc-600 focus:ring-zinc-600 h-8 sm:h-9 text-sm"
+                      className={`mt-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 focus:border-zinc-600 focus:ring-zinc-600 h-8 sm:h-9 text-sm ${
+                        validationErrors.liveUrl ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
+                      maxLength={200}
                     />
+                    <div className="flex justify-between items-center mt-1">
+                      <div className="text-xs text-zinc-500">
+                        {formData.liveUrl.length}/200 characters
+                      </div>
+                      {validationErrors.liveUrl && (
+                        <div className="text-xs text-red-400">
+                          {validationErrors.liveUrl}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -491,7 +669,7 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
                 <div>
                   <Label className="text-white font-medium flex items-center gap-1 text-xs sm:text-sm">
                     <Tag className="h-3 w-3 sm:h-4 sm:w-4" />
-                    Tags * (1-10 tags)
+                    Tags * (1-10 tags, max 20 characters each)
                   </Label>
                   <div className="flex gap-2 mb-2">
                     <Input
@@ -499,7 +677,9 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
                       onChange={(e) => setCurrentTag(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder="Add a tag (e.g., web, mobile, ai)"
-                      className="flex-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 focus:border-zinc-600 focus:ring-zinc-600 h-8 sm:h-9 text-sm"
+                      className={`flex-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 focus:border-zinc-600 focus:ring-zinc-600 h-8 sm:h-9 text-sm ${
+                        validationErrors.tags ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                      }`}
                       maxLength={20}
                     />
                     <Button
@@ -527,8 +707,15 @@ export function CreateProjectModal({ isOpen, onClose, onProjectCreated }: Create
                     ))}
                   </div>
 
-                  <div className="text-xs text-zinc-500">
-                    {formData.tags.length}/10 tags • Click on a tag to remove it
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs text-zinc-500">
+                      {formData.tags.length}/10 tags • Click on a tag to remove it
+                    </div>
+                    {validationErrors.tags && (
+                      <div className="text-xs text-red-400">
+                        {validationErrors.tags}
+                      </div>
+                    )}
                   </div>
                 </div>
 
