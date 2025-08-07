@@ -204,28 +204,26 @@ router.get('/:id', validateUUID, handleValidationErrors, optionalAuth, getUserIn
     res.json({
       success: true,
       data: {
-        project: {
-          id: project.id,
-          title: project.title,
-          description: project.description,
-          imageUrl: project.image_url,
-          githubUrl: project.github_url,
-          liveUrl: project.live_url,
-          tags: project.tags || [],
-          language: project.language,
-          isFeatured: project.is_featured,
-          starsCount: project.stars_count,
-          forksCount: project.forks_count,
-          createdAt: project.created_at,
-          updatedAt: project.updated_at,
-          author: {
-            username: project.username,
-            fullName: project.full_name,
-            imageUrl: project.user_image_url,
-            isVerified: project.is_verified
-          },
-          isStarredByUser: false // We'll add this functionality later
-        }
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        imageUrl: project.image_url,
+        githubUrl: project.github_url,
+        liveUrl: project.live_url,
+        tags: project.tags || [],
+        language: project.language,
+        isFeatured: project.is_featured,
+        starsCount: project.stars_count,
+        forksCount: project.forks_count,
+        createdAt: project.created_at,
+        updatedAt: project.updated_at,
+        author: {
+          username: project.username,
+          fullName: project.full_name,
+          imageUrl: project.user_image_url,
+          isVerified: project.is_verified
+        },
+        isStarredByUser: false // We'll add this functionality later
       }
     });
   } catch (error) {

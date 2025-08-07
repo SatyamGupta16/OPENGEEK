@@ -313,6 +313,12 @@ export default function ProjectsPage() {
     }
   };
 
+  // Get user's project count for display
+  const getUserProjectCount = () => {
+    if (!user?.username) return 0;
+    return projects.filter(project => project.author.username === user.username).length;
+  };
+
   // Load more projects
   const loadMore = () => {
     setPage(prev => prev + 1);
@@ -333,16 +339,28 @@ export default function ProjectsPage() {
             <p className="text-zinc-400 text-lg">
               Discover and explore innovative projects built by our talented developer community
             </p>
+            {isSignedIn && getUserProjectCount() > 0 && (
+              <div className="mt-2">
+                <Badge variant="secondary" className="bg-zinc-800 text-zinc-300 border-0">
+                  You have {getUserProjectCount()} {getUserProjectCount() === 1 ? 'project' : 'projects'} submitted
+                </Badge>
+              </div>
+            )}
           </div>
 
           {isSignedIn && (
-            <Button
-              className="bg-white hover:bg-zinc-100 text-black font-medium px-6 py-3 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
-              onClick={() => setShowCreateModal(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Submit Project
-            </Button>
+            <div className="flex flex-col items-end gap-2">
+              <Button
+                className="bg-white hover:bg-zinc-100 text-black font-medium px-6 py-3 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
+                onClick={() => setShowCreateModal(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Submit Another Project
+              </Button>
+              <p className="text-zinc-500 text-sm">
+                Share multiple projects with the community
+              </p>
+            </div>
           )}
         </div>
       </div>

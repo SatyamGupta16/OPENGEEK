@@ -23,7 +23,7 @@ export function ClientLayout({ children }: ClientLayoutProps) {
   usePreventScrollLock();
 
   return (
-    <div className="min-h-screen bg-zinc-900">
+    <div className="min-h-screen bg-background">
       {/* Fixed Navbar */}
       <Navbar onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)} isSidebarOpen={isSidebarOpen} />
 
