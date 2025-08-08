@@ -15,19 +15,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const updateToken = async () => {
       if (isSignedIn) {
         try {
-          console.log('Getting fresh token from Clerk...');
-          // Always get a fresh token from Clerk
-          const token = await getToken({ skipCache: true });
-          console.log('Token retrieved:', {
-            hasToken: !!token,
-            tokenLength: token?.length || 0,
-            tokenStart: token ? token.substring(0, 20) + '...' : 'No token',
-            isSignedIn
-          });
+          // Get fresh token from Clerk - let Clerk handle all expiration logic
+          const token = await getToken();
+          
           if (token) {
             setAuthToken(token);
           } else {
-            console.warn('Token is null despite being signed in');
             clearAuthToken();
           }
         } catch (error) {
@@ -35,24 +28,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           clearAuthToken();
         }
       } else {
-        console.log('User not signed in, clearing token');
         clearAuthToken();
       }
     };
 
+    // Initial token fetch
     updateToken();
-
-    // Set up token refresh interval (refresh every 50 minutes)
-    const tokenRefreshInterval = setInterval(() => {
-      if (isSignedIn) {
-        console.log('Refreshing token automatically...');
-        updateToken();
-      }
-    }, 50 * 60 * 1000); // 50 minutes
 
     // Listen for token refresh events from API interceptor
     const handleTokenRefresh = () => {
-      console.log('Token refresh requested by API interceptor');
       updateToken();
     };
 
@@ -61,7 +45,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     return () => {
-      clearInterval(tokenRefreshInterval);
       if (typeof window !== 'undefined') {
         window.removeEventListener('token-refresh-needed', handleTokenRefresh);
       }
