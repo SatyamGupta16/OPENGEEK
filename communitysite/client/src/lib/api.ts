@@ -13,58 +13,21 @@ const api = axios.create({
 
 // Add Clerk token to requests
 api.interceptors.request.use(async (config) => {
-  try {
-    const token = getAuthToken();
-    
-    console.log('API Request:', {
-      url: config.url,
-      method: config.method,
-      hasToken: !!token,
-      tokenPreview: token ? `${token.substring(0, 20)}...` : 'No token'
-    });
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  } catch (error) {
-    console.error('Error getting auth token:', error);
+  const token = getAuthToken();
+  
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   
   return config;
 });
 
-// Response interceptor for error handling with token refresh
+// Simple response interceptor - let Clerk handle token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-    
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      console.log('Token expired, attempting to refresh...');
-      
-      // Try to get a fresh token
-      try {
-        // Trigger a token refresh by dispatching a custom event
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('token-refresh-needed'));
-        }
-        
-        // Wait a bit for the token to be refreshed
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const newToken = getAuthToken();
-        if (newToken) {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-      }
-      
-      // If refresh failed, redirect to login
-      console.error('Authentication failed - redirecting to login');
+    // For 401 errors, just redirect to sign-in and let Clerk handle it
+    if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
         window.location.href = '/sign-in';
       }

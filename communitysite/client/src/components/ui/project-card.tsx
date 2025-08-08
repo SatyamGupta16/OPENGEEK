@@ -8,7 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { Badge } from './badge';
 import {
   Star,
-  Code
+  Code,
+  GitBranch,
+  ExternalLink,
+  Github,
+  Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -89,22 +93,29 @@ export function ProjectCard({
           </div>
         )}
 
-        {/* Minimal Content */}
+        {/* Simple Content */}
         <div className="p-4">
           {/* Project Title */}
           <h3 className="text-lg font-semibold text-white group-hover:text-zinc-300 transition-colors line-clamp-1 mb-3">
             {title}
           </h3>
 
-          {/* Author Info */}
-          <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={author.avatarUrl} alt={author.name} />
-              <AvatarFallback className="bg-zinc-800 text-zinc-300 text-xs">
-                {author.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-sm text-zinc-400 truncate">{author.name}</span>
+          {/* Author and Time */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={author.avatarUrl} alt={author.name} />
+                <AvatarFallback className="bg-zinc-800 text-zinc-300 text-xs">
+                  {author.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm text-zinc-400 truncate">{author.name}</span>
+            </div>
+            
+            <div className="flex items-center gap-1 text-xs text-zinc-500">
+              <Clock className="h-3 w-3" />
+              <span>{lastUpdated}</span>
+            </div>
           </div>
         </div>
       </Card>

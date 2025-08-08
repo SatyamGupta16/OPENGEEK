@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { AuthProvider } from "@/components/providers/auth-provider";
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -170,7 +171,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}
+      appearance={{
+        baseTheme: undefined,
+        variables: {
+          colorPrimary: '#10b981', // emerald-500
+        }
+      }}
+    >
       <html lang="en">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
