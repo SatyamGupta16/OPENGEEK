@@ -23,33 +23,71 @@ This monorepo contains all apps, platforms, and tools under the OpenGeek initiat
 ```
 OPENGEEK/
 │
-├── communitysite/             # ✅ Main fullstack app (Client + Server)
-│   ├── client/                # Frontend (Next.js + Tailwind + TypeScript)
-│   │   ├── public/            # Static assets (favicon, logos, images)
-│   │   ├── src/               # Main app source code (components, pages, utils)
+├── admin/                     # 🔧 Admin dashboard (React + Vite)
+│   ├── client/                # Admin frontend (React + TypeScript + Vite)
+│   │   ├── src/               # Admin app source code
+│   │   ├── public/            # Static assets
 │   │   ├── components.json    # UI/component library config
-│   │   ├── eslint.config.mjs  # ESLint configuration
-│   │   ├── next.config.ts     # Next.js configuration
-│   │   ├── tailwind.config.js # Tailwind CSS configuration
+│   │   ├── vite.config.ts     # Vite configuration
 │   │   ├── tsconfig.json      # TypeScript configuration
 │   │   └── package.json       # Frontend dependencies
 │   │
+│   └── server/                # Admin backend (Express.js)
+│       ├── index.js           # Admin API entry point
+│       └── package.json       # Backend dependencies
+│
+├── communitysite/             # ✅ Main fullstack app (Client + Server)
+│   ├── client/                # Frontend (Next.js + Tailwind + TypeScript)
+│   │   ├── src/               # Main app source code (components, pages, utils)
+│   │   ├── public/            # Static assets (favicon, logos, images)
+│   │   ├── .next/             # Next.js build output
+│   │   ├── components.json    # UI/component library config
+│   │   ├── eslint.config.mjs  # ESLint configuration
+│   │   ├── next.config.ts     # Next.js configuration
+│   │   ├── tsconfig.json      # TypeScript configuration
+│   │   ├── .env*              # Environment variables
+│   │   └── package.json       # Frontend dependencies
+│   │
 │   ├── server/                # Backend (Express.js + PostgreSQL)
+│   │   ├── config/            # Database and app configuration
+│   │   ├── database-scripts/  # Database setup and migration scripts
+│   │   ├── middleware/        # Express middleware (auth, validation, etc.)
+│   │   ├── routes/            # API route handlers
+│   │   ├── utils/             # Utility functions
 │   │   ├── index.js           # API entry point (Express app)
-│   │   ├── .env               # Server environment variables
+│   │   ├── .env*              # Server environment variables
+│   │   ├── render.yaml        # Render deployment config
 │   │   └── package.json       # Backend dependencies
 │   │
 │   ├── CLOUDINARY_INTEGRATION_GUIDE.md
 │   ├── SYSTEM_ARCHITECTURE_DOCUMENTATION.txt
 │   └── README.md
 │
-├── mainsite/                  # Marketing/landing site for opengeek.in
-│   ├── src/                   # Next.js source code
+├── enterprise/                # 🏢 Enterprise platform (Next.js)
+│   ├── src/                   # Enterprise app source code
+│   │   ├── app/               # Next.js App Router pages
+│   │   └── components/        # React components
 │   ├── public/                # Static assets
+│   ├── .next/                 # Next.js build output
 │   ├── next.config.ts         # Next.js configuration
 │   ├── tailwind.config.js     # Tailwind CSS configuration
+│   ├── tsconfig.json          # TypeScript configuration
 │   └── package.json           # Dependencies
 │
+├── mainsite/                  # 🌐 Marketing/landing site for opengeek.in
+│   ├── src/                   # Next.js source code
+│   │   ├── app/               # Next.js App Router pages
+│   │   ├── components/        # React components
+│   │   ├── lib/               # Utility libraries
+│   │   └── middleware.ts      # Next.js middleware
+│   ├── public/                # Static assets (images, icons, etc.)
+│   ├── next.config.ts         # Next.js configuration
+│   ├── tailwind.config.js     # Tailwind CSS configuration
+│   ├── tsconfig.json          # TypeScript configuration
+│   ├── vercel.json            # Vercel deployment config
+│   └── package.json           # Dependencies
+│
+├── .vscode/                   # VS Code workspace settings
 ├── LICENSE
 └── README.md                  # Project overview and setup guide
 ```
@@ -73,10 +111,12 @@ OPENGEEK/
 
 ## 🌐 Project Overview
 
-| Folder              | Description |
-|---------------------|-------------|
-| `communitysite`     | ✅ **Main OpenGeek community platform** (Full-stack app with Next.js frontend and Express.js backend)|
-| `mainsite`          | Marketing/landing site for [www.opengeek.in](https://www.opengeek.in) |
+| Folder              | Description | Status |
+|---------------------|-------------|--------|
+| `communitysite`     | **Main OpenGeek community platform** - Full-stack social platform with posts, projects, user profiles, and real-time interactions | ✅ **Active** |
+| `mainsite`          | **Marketing/landing site** - Public-facing website for [www.opengeek.in](https://www.opengeek.in) with community info and onboarding | ✅ **Active** |
+| `enterprise`        | **Enterprise platform** - Business-focused platform for organizations and enterprise users | 🚧 **In Development** |
+| `admin`             | **Admin dashboard** - Management interface for community moderation, analytics, and platform administration | 🚧 **In Development** |
 
 ---
 
