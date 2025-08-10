@@ -1,10 +1,10 @@
-const db = require('./connection');
+const db = require('../config/database');
 
 const initDatabase = async () => {
   try {
-    // Create users table
+    // Create admin_users table for admin panel (separate from main users table)
     await db.query(`
-      CREATE TABLE IF NOT EXISTS users (
+      CREATE TABLE IF NOT EXISTS admin_users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50) UNIQUE NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
@@ -28,14 +28,14 @@ const initDatabase = async () => {
     
     // Insert default admin user if it doesn't exist
     await db.query(`
-      INSERT INTO users (username, email, role)
+      INSERT INTO admin_users (username, email, role)
       VALUES ('admin', 'admin@example.com', 'admin')
       ON CONFLICT (username) DO NOTHING
     `);
     
     console.log('Database initialized successfully');
   } catch (error) {
-    console.error('Error initializing database:', error);
+    console.error('❌ Database connection error:', error);
   }
 };
 

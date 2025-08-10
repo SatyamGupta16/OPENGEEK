@@ -1,0 +1,119 @@
+# Show help and available operations
+node scripts/cleanup-database.js --help
+
+# Clean specific data types
+node scripts/cleanup-database.js --posts      # Remove all posts & comments
+node scripts/cleanup-database.js --projects  # Remove all projects
+node scripts/cleanup-database.js --follows   # Remove follow relationships
+node scripts/cleanup-database.js --likes     # Remove likes & stars
+node scripts/cleanup-database.js --comments  # Remove comments only
+
+# Dangerous operations
+node scripts/cleanup-database.js --users     # Remove ALL users & data
+node scripts/cleanup-database.js --all       # Remove EVERYTHING
+
+# Utility operations
+node scripts/cleanup-database.js --stats     # Show database statistics
+node scripts/cleanup-database.js --reset-seq # Reset auto-increment sequences
+
+# Custom queries
+node scripts/cleanup-database.js --custom "DELETE FROM posts WHERE created_at < '2024-01-01'"
+
+
+
+
+
+
+# Interactive cleanup (with confirmations)
+npm run cleanup
+
+# Quick cleanup operations
+npm run cleanup:posts     # Clear posts & comments
+npm run cleanup:projects  # Clear projects  
+npm run cleanup:follows   # Clear follow relationships
+npm run cleanup:all       # Clear all data
+npm run cleanup:reset     # Reset auto-increment sequences
+
+# Database statistics
+npm run db:stats          # Show row counts for all tables
+
+
+
+
+
+
+
+
+
+
+# Development workflow
+npm run db:stats           # Check current data
+npm run cleanup:posts      # Clear old posts
+npm run cleanup:reset      # Reset ID sequences
+npm run db:stats           # Verify cleanup
+
+# Complete reset for testing
+npm run cleanup:all        # Clear everything
+npm run cleanup:reset      # Reset sequences
+
+# Production-safe cleanup (with confirmations)
+npm run cleanup -- --posts  # Interactive post cleanup
+
+
+
+
+
+
+
+
+
+
+# Navigate to server directory
+cd communitysite/server
+
+# List all claims
+node view-claims.js list
+
+
+
+# View specific claim details
+node view-claims.js view 1
+
+# Filter by status
+node view-claims.js status pending
+node view-claims.js status approved
+node view-claims.js status rejected
+
+# Export to JSON
+node view-claims.js export-json claims-backup.json
+
+# Export to CSV
+node view-claims.js export-csv claims-data.csv
+
+# Show statistics
+node view-claims.js stats
+
+
+
+
+
+# Interactive review mode (recommended)
+node manage-claims.js review
+
+# Show pending claims
+node manage-claims.js pending
+
+# Approve specific claim
+node manage-claims.js approve 1 "Great project, approved!"
+
+# Reject specific claim
+node manage-claims.js reject 2 "GitHub repo is private, please make it public"
+
+# Bulk approve multiple claims
+node manage-claims.js bulk-approve 1 3 5
+
+# Bulk reject multiple claims
+node manage-claims.js bulk-reject 2 4 "Incomplete applications"
+
+# Show help
+node manage-claims.js help

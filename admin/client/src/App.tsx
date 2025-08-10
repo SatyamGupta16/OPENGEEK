@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
 import LoginPage from '@/components/auth/LoginPage';
 import Dashboard from '@/components/dashboard/Dashboard';
@@ -6,12 +6,15 @@ import UserList from '@/components/users/UserList';
 import UserForm from '@/components/users/UserForm';
 import ContentList from '@/components/content/ContentList';
 import ContentForm from '@/components/content/ContentForm';
+import BlogList from '@/components/blogs/BlogList';
+import BlogForm from '@/components/blogs/BlogForm';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Navigate to="/admin/login" replace />} />
         <Route path="/admin/login" element={<LoginPage />} />
         <Route path="/admin" element={
           <ProtectedRoute>
@@ -26,6 +29,9 @@ function App() {
           <Route path="content" element={<ContentList />} />
           <Route path="content/add" element={<ContentForm />} />
           <Route path="content/edit/:id" element={<ContentForm />} />
+          <Route path="blogs" element={<BlogList />} />
+          <Route path="blogs/new" element={<BlogForm />} />
+          <Route path="blogs/edit/:id" element={<BlogForm />} />
         </Route>
       </Routes>
     </Router>
