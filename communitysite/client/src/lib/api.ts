@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { getAuthToken, isTokenStale, requestFreshToken } from './token-manager';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -12,11 +12,11 @@ const api = axios.create({
 });
 
 // Helper function to check if this is a long operation that needs fresh token
-const isLongOperation = (config: any) => {
+const isLongOperation = (config: AxiosRequestConfig) => {
   const longOperationPaths = ['/posts', '/projects', '/users/profile'];
-  const isFormData = config.headers['Content-Type']?.includes('multipart/form-data');
+  const isFormData = config.headers?.['Content-Type']?.includes('multipart/form-data');
   const isLongPath = longOperationPaths.some(path => config.url?.includes(path));
-  const isWriteOperation = ['POST', 'PUT', 'PATCH'].includes(config.method?.toUpperCase());
+  const isWriteOperation = ['POST', 'PUT', 'PATCH'].includes(config.method?.toUpperCase() || '');
 
   return (isFormData || (isLongPath && isWriteOperation));
 };
