@@ -1,11 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db/connection');
+const db = require('../config/database');
 
-// GET /users → List all users
+// GET /users → List all users from the main database
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT id, username, email, role, created_at FROM users');
+    const result = await db.query(`
+      SELECT 
+        id, 
+        email, 
+        username, 
+        full_name,
+        first_name,
+        last_name,
+        bio,
+        location,
+        github_username,
+        is_verified,
+        is_active,
+        created_at,
+        updated_at
+      FROM users 
+      ORDER BY created_at DESC
+    `);
     res.json({
       success: true,
       data: result.rows
@@ -23,7 +40,24 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await db.query('SELECT id, username, email, role, created_at FROM users WHERE id = $1', [id]);
+    const result = await db.query(`
+      SELECT 
+        id, 
+        email, 
+        username, 
+        full_name,
+        first_name,
+        last_name,
+        bio,
+        location,
+        github_username,
+        is_verified,
+        is_active,
+        created_at,
+        updated_at
+      FROM users 
+      WHERE id = $1
+    `, [id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -45,14 +79,20 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /users → Add user
+// POST /users → Add user (Note: In real app, users are created via Clerk webhooks)
 router.post('/', async (req, res) => {
   try {
-    const { username, email, role } = req.body;
-    const result = await db.query(
-      'INSERT INTO users (username, email, role) VALUES ($1, $2, $3) RETURNING id, username, email, role, created_at',
-      [username, email, role]
-    );
+    const { id, email, username, first_name, last_name, full_name, bio, location, github_username } = req.body;
+    
+    // Generate a unique ID if not provided (normally would come from Clerk)
+    const userId = id || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const result = await db.query(`
+      INSERT INTO users (
+        id, email, username, first_name, last_name, full_name, bio, location, github_username, is_verified, is_active
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+      RETURNING id, email, username, full_name, first_name, last_name, bio, location, github_username, is_verified, is_active, created_at
+    `, [userId, email, username, first_name, last_name, full_name, bio, location, github_username, false, true]);
     
     res.status(201).json({
       success: true,
@@ -72,12 +112,24 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { username, email, role } = req.body;
+    const { email, username, first_name, last_name, full_name, bio, location, github_username, is_verified, is_active } = req.body;
     
-    const result = await db.query(
-      'UPDATE users SET username = $1, email = $2, role = $3 WHERE id = $4 RETURNING id, username, email, role, created_at',
-      [username, email, role, id]
-    );
+    const result = await db.query(`
+      UPDATE users SET 
+        email = $1, 
+        username = $2, 
+        first_name = $3, 
+        last_name = $4, 
+        full_name = $5, 
+        bio = $6, 
+        location = $7, 
+        github_username = $8,
+        is_verified = $9,
+        is_active = $10,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $11 
+      RETURNING id, email, username, full_name, first_name, last_name, bio, location, github_username, is_verified, is_active, created_at, updated_at
+    `, [email, username, first_name, last_name, full_name, bio, location, github_username, is_verified, is_active, id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -100,7 +152,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /users/:id → Delete user
+// DELETE /users/:id → Delete user (cascades to posts, projects, etc.)
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;

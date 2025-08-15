@@ -2,12 +2,21 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Bot, Calendar, Clock, Tag } from 'lucide-react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Avatar } from '@/components/ui/avatar'
-import { blogPosts, type BlogPost } from './data'
+
+type BlogListItem = {
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  cover_image_url: string | null;
+  tags: string[] | null;
+  published_at: string;
+};
 
 // Helper function to get formatted date
 const getFormattedDate = () => {
@@ -30,8 +39,31 @@ const currentDate = getFormattedDate()
 const currentTime = getFormattedTime()
 
 export default function BlogPage() {
-  const featuredPost = blogPosts.find((post) => post.featured)
-  const regularPosts = blogPosts.filter((post) => !post.featured)
+  const [posts, setPosts] = useState<BlogListItem[]>([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const res = await fetch(`${base}/public/blogs/list`, { cache: 'no-store' });
+        const json = await res.json();
+        if (!json?.success) throw new Error('Failed to load blog posts');
+        setPosts(json.data || []);
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load blog posts');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const featuredPost = useMemo(() => posts[0], [posts]);
+  const regularPosts = useMemo(() => posts.slice(1), [posts]);
 
   return (
     <div className="min-h-screen bg-neutral-950">
@@ -68,13 +100,19 @@ export default function BlogPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
+        {error && (
+          <div className="mb-6 text-sm text-red-500">{error}</div>
+        )}
+        {loading && (
+          <div className="mb-6 text-sm text-neutral-400">Loading posts...</div>
+        )}
         {/* Featured Post */}
         {featuredPost && (
           <Link href={`/blog/${featuredPost.slug}`} className="block mb-16 group">
             <div className="grid md:grid-cols-2 gap-8 items-center bg-neutral-900/50 border border-neutral-800 rounded-2xl p-8 hover:bg-neutral-900/80 transition-all duration-300">
               <div className="relative h-[350px] rounded-xl overflow-hidden">
                 <Image
-                  src={featuredPost.coverImage}
+                  src={featuredPost.cover_image_url || '/banner.png'}
                   alt={featuredPost.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -85,17 +123,15 @@ export default function BlogPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/60 to-transparent" />
               </div>
               <div>
-                <Badge className="mb-4 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border-blue-500/20">
-                  Featured Post
-                </Badge>
+                <Badge className="mb-4 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border-blue-500/20">Featured Post</Badge>
                 <h2 className="text-3xl font-bold mb-4 text-neutral-200 group-hover:text-blue-400 transition">
                   {featuredPost.title}
                 </h2>
                 <p className="text-lg text-neutral-400 mb-6">
-                  {featuredPost.description}
+                  {featuredPost.excerpt}
                 </p>
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {featuredPost.tags.map((tag: string) => (
+                  {(featuredPost.tags || []).map((tag: string) => (
                     <Badge key={tag} variant="secondary" className="bg-neutral-800 text-neutral-300 hover:bg-neutral-700">
                       {tag}
                     </Badge>
@@ -108,26 +144,26 @@ export default function BlogPage() {
                         <Avatar className="border-2 border-neutral-700">
                           <Image
                             src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop"
-                            alt={featuredPost.author}
+                            alt={'Author'}
                             width={40}
                             height={40}
                             className="rounded-full"
                           />
                         </Avatar>
-                        <span className="text-neutral-300">{featuredPost.author}</span>
+                        <span className="text-neutral-300">OpenGeek</span>
                       </div>
                     </HoverCardTrigger>
                     <HoverCardContent className="bg-neutral-900 border-neutral-800">
                       <div className="flex flex-col gap-2">
-                        <h4 className="font-semibold text-neutral-200">{featuredPost.author}</h4>
+                        <h4 className="font-semibold text-neutral-200">OpenGeek</h4>
                         <p className="text-sm text-neutral-400">Technical Writer & Developer</p>
                       </div>
                     </HoverCardContent>
                   </HoverCard>
                   <span className="text-sm text-neutral-500">•</span>
-                  <time className="text-sm text-neutral-400">{featuredPost.date}</time>
+                  <time className="text-sm text-neutral-400">{new Date(featuredPost.published_at).toLocaleDateString()}</time>
                   <span className="text-sm text-neutral-500">•</span>
-                  <span className="text-sm text-neutral-400">{featuredPost.readingTime}</span>
+                  <span className="text-sm text-neutral-400">Blog</span>
                 </div>
               </div>
             </div>
@@ -137,11 +173,11 @@ export default function BlogPage() {
         {/* Regular Posts Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {regularPosts.map((post) => (
-            <Link key={post.id} href={`/blog/${post.slug}`}>
+            <Link key={post.slug} href={`/blog/${post.slug}`}>
               <Card className="h-full group hover:shadow-xl transition-all duration-300 bg-neutral-900/50 border-neutral-800 hover:bg-neutral-900/80">
                 <div className="relative h-44">
                   <Image
-                    src={post.coverImage}
+                    src={post.cover_image_url || '/banner.png'}
                     alt={post.title}
                     fill
                     className="object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-300"
@@ -151,7 +187,7 @@ export default function BlogPage() {
                 </div>
                 <CardContent className="p-6">
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {post.tags.slice(0, 2).map((tag) => (
+                    {(post.tags || []).slice(0, 2).map((tag) => (
                       <Badge key={tag} variant="secondary" className="bg-neutral-800 text-neutral-300">
                         {tag}
                       </Badge>
@@ -161,22 +197,22 @@ export default function BlogPage() {
                     {post.title}
                   </h3>
                   <p className="text-neutral-400 text-sm mb-4 line-clamp-2">
-                    {post.description}
+                    {post.excerpt}
                   </p>
                   <div className="flex items-center justify-between text-sm text-neutral-400">
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6 border border-neutral-700">
                         <Image
                           src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=200&auto=format&fit=crop"
-                          alt={post.author}
+                          alt={'Author'}
                           width={24}
                           height={24}
                           className="rounded-full"
                         />
                       </Avatar>
-                      <span>{post.author}</span>
+                      <span>OpenGeek</span>
                     </div>
-                    <span>{post.readingTime}</span>
+                    <span>{new Date(post.published_at).toLocaleDateString()}</span>
                   </div>
                 </CardContent>
               </Card>
