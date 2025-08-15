@@ -1,9 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 // import { Cover } from "@/components/ui/cover";
 // import { ContainerTextFlip } from "@/components/ui/container-text-flip";
 import Squares from "@/components/ui/Squares";
