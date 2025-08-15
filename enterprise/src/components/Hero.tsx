@@ -56,18 +56,10 @@ export function Hero() {
           transition={{ delay: 0.4, duration: 0.8 }}
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold mx-auto text-center mt-4 sm:mt-6 relative z-20 py-4 bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/80"
         >
-          Turn Your Code into Real <br/> 
-          {/* <div className="relative inline-block">
-            <Cover>
-              <ContainerTextFlip
-                words={["Projects", "Money", "Income"]}
-                interval={4000}
-                className="!text-4xl sm:!text-5xl md:!text-6xl lg:!text-7xl bg-clip-text"
-                textClassName="overflow-hidden"
-                animationDuration={500}
-              />
-            </Cover>
-          </div> */}
+          Enterprise Solutions<br/>
+          <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-white/90 to-blue-500">
+            Elevate Your Business
+          </span>
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
@@ -75,7 +67,7 @@ export function Hero() {
           transition={{ delay: 0.6, duration: 0.8 }}
           className="mt-4 bg-transparent sm:mt-6 mb-6 sm:mb-10 text-sm sm:text-base md:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed px-4 backdrop-blur-sm"
         >
-          Connect with real clients, build your portfolio, and start earning today. Join our community of students who are turning their coding skills into income.
+          Transform your business with cutting-edge web development, mobile applications, and comprehensive IT solutions that drive growth and innovation.
         </motion.p>
         
         <motion.div 
@@ -114,4 +106,4 @@ export function Hero() {
       </motion.div>
     </section>
   );
-} 
+}
