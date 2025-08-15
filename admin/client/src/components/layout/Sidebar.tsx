@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Users, FileText, BarChart3, LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -12,12 +12,24 @@ type NavItemType = {
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = () => {
+    // Clear the admin token from localStorage
+    localStorage.removeItem('admin_token');
+    
+    // Redirect to login page
+    navigate('/admin/login');
+    
+    console.log('User logged out successfully');
+  };
 
   const navItems: NavItemType[] = [
     { name: 'Dashboard', href: '/admin', icon: BarChart3 },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Content', href: '/admin/content', icon: FileText },
+    { name: 'Blogs', href: '/admin/blogs', icon: FileText },
   ];
 
   const NavItem = ({ item }: { item: NavItemType }) => (
@@ -54,6 +66,17 @@ const Sidebar = () => {
             {navItems.map((item) => (
               <NavItem key={item.name} item={item} />
             ))}
+            <Button
+              variant="ghost"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground justify-start"
+              onClick={() => {
+                handleLogout();
+                setIsOpen(false);
+              }}
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
           </nav>
         </SheetContent>
       </Sheet>
@@ -75,9 +98,7 @@ const Sidebar = () => {
               <Button
                 variant="ghost"
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => {
-                  console.log('Logout clicked');
-                }}
+                onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
                 Logout
