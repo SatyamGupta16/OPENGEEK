@@ -132,6 +132,29 @@ router.put('/:id', userManagementRateLimit, auditLog('UPDATE_ADMIN_USER'), async
       });
     }
     
+    // Get target user info to check if it's a super_admin
+    const targetUserResult = await db.query(
+      'SELECT role FROM admin_users WHERE id = $1',
+      [id]
+    );
+    
+    if (targetUserResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin user not found'
+      });
+    }
+    
+    const targetUser = targetUserResult.rows[0];
+    
+    // Prevent modifying other super_admin users (except self)
+    if (targetUser.role === 'super_admin' && req.user.id !== parseInt(id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Super admin accounts cannot be modified by other users'
+      });
+    }
+    
     // Build update query dynamically
     const updates = [];
     const values = [];
@@ -139,19 +162,19 @@ router.put('/:id', userManagementRateLimit, auditLog('UPDATE_ADMIN_USER'), async
     
     if (email) {
       paramCount++;
-      updates.push('email = $' + paramCount);
+      updates.push(`email = $${paramCount}`);
       values.push(email);
     }
     
     if (role && ['admin', 'moderator', 'super_admin'].includes(role)) {
       paramCount++;
-      updates.push('role = $' + paramCount);
+      updates.push(`role = $${paramCount}`);
       values.push(role);
     }
     
     if (is_active !== undefined) {
       paramCount++;
-      updates.push('is_active = $' + paramCount);
+      updates.push(`is_active = $${paramCount}`);
       values.push(is_active);
     }
     
@@ -166,7 +189,7 @@ router.put('/:id', userManagementRateLimit, auditLog('UPDATE_ADMIN_USER'), async
     paramCount++;
     values.push(id);
     
-    const query = 'UPDATE admin_users SET ' + updates.join(', ') + ' WHERE id = $' + paramCount + ' RETURNING id, username, email, role, is_active, created_at, updated_at';
+    const query = `UPDATE admin_users SET ${updates.join(', ')} WHERE id = $${paramCount} RETURNING id, username, email, role, is_active, created_at, updated_at`;
     
     const result = await db.query(query, values);
     
@@ -217,7 +240,7 @@ router.put('/:id/password', userManagementRateLimit, auditLog('CHANGE_PASSWORD')
     
     // Get current user data
     const userResult = await db.query(
-      'SELECT username, password_hash FROM admin_users WHERE id = $1',
+      'SELECT username, password_hash, role FROM admin_users WHERE id = $1',
       [id]
     );
     
@@ -229,6 +252,14 @@ router.put('/:id/password', userManagementRateLimit, auditLog('CHANGE_PASSWORD')
     }
     
     const user = userResult.rows[0];
+    
+    // Prevent changing password of other super_admin users
+    if (user.role === 'super_admin' && req.user.id !== parseInt(id) && req.user.role !== 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot change password of super admin users'
+      });
+    }
     
     // If not super_admin, verify current password
     if (req.user.role !== 'super_admin') {
@@ -295,7 +326,7 @@ router.delete('/:id', userManagementRateLimit, auditLog('DELETE_ADMIN_USER'), as
     
     // Get user info before deletion
     const userResult = await db.query(
-      'SELECT username FROM admin_users WHERE id = $1',
+      'SELECT username, role FROM admin_users WHERE id = $1',
       [id]
     );
     
@@ -306,12 +337,20 @@ router.delete('/:id', userManagementRateLimit, auditLog('DELETE_ADMIN_USER'), as
       });
     }
     
-    const username = userResult.rows[0].username;
+    const targetUser = userResult.rows[0];
+    
+    // Prevent deleting other super_admin users (only allow deleting admin/moderator)
+    if (targetUser.role === 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Super admin accounts cannot be deleted for security reasons'
+      });
+    }
     
     // Delete user
     await db.query('DELETE FROM admin_users WHERE id = $1', [id]);
     
-    console.log(`🗑️ Admin user deleted: ${username} by ${req.user.username}`);
+    console.log(`🗑️ Admin user deleted: ${targetUser.username} (${targetUser.role}) by ${req.user.username}`);
     
     res.json({
       success: true,
@@ -354,6 +393,47 @@ router.get('/profile', auditLog('VIEW_PROFILE'), async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching profile',
+      error: error.message
+    });
+  }
+});
+
+// GET /admin-users/:id - Get specific admin user (super_admin only)
+router.get('/:id', auditLog('VIEW_ADMIN_USER'), async (req, res) => {
+  try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only super admins can view specific admin users'
+      });
+    }
+    
+    const { id } = req.params;
+    
+    const result = await db.query(`
+      SELECT 
+        id, username, email, role, is_active, created_at, 
+        last_login, last_activity, login_attempts
+      FROM admin_users 
+      WHERE id = $1
+    `, [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin user not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Error fetching admin user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching admin user',
       error: error.message
     });
   }

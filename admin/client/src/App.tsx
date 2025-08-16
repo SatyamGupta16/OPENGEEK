@@ -19,6 +19,7 @@ import CommunityProjects from '@/components/community/CommunityProjects';
 import CommunityUsers from '@/components/community/CommunityUsers';
 import CommunityAnalytics from '@/components/community/CommunityAnalytics';
 import ProfileSettings from '@/components/profile/ProfileSettings';
+import ApiTest from '@/components/debug/ApiTest';
 
 function App() {
   return (
@@ -63,6 +64,9 @@ function App() {
           
           {/* Profile Settings */}
           <Route path="profile" element={<ProfileSettings />} />
+          
+          {/* API Test (temporary) */}
+          <Route path="api-test" element={<ApiTest />} />
         </Route>
       </Routes>
     </Router>

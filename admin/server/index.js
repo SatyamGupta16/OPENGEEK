@@ -60,6 +60,15 @@ createDefaultAdmin().catch(error => {
 
 // Enhanced Admin Routes (using new authentication system)
 console.log('🔧 Mounting enhanced admin routes...');
+
+// Profile route accessible to all authenticated admin users
+app.get('/api/admin-users/profile', enhancedAuth, requireRole(['admin', 'moderator', 'super_admin']), (req, res, next) => {
+  // Forward to the profile route in adminUsersRoutes
+  req.url = '/profile';
+  adminUsersRoutes(req, res, next);
+});
+
+// Other admin-users routes restricted to super_admin only
 app.use('/api/admin-users', enhancedAuth, requireRole(['super_admin']), adminUsersRoutes);
 app.use('/api/community', enhancedAuth, requireRole(['admin', 'moderator', 'super_admin']), adminRateLimit, communityAdminRoutes);
 console.log('✅ Enhanced admin routes mounted successfully');
@@ -120,6 +129,30 @@ app.get('/health', async (req, res) => {
   const statusCode = healthCheck.database === 'OK' ? 200 : 503;
 
   res.status(statusCode).json(healthCheck);
+});
+
+// Debug endpoint to check authentication
+app.get('/debug/auth', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.json({ error: 'No authorization header' });
+  }
+  
+  const token = authHeader.split(' ')[1];
+  const { debugToken, debugUser } = require('./debug-auth');
+  
+  const decoded = debugToken(token);
+  if (decoded) {
+    debugUser(decoded.id).then(user => {
+      res.json({
+        token: decoded,
+        user: user,
+        authHeader: authHeader
+      });
+    });
+  } else {
+    res.json({ error: 'Invalid token' });
+  }
 });
 
 // Enhanced admin login endpoint
@@ -213,7 +246,7 @@ app.post('/admin/login', authRateLimit, async (req, res) => {
         console.log(`✅ Legacy login successful: ${username} from ${clientIP}`);
 
         const token = jwt.sign(
-          { id: 1, username: 'admin', role: 'admin' },
+          { id: 1, username: 'admin', role: 'super_admin' },
           process.env.JWT_SECRET,
           { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
         );
@@ -225,7 +258,7 @@ app.post('/admin/login', authRateLimit, async (req, res) => {
           user: {
             id: 1,
             username: 'admin',
-            role: 'admin'
+            role: 'super_admin'
           }
         });
       }

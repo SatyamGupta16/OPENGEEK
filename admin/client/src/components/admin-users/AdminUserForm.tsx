@@ -9,7 +9,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Save, Shield, ShieldCheck, User } from 'lucide-react';
-import axios from 'axios';
+import api from '@/lib/api';
 
 interface AdminUserFormData {
   username: string;
@@ -39,10 +39,7 @@ const AdminUserForm = () => {
   const [success, setSuccess] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  const token = localStorage.getItem('admin_token');
-  const axiosConfig = {
-    headers: { Authorization: `Bearer ${token}` }
-  };
+  // Token is now handled automatically by the API instance
 
   useEffect(() => {
     fetchCurrentUser();
@@ -53,7 +50,7 @@ const AdminUserForm = () => {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await axios.get('/api/admin-users/profile', axiosConfig);
+      const response = await api.get('/api/admin-users/profile');
       setCurrentUser(response.data.data);
     } catch (error) {
       console.error('Error fetching current user:', error);
@@ -63,7 +60,7 @@ const AdminUserForm = () => {
   const fetchAdminUser = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/admin-users/${id}`, axiosConfig);
+      const response = await api.get(`/api/admin-users/${id}`);
       const user = response.data.data;
       setFormData({
         username: user.username,
@@ -126,7 +123,7 @@ const AdminUserForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     try {
@@ -145,10 +142,10 @@ const AdminUserForm = () => {
       }
 
       if (isEditing) {
-        await axios.put(`/api/admin-users/${id}`, submitData, axiosConfig);
+        await api.put(`/api/admin-users/${id}`, submitData);
         setSuccess('Admin user updated successfully');
       } else {
-        await axios.post('/api/admin-users', submitData, axiosConfig);
+        await api.post('/api/admin-users', submitData);
         setSuccess('Admin user created successfully');
       }
 
@@ -213,7 +210,7 @@ const AdminUserForm = () => {
             {isEditing ? 'Edit Admin User' : 'Create New Admin User'}
           </CardTitle>
           <CardDescription>
-            {isEditing 
+            {isEditing
               ? 'Update the admin user information below'
               : 'Fill in the details to create a new admin user'
             }

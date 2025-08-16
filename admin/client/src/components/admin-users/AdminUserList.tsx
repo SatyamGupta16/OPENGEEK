@@ -38,10 +38,7 @@ const AdminUserList = () => {
   const [deleteUser, setDeleteUser] = useState<AdminUser | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  const token = localStorage.getItem('admin_token');
-  const axiosConfig = {
-    headers: { Authorization: `Bearer ${token}` }
-  };
+  // Token is now handled automatically by the API instance
 
   useEffect(() => {
     fetchAdminUsers();
@@ -60,10 +57,11 @@ const AdminUserList = () => {
   const fetchAdminUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/admin-users', axiosConfig);
+      const response = await api.get('/api/admin-users');
       setAdminUsers(response.data.data);
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Error fetching admin users');
+      console.error('Error fetching admin users:', error);
+      setError(error.response?.data?.message || error.message || 'Error fetching admin users');
     } finally {
       setLoading(false);
     }
@@ -71,7 +69,7 @@ const AdminUserList = () => {
 
   const handleDeleteUser = async (user: AdminUser) => {
     try {
-      await axios.delete(`/api/admin-users/${user.id}`, axiosConfig);
+      await api.delete(`/api/admin-users/${user.id}`);
       setAdminUsers(adminUsers.filter(u => u.id !== user.id));
       setDeleteUser(null);
     } catch (error: any) {
@@ -81,9 +79,9 @@ const AdminUserList = () => {
 
   const toggleUserStatus = async (user: AdminUser) => {
     try {
-      await axios.put(`/api/admin-users/${user.id}`, {
+      await api.put(`/api/admin-users/${user.id}`, {
         is_active: !user.is_active
-      }, axiosConfig);
+      });
       
       setAdminUsers(adminUsers.map(u => 
         u.id === user.id ? { ...u, is_active: !u.is_active } : u
@@ -124,6 +122,7 @@ const AdminUserList = () => {
     if (!currentUser) return false;
     if (currentUser.role !== 'super_admin') return false;
     if (user.id === currentUser.id) return false; // Can't manage self
+    if (user.role === 'super_admin') return false; // Can't manage other super admins
     return true;
   };
 
@@ -223,7 +222,7 @@ const AdminUserList = () => {
                         </Link>
                       </Button>
                       
-                      {canManageUser(user) && (
+                      {canManageUser(user) ? (
                         <>
                           <Button
                             variant="outline"
@@ -241,7 +240,17 @@ const AdminUserList = () => {
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </>
-                      )}
+                      ) : user.role === 'super_admin' ? (
+                        <Badge variant="outline" className="text-red-600 border-red-200">
+                          <Shield className="h-3 w-3 mr-1" />
+                          Protected
+                        </Badge>
+                      ) : user.id === currentUser?.id ? (
+                        <Badge variant="outline" className="text-blue-600 border-blue-200">
+                          <User className="h-3 w-3 mr-1" />
+                          You
+                        </Badge>
+                      ) : null}
                     </div>
                   </TableCell>
                 </TableRow>
