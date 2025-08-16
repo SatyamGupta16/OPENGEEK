@@ -41,9 +41,7 @@ router.post('/', async (req, res) => {
     }
     const pubAt = status === 'published' ? 'NOW()' : 'NULL';
     const result = await db.query(
-      `INSERT INTO blogs (title, slug, excerpt, content, cover_image_url, tags, status, published_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, ${pubAt})
-       RETURNING id, title, slug, excerpt, cover_image_url, tags, status, published_at, created_at, updated_at`,
+      'INSERT INTO blogs (title, slug, excerpt, content, cover_image_url, tags, status, published_at) VALUES ($1, $2, $3, $4, $5, $6, $7, ' + pubAt + ') RETURNING id, title, slug, excerpt, cover_image_url, tags, status, published_at, created_at, updated_at',
       [title, slug, excerpt || null, content, cover_image_url || null, tags, status]
     );
     res.status(201).json({ success: true, data: result.rows[0] });
