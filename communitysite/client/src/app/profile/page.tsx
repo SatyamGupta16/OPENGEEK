@@ -158,7 +158,7 @@ export default function ProfilePage() {
       const checkTokenAndFetch = async () => {
         let attempts = 0;
         const maxAttempts = 50; // 5 seconds max wait
-        
+
         const waitForToken = () => {
           const token = getAuthToken();
           if (token) {
@@ -166,7 +166,7 @@ export default function ProfilePage() {
             fetchProfile();
             return;
           }
-          
+
           attempts++;
           if (attempts < maxAttempts) {
             setTimeout(waitForToken, 100);
@@ -175,10 +175,10 @@ export default function ProfilePage() {
             fetchProfile();
           }
         };
-        
+
         waitForToken();
       };
-      
+
       checkTokenAndFetch();
     }
   }, [isSignedIn]);
@@ -227,13 +227,38 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
+  // Handle like/unlike post
+  const handleLikePost = async (postId: string) => {
+    try {
+      const response = await postsAPI.likePost(postId);
+      if (response.success) {
+        // Update the post in the local state
+        setUserPosts(prevPosts =>
+          prevPosts.map(post =>
+            post.id === postId
+              ? {
+                ...post,
+                is_liked_by_user: response.data.isLiked,
+                likes_count: response.data.likesCount
+              }
+              : post
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error liking post:', error);
+      toast.error('Failed to update like');
+    }
+  };
+
   // Transform post for PostCard
   const transformPostForCard = (post: Post) => ({
     id: post.id,
     user: {
       name: post.full_name || post.username,
       username: post.username,
-      avatarUrl: post.user_image_url
+      avatarUrl: post.user_image_url,
+      userId: post.username === profile?.username ? profile?.id : undefined
     },
     content: post.content,
     timestamp: formatDistanceToNow(new Date(post.created_at), { addSuffix: true }),
@@ -241,7 +266,10 @@ export default function ProfilePage() {
     comments: post.comments_count,
     image: post.image_url,
     isLiked: post.is_liked_by_user,
-    onLike: () => { } // TODO: Implement like functionality
+    onLike: () => handleLikePost(post.id),
+    onDelete: (postId: string) => {
+      setUserPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
+    }
   });
 
   if (!isSignedIn) {
