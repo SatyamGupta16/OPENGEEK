@@ -22,7 +22,7 @@ import {
   Twitter
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { usersAPI } from '@/lib/api';
+import { usersAPI, postsAPI } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 
@@ -164,13 +164,43 @@ export default function UserProfilePage() {
     }
   }, [username, isSignedIn]);
 
+  // Handle like/unlike post
+  const handleLikePost = async (postId: string) => {
+    if (!isSignedIn) {
+      toast.error('Please sign in to like posts');
+      return;
+    }
+
+    try {
+      const response = await postsAPI.likePost(postId);
+      if (response.success) {
+        // Update the post in the local state
+        setUserPosts(prevPosts => 
+          prevPosts.map(post => 
+            post.id === postId 
+              ? {
+                  ...post,
+                  is_liked_by_user: response.data.isLiked,
+                  likes_count: response.data.likesCount
+                }
+              : post
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error liking post:', error);
+      toast.error('Failed to update like');
+    }
+  };
+
   // Transform post for PostCard
   const transformPostForCard = (post: Post) => ({
     id: post.id,
     user: {
       name: post.full_name || post.username,
       username: post.username,
-      avatarUrl: post.user_image_url
+      avatarUrl: post.user_image_url,
+      userId: post.username === profile?.username ? profile?.id : undefined
     },
     content: post.content,
     timestamp: formatDistanceToNow(new Date(post.created_at), { addSuffix: true }),
@@ -178,7 +208,7 @@ export default function UserProfilePage() {
     comments: post.comments_count,
     image: post.image_url,
     isLiked: post.is_liked_by_user,
-    onLike: () => { } // TODO: Implement like functionality
+    onLike: () => handleLikePost(post.id)
   });
 
   // Redirect to own profile if viewing own username
