@@ -113,10 +113,23 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+  }
+}
+
+@layer components {
+  .dropdown-content {
+    @apply animate-in fade-in-0 zoom-in-95;
+  }
+  
+  .dropdown-item {
+    @apply relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors;
   }
 }

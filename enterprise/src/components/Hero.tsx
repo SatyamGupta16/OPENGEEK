@@ -50,17 +50,23 @@ export function Hero() {
             </a>
           </div>
         </motion.div>
-        <motion.h1 
+        <motion.div
+          className="text-center relative z-20"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.8 }}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold mx-auto text-center mt-4 sm:mt-6 relative z-20 py-4 bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/80"
         >
-          Enterprise Solutions<br/>
-          <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-white/90 to-blue-500">
-            Elevate Your Business
-          </span>
-        </motion.h1>
+          <h1 className="flex flex-col items-center gap-2 sm:gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+              
+              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold ">
+                <div className="mb-2.5 bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/30">The IT Services you need </div>
+                <div className="bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/30">For Your Buisness</div>
+              </div>
+            </div>
+            
+          </h1>
+        </motion.div>
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

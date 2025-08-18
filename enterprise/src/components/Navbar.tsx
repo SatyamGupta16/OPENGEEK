@@ -63,9 +63,8 @@ export function Navbar() {
         className="relative z-10 flex items-center gap-1 xs:gap-2 text-lg xs:text-xl font-semibold text-white"
       >
         <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
-          OPENGEEK <span className="text-xs sm:text-sm text-white/40">Community</span>
+          OPENGEEK <span className="text-xs sm:text-sm text-white/40">Entreprise</span>
         </span>
-        <span className="hidden xs:inline-block text-xs sm:text-sm text-white/50">Community</span>
       </Link>
 
       {/* Desktop Navigation - Shifted to right */}
