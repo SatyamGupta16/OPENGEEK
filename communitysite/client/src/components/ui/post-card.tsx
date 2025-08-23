@@ -166,12 +166,12 @@ export function PostCard({
             variant="ghost"
             size="sm"
             onClick={onLike}
-            className={`${isLiked
+            className={`${likes > 0 || isLiked
               ? 'text-red-500 hover:text-red-400 hover:bg-red-500/10'
               : 'text-zinc-400 hover:text-red-400 hover:bg-red-500/10'
               } transition-colors`}
           >
-            <Heart className={`h-4 w-4 mr-1 ${isLiked ? 'fill-current' : ''}`} />
+            <Heart className={`h-4 w-4 mr-1 ${likes > 0 || isLiked ? 'fill-current' : ''}`} />
             {likes}
           </Button>
           <Button 

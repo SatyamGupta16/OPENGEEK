@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import axios from 'axios';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState(import.meta.env.VITE_DEFAULT_ADMIN_USERNAME );
+  const [username, setUsername] = useState(import.meta.env.VITE_DEFAULT_ADMIN_USERNAME  );
   const [password, setPassword] = useState(import.meta.env.VITE_DEFAULT_ADMIN_PASSWORD );
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,22 +20,43 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // In a real implementation, you would call your actual API endpoint
+      console.log('Attempting login with username:', username);
+      
       const response = await axios.post('/admin/login', {
-        username,
-        password
+        username: username.trim(), // Remove any whitespace
+        password: password.trim()  // Remove any whitespace
       });
 
+      console.log('Login response:', response.data);
+
       if (response.data.success) {
-        // Store token in localStorage or sessionStorage
+        console.log('Login successful, storing token and redirecting');
+        // Store token in localStorage
         localStorage.setItem('admin_token', response.data.token);
         // Navigate to dashboard
         navigate('/admin/dashboard');
       } else {
-        setError(response.data.message);
+        console.log('Login failed:', response.data.message);
+        setError(response.data.message || 'Login failed');
       }
-    } catch (err) {
-      setError('Login failed. Please check your credentials and try again.');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      
+      // Handle different types of errors
+      if (err.response) {
+        // Server responded with error status
+        const errorMessage = err.response.data?.message || 'Login failed. Please check your credentials and try again.';
+        setError(errorMessage);
+        console.log('Server error:', err.response.status, errorMessage);
+      } else if (err.request) {
+        // Request was made but no response received
+        setError('Unable to connect to server. Please check your connection.');
+        console.log('Network error:', err.request);
+      } else {
+        // Something else happened
+        setError('An unexpected error occurred. Please try again.');
+        console.log('Unexpected error:', err.message);
+      }
     } finally {
       setLoading(false);
     }

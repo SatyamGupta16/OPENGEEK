@@ -11,6 +11,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: '/',
   server: {
     proxy: {
       '/admin': {
@@ -20,7 +21,7 @@ export default defineConfig({
       '/users': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-      },
+      },  
       '/content': {
         target: 'http://localhost:3000',
         changeOrigin: true,
@@ -30,7 +31,7 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-    base: '/',
+  
   },
   build: {
     rollupOptions: {
